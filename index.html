@@ -14,8 +14,8 @@
   .kpi .label { font-size: 12px; color: #52514e; margin: 0 0 4px; }
   .kpi .value { font-size: 22px; font-weight: 700; margin: 0; }
   .kpi .delta { font-size: 12px; margin: 4px 0 0; }
-  .delta.up { color: #b5451f; }
-  .delta.down { color: #a32d2d; }
+  .delta.good { color: #1a7a3d; }
+  .delta.bad { color: #a32d2d; }
   .note { font-size: 12px; color: #898781; max-width: 900px; margin: 0 0 12px; }
   .note-line { font-size: 13px; line-height: 1.6; margin: 0 0 8px; max-width: 900px; }
   .callout { background: #fff2df; border-left: 4px solid #eb6834; padding: 10px 14px; font-size: 13px; max-width: 900px; margin: 0 0 16px; border-radius: 4px; }
@@ -5459,10 +5459,12 @@ function kpiValueStr(v, format){
   return Math.round(v).toLocaleString('en-US');
 }
 
-function kpiCardHtml(label, ty, ly, format, tag){
+function kpiCardHtml(label, ty, ly, format, tag, favorable){
   const hasDelta = ly !== null && ly !== undefined && ly !== 0 && ty !== null && ty !== undefined;
   const delta = hasDelta ? (ty - ly) / ly : null;
-  const deltaCls = delta === null ? 'neutral' : (delta >= 0 ? 'up' : 'down');
+  let deltaCls;
+  if (delta === null || !favorable) deltaCls = 'neutral';
+  else deltaCls = (delta * favorable >= 0) ? 'good' : 'bad';
   const deltaStr = delta === null ? 'n/a vs LY' : (delta >= 0 ? '+' : '') + (delta * 100).toFixed(1) + '% vs LY';
   return `<div class="kpi"><p class="label">${label}${tag}</p><p class="value">${kpiValueStr(ty, format)}</p><p class="delta ${deltaCls}">${deltaStr}</p></div>`;
 }
@@ -5481,11 +5483,11 @@ function renderKpiSection(){
   if (!bucket) { row.innerHTML = '<p class="panel-na">No data available for this view.</p>'; return; }
   const tag = (typeof seasonalOn !== 'undefined' && seasonalOn) ? ' (deseasonalized)' : ' (raw, not seasonally adjusted)';
   let html = '<div class="kpi-row">';
-  html += kpiCardHtml('Ad spend', bucket.spend.ty, bucket.spend.ly, 'money', tag);
-  html += kpiCardHtml('New customer orders', bucket.orders.ty, bucket.orders.ly, 'count', tag);
-  html += kpiCardHtml('New customer revenue', bucket.revenue.ty, bucket.revenue.ly, 'money', tag);
-  html += kpiCardHtml('Blended CAC', bucket.cac.ty, bucket.cac.ly, 'money', tag);
-  html += kpiCardHtml('Blended ROAS', bucket.roas.ty, bucket.roas.ly, 'roas', tag);
+  html += kpiCardHtml('Ad spend', bucket.spend.ty, bucket.spend.ly, 'money', tag, 0);
+  html += kpiCardHtml('New customer orders', bucket.orders.ty, bucket.orders.ly, 'count', tag, 1);
+  html += kpiCardHtml('New customer revenue', bucket.revenue.ty, bucket.revenue.ly, 'money', tag, 1);
+  html += kpiCardHtml('Blended CAC', bucket.cac.ty, bucket.cac.ly, 'money', tag, -1);
+  html += kpiCardHtml('Blended ROAS', bucket.roas.ty, bucket.roas.ly, 'roas', tag, 1);
   html += '</div>';
   row.innerHTML = html;
 }
