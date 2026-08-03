@@ -3366,6 +3366,29 @@
 <div class="finding-item"><span class="finding-title"><strong>4. International Other Paid is where the ROAS decline concentrates, and the one channel showing real diminishing returns.</strong></span> Across every seasonal/holiday toggle setting, International Other Paid is consistently the standout negative on the ROAS trend (-25% to -33% year over year), while US Meta is consistently the standout positive (still down 5.5%-6.5%). It's also the only spend/outcome pair in the whole report with a statistically flagged reversal in its own marginal effect -- a strongly positive slope at low spend levels that turns negative at high spend levels, for both orders and revenue. <span class="finding-ref">See <a href="#trendDeepDiveDetails" onclick="event.preventDefault(); openAndScrollTo(document.getElementById('trendDeepDiveDetails'), 'start');">"Trend &amp; change deep-dive"</a> and <a href="#saturationDetails" onclick="event.preventDefault(); openAndScrollTo(document.getElementById('saturationDetails'), 'start');">"Are we past the point of good returns?"</a></span></div>
 
 <div class="finding-item"><span class="finding-title"><strong>5. No evidence spend takes a month to "catch up."</strong></span> Across every region, channel, and toggle setting tested, no pair shows a next-month relationship even 0.05 r stronger than its own same-month one. Whatever relationship ad spend has with new customer acquisition in this data is already visible in the same month. <span class="finding-ref">See <a href="#lagDetails" onclick="event.preventDefault(); openAndScrollTo(document.getElementById('lagDetails'), 'start');">"Does spend take a month to show up?"</a></span></div>
+
+<h3>Recommendations</h3>
+<p class="method-note">Directly follows from the 5 findings above -- data-driven starting points, not final decisions. Dollar amounts below are illustrative; use the interactive "What if we shifted spend between channels?" calculator to test other amounts.</p>
+
+<div class="rec-item"><div class="rec-title"><strong>1. Shift a meaningful amount of budget from Meta to Other Paid -- concentrated in the US.</strong></div>
+<p class="rec-line"><strong>Why:</strong> Other Paid beats Meta on cost and customer value on every metric measured (finding 1), and its marginal effect on volume is currently more than double Meta's per dollar: about 117 new customer orders and $6,302 in revenue per additional $1,000 spent on Other Paid, vs. about 50 orders and $2,581 per additional $1,000 on Meta (Total region, this period). Concentrating the shift in the US avoids International Other Paid specifically, the one pocket of this channel with real diminishing returns (recommendation 3).</p>
+<p class="rec-line"><strong>Expected result:</strong> Moving $500,000/month from Meta to Other Paid (Total region, this period) projects +33,699 new customer orders (&plusmn;24,202) and +$1,860,233 in new customer revenue (&plusmn;1,222,030), with no meaningful change to Blended CAC or ROAS -- both move by less than their own uncertainty range.</p>
+</div>
+
+<div class="rec-item"><div class="rec-title"><strong>2. Don't eliminate Meta spend -- reallocate at the margin, not entirely.</strong></div>
+<p class="rec-line"><strong>Why:</strong> Meta is simultaneously the least valuable channel per customer and the single strongest driver of total order volume anywhere in this data (+49.56 orders per additional $1,000, t = 11.86, finding 2). A full cutoff would sacrifice real, statistically significant volume that Other Paid's smaller current base may not fully absorb at the same efficiency.</p>
+<p class="rec-line"><strong>Expected result:</strong> A moderate shift like the one modeled above captures Other Paid's better unit economics on the margin while preserving most of Meta's proven volume contribution, instead of an all-or-nothing switch that risks a net loss in total new customers.</p>
+</div>
+
+<div class="rec-item"><div class="rec-title"><strong>3. Cap or pull back spend in International Other Paid specifically -- it's the one place with real diminishing returns.</strong></div>
+<p class="rec-line"><strong>Why:</strong> It's the only flagged (p &lt; 0.10) reversal in the whole saturation check: its own slope on Other Paid orders goes from +54.7 per $1,000 at the lower spend level (avg $77K/mo) to -14.3 per $1,000 at the higher spend level (avg $174K/mo), and the revenue slope follows the same pattern ($2,556 to -$641). It's also the standout negative on the ROAS trend across every toggle setting (-25% to -33% year over year). US Other Paid shows the opposite pattern -- increasing returns at higher spend ($1,236 to $3,322 revenue per $1,000) -- so this is specific to the international pocket of the channel, not Other Paid broadly.</p>
+<p class="rec-line"><strong>Expected result:</strong> Pulling International Other Paid spend back toward its more efficient, lower-spend range should recover some of the ROAS decline concentrated in that pocket, without giving up the increasing returns available from scaling Other Paid further in the US.</p>
+</div>
+
+<div class="rec-item"><div class="rec-title"><strong>4. Judge each channel's performance same-month -- don't hold off adjusting spend expecting a delayed payoff.</strong></div>
+<p class="rec-line"><strong>Why:</strong> No pair anywhere in the data shows a next-month relationship even 0.05 r stronger than its own same-month one (finding 5) -- whatever a channel is going to do shows up in the same month's numbers.</p>
+<p class="rec-line"><strong>Expected result:</strong> Faster, more confident budget decisions -- an underperforming month can be acted on immediately rather than waiting to see if it "catches up," since nothing in this data suggests it will.</p>
+</div>
 </div>
 </details>
 
@@ -5848,6 +5871,10 @@ renderSaturationSection();
 .finding-item .finding-title { color: #1F3864; }
 .finding-item .finding-ref { color: #888; font-size: 12px; }
 .finding-item .finding-ref a { color: #1F3864; text-decoration: underline; }
+.rec-item { background: #f1f7f2; border-left: 4px solid #1a7a3d; border-radius: 4px; padding: 12px 16px; max-width: 900px; margin: 0 0 14px; font-size: 14px; line-height: 1.65; }
+.rec-item .rec-title { color: #1a7a3d; }
+.rec-item p.rec-line { margin: 6px 0 0; }
+.rec-item p.rec-line:first-of-type { margin-top: 8px; }
 </style>
 
 </body>
