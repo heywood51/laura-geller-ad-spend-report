@@ -4405,6 +4405,18 @@ function buildCrRollChart(canvasId, rollingSet){
 const spendLabel = { total_spend: 'Total spend', meta_spend: 'Meta spend', other_spend: 'Other paid spend' };
 
 function updateAll(){
+  const isHolidayOnly = typeof currentDs !== 'undefined' && currentDs.endsWith('_holidayonly');
+  const rollWrapIds = ['rollOrders', 'rollCac', 'rollRoas'];
+  rollWrapIds.forEach(id => {
+    const el = document.getElementById(id);
+    const wrap = el && el.closest('.chart-wrap');
+    if (wrap) wrap.style.display = isHolidayOnly ? 'none' : '';
+  });
+  ['rollLegend', 'rollLegendCR', 'rollTitle1', 'rollTitle2', 'rollTitle3'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = isHolidayOnly ? 'none' : '';
+  });
+  if (isHolidayOnly) return;
   const rolling = ROLLING[currentDs];
   if (chartInstances['rollOrders']) {
     const chart = chartInstances['rollOrders'];
