@@ -171,8 +171,6 @@
 .marg-controls select { font-size: 14px; font-family: inherit; padding: 4px 8px; margin: 0 4px; border: 1px solid #c9c7bd; border-radius: 5px; background: #fff; }
 .marg-mode-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 14px; }
 .marg-mode-note { font-size: 12px; color: #888; font-style: italic; margin: 4px 0 0; flex-basis: 100%; }
-#margShowBtn { background: #1F3864; color: #fff; border: none; border-radius: 6px; padding: 9px 20px; font-size: 14px; font-weight: 700; cursor: pointer; margin: 4px 0 18px; }
-#margShowBtn:hover { background: #142a4d; }
 .marg-result { max-width: 900px; }
 .marg-metric-block { margin: 0 0 26px; }
 .marg-metric-block-head { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; flex-wrap: wrap; }
@@ -2434,7 +2432,7 @@
 <details class="section-details" id="marginalDetails">
 <summary>Marginal effect: what does an extra dollar of spend actually buy?</summary>
 <div class="details-body">
-<p class="method-note">Correlation (r, used everywhere else on this page) tells you how tightly two things move together -- not how big the effect is. This uses regression instead, estimating the actual number of orders, dollars of revenue, dollars of CAC, or points of ROAS that come with each additional increment of spend. Orders and revenue are shown per additional $1,000 spent; CAC and ROAS barely move at that scale, so those are shown per additional $100,000 spent. Pick a spend channel and an outcome, choose a region, and click Show me -- CAC and ROAS for the relevant spend-bearing entities are shown alongside automatically.</p>
+<p class="method-note">Correlation (r, used everywhere else on this page) tells you how tightly two things move together -- not how big the effect is. This uses regression instead, estimating the actual number of orders, dollars of revenue, dollars of CAC, or points of ROAS that come with each additional increment of spend. Orders and revenue are shown per additional $1,000 spent; CAC and ROAS barely move at that scale, so those are shown per additional $100,000 spent. Pick a spend channel and an outcome, choose a region -- the result updates automatically, and CAC and ROAS for the relevant spend-bearing entities are shown alongside.</p>
 
 
 <div class="marg-controls">
@@ -2451,9 +2449,7 @@
   <p class="marg-mode-note" id="margModeNote"></p>
 </div>
 
-<button id="margShowBtn">Show me</button>
-
-<div id="margResult"><p class="marg-empty">Pick a spend channel and an outcome above, then click Show me.</p></div>
+<div id="margResult"></div>
 </div>
 </details>
 
@@ -4854,7 +4850,6 @@ const margTargetSelect = document.getElementById('margTargetSelect');
 const margModeSimpleBtn = document.getElementById('margModeSimple');
 const margModeControlledBtn = document.getElementById('margModeControlled');
 const margModeNote = document.getElementById('margModeNote');
-const margShowBtn = document.getElementById('margShowBtn');
 const margResultEl = document.getElementById('margResult');
 
 function updateMargModeAvailability(){
@@ -4874,21 +4869,26 @@ function updateMargModeAvailability(){
   }
 }
 
-margSpendSelect.onchange = updateMargModeAvailability;
+margSpendSelect.onchange = () => {
+  updateMargModeAvailability();
+  renderMarginalResult();
+};
 
 margTargetSelect.onchange = () => {
   margCacEntity = defaultCrEntity(margTargetSelect.value);
   margRoasEntity = defaultCrEntity(margTargetSelect.value);
-  if (margResultEl.dataset.rendered === '1') renderMarginalResult();
+  renderMarginalResult();
 };
 
 updateMargModeAvailability();
+renderMarginalResult();
 
 margModeSimpleBtn.onclick = () => {
   margMode = 'simple';
   margModeSimpleBtn.classList.add('active');
   margModeControlledBtn.classList.remove('active');
   updateMargModeAvailability();
+  renderMarginalResult();
 };
 margModeControlledBtn.onclick = () => {
   if (margModeControlledBtn.disabled) return;
@@ -4896,10 +4896,6 @@ margModeControlledBtn.onclick = () => {
   margModeControlledBtn.classList.add('active');
   margModeSimpleBtn.classList.remove('active');
   updateMargModeAvailability();
-};
-
-margShowBtn.onclick = () => {
-  margResultEl.dataset.rendered = '1';
   renderMarginalResult();
 };
 
@@ -5025,7 +5021,7 @@ function renderMarginalResult(){
 
 // Keep the result in sync if the global seasonal/holiday toggle changes while a result is shown.
 function refreshMarginalPanel(){
-  if (margResultEl.dataset.rendered === '1') renderMarginalResult();
+  renderMarginalResult();
 }
 </script>
 
@@ -5108,7 +5104,6 @@ function jumpToMarginalFor(spendKey, chan, region){
   margRoasEntity = defaultCrEntity(chan);
 
   openAndScrollTo(document.getElementById('marginalDetails'), 'start');
-  margResultEl.dataset.rendered = '1';
   renderMarginalResult();
 }
 
