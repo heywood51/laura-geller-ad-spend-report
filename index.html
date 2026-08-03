@@ -2501,50 +2501,29 @@
 <details class="section-details" id="ltvDetails">
 <summary>Are we acquiring valuable customers, or just cheap ones? (LTV by acquisition channel)</summary>
 <div class="details-body">
-<p class="method-note">Every other section on this page measures the COST side of acquisition -- CAC, ROAS, $ per customer. This asks whether the customers different channels bring in are actually worth similar amounts, by pairing CAC with customer lifetime value pulled fresh from BigQuery (<code>custom_customer_table</code> + <code>fact_shopify_customer_behaviour</code>), Laura Geller, snapshot as of 2026-08-03. Channels are mapped to the same Meta / Other Paid / CRM Email / CRM SMS / Organic / Direct buckets used everywhere else on this page (Meta = the "Paid Social - facebook" subchannel specifically; Other Paid = every other paid subchannel) -- verified to match this report's own Meta and Other Paid spend and new-order totals for This Year to within ordinary data-refresh rounding.</p>
-<p class="method-note"><strong>Unlike every other section on this page, this one doesn't respond to the toggles above</strong> -- it's a customer-level pull, not a slice of the monthly time series the rest of the page reads from an embedded payload. It's a static snapshot as of the date above.</p>
-<p class="method-note"><strong>Cohort windows, and why they're not the usual This Year / Last Year:</strong> LTV needs customers to have had time to spend again, so a customer acquired in June 2026 can't be fairly compared to one acquired in June 2024 -- they haven't had the same amount of time. Two adjustments: (1) the primary comparison metric is <strong>revenue in the first 90 days since first order</strong>, not lifetime revenue, since that's fair to compute for any customer at least 90 days old; (2) the "This Year" cohort here only includes customers acquired <strong>2025-07-01 through 2026-04-30</strong> (not through 2026-06-30 like elsewhere on this page) -- April 2026 is the most recent month where every customer has had at least 90 days as of today. CAC for this section's "This Year" row is computed over that same truncated window, so it will differ slightly from the headline CAC elsewhere on this page. Lifetime LTV and rebuy rate need far more time to mature and are shown for the Last Year cohort (2024-07-01 to 2025-06-30) only.</p>
+<p class="method-note"><strong>Data pending.</strong> The numbers previously shown here were a plain sum of historical revenue (90-day-since-first-order and cumulative-to-date), not a modeled projection of future value -- there's a real difference between "how much they've spent so far" and "what they're expected to be worth." No genuine predictive LTV model was found anywhere in the BigQuery warehouse when checked, so this section is on hold until the company's actual LTV model is tracked down and pulled in. The layout below is left in place so new data can be dropped straight into these tables once it's available.</p>
+<p class="method-note">Every other section on this page measures the COST side of acquisition -- CAC, ROAS, $ per customer. This section will pair CAC with modeled customer lifetime value to ask whether the customers different channels bring in are actually worth similar amounts. Channels will map to the same Meta / Other Paid / CRM Email / CRM SMS / Organic / Direct buckets used everywhere else on this page (Meta = the "Paid Social - facebook" subchannel specifically; Other Paid = every other paid subchannel).</p>
+<p class="method-note"><strong>Unlike every other section on this page, this one won't respond to the toggles above</strong> -- it will be a customer-level pull, not a slice of the monthly time series the rest of the page reads from an embedded payload.</p>
 
-<h4>Paid channels: 90-day LTV vs. CAC</h4>
-<p class="appendix-note">LTV:CAC below 1 means the average customer hasn't even repaid their own acquisition cost in the first 90 days (lifetime LTV will be higher, but this is a read on how quickly a channel pays back, not whether it's permanently unprofitable).</p>
+<h4>Paid channels: LTV vs. CAC</h4>
 <table class="dtable">
-<tr><th>Cohort</th><th>Channel</th><th>New customers</th><th>CAC</th><th>90-day LTV</th><th>LTV : CAC</th></tr>
-<tr><td>Last Year (2024-07 to 2025-06)</td><td>Meta</td><td>990,639</td><td>$58.00</td><td>$55.19</td><td><span class="val-bad">0.95x</span></td></tr>
-<tr><td>Last Year (2024-07 to 2025-06)</td><td>Other Paid</td><td>839,156</td><td>$26.31</td><td>$62.77</td><td><span class="val-good">2.39x</span></td></tr>
-<tr><td>This Year (2025-07 to 2026-04)</td><td>Meta</td><td>1,060,850</td><td>$63.75</td><td>$55.61</td><td><span class="val-bad">0.87x</span></td></tr>
-<tr><td>This Year (2025-07 to 2026-04)</td><td>Other Paid</td><td>685,250</td><td>$27.33</td><td>$61.33</td><td><span class="val-good">2.24x</span></td></tr>
+<tr><th>Cohort</th><th>Channel</th><th>New customers</th><th>CAC</th><th>LTV</th><th>LTV : CAC</th></tr>
+<tr><td colspan="6" class="marg-empty">Awaiting modeled LTV data.</td></tr>
 </table>
 
-<h4>90-day LTV, all acquisition channels</h4>
-<p class="appendix-note">CRM Email/SMS, Organic, and Direct don't have a comparable "CAC" -- they're not bought the way Meta and Other Paid spend is -- so they're shown here without a cost pairing.</p>
+<h4>LTV, all acquisition channels</h4>
 <table class="dtable">
-<tr><th>Cohort</th><th>Channel</th><th>New customers</th><th>90-day LTV</th></tr>
-<tr><td>Last Year</td><td>CRM SMS</td><td>111,626</td><td>$72.61</td></tr>
-<tr><td>Last Year</td><td>Direct</td><td>194,080</td><td>$65.87</td></tr>
-<tr><td>Last Year</td><td>Organic</td><td>135,425</td><td>$64.78</td></tr>
-<tr><td>Last Year</td><td>CRM Email</td><td>376,101</td><td>$63.10</td></tr>
-<tr><td>Last Year</td><td>Other Paid</td><td>839,156</td><td>$62.77</td></tr>
-<tr><td>Last Year</td><td>Meta</td><td>990,639</td><td><span class="val-bad">$55.19</span></td></tr>
-<tr><td>This Year</td><td>CRM SMS</td><td>106,091</td><td>$70.10</td></tr>
-<tr><td>This Year</td><td>Direct</td><td>150,922</td><td>$64.79</td></tr>
-<tr><td>This Year</td><td>Organic</td><td>103,159</td><td>$63.16</td></tr>
-<tr><td>This Year</td><td>CRM Email</td><td>284,064</td><td>$62.11</td></tr>
-<tr><td>This Year</td><td>Other Paid</td><td>685,250</td><td>$61.33</td></tr>
-<tr><td>This Year</td><td>Meta</td><td>1,060,850</td><td><span class="val-bad">$55.61</span></td></tr>
+<tr><th>Cohort</th><th>Channel</th><th>New customers</th><th>LTV</th></tr>
+<tr><td colspan="4" class="marg-empty">Awaiting modeled LTV data.</td></tr>
 </table>
 
-<h4>Lifetime LTV and rebuy rate (Last Year cohort only -- mature enough to measure)</h4>
+<h4>Rebuy rate and repeat-purchase timing</h4>
 <table class="dtable">
-<tr><th>Channel</th><th>New customers</th><th>Lifetime LTV</th><th>Rebuy rate</th><th>Avg. days to 2nd order</th></tr>
-<tr><td>CRM SMS</td><td>111,453</td><td>$100.77</td><td>38.8%</td><td>134.7</td></tr>
-<tr><td>Direct</td><td>193,722</td><td>$87.80</td><td>33.2%</td><td>149.1</td></tr>
-<tr><td>CRM Email</td><td>375,316</td><td>$86.88</td><td>36.4%</td><td>151.7</td></tr>
-<tr><td>Organic</td><td>135,082</td><td>$85.88</td><td>32.4%</td><td>154.0</td></tr>
-<tr><td>Other Paid</td><td>837,533</td><td>$83.38</td><td>32.9%</td><td>146.8</td></tr>
-<tr><td>Meta</td><td>988,560</td><td><span class="val-bad">$70.09</span></td><td><span class="val-bad">27.0%</span></td><td>162.4</td></tr>
+<tr><th>Channel</th><th>New customers</th><th>LTV</th><th>Rebuy rate</th><th>Avg. days to 2nd order</th></tr>
+<tr><td colspan="5" class="marg-empty">Awaiting modeled LTV data.</td></tr>
 </table>
 
-<div class="callout">Meta comes in last on every value metric checked here -- lowest 90-day LTV, lowest lifetime LTV, and lowest rebuy rate, in both cohort periods -- while also having by far the highest CAC of any channel. Other Paid beats it on cost (roughly a quarter of Meta's CAC) <em>and</em> on customer value (higher LTV, faster and more frequent repeat purchases). This isn't a one-period blip: the same ranking holds in both the Last Year and This Year cohorts. It doesn't mean Meta spend should stop -- volume matters, and Meta brings in more total new customers than any other single channel -- but on a per-customer basis, it's currently the report's most expensive channel acquiring its least valuable customers.</div>
+<p class="marg-empty">Bottom-line takeaway will go here once modeled LTV data is added.</p>
 </div>
 </details>
 
