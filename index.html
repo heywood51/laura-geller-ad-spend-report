@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+window.__stage3BlocksLoaded = false;
+window.__stage3BlocksPromise = fetch('stage3_split_blocks.html').then(function(r){ return r.text(); }).then(function(html){
+  window.__stage3BlocksHtml = html;
+}).catch(function(err){
+  console.error('Failed to load stage3 split blocks:', err);
+  window.__stage3BlocksHtml = '';
+});
+</script>
+
 <meta charset="UTF-8">
 <title>Ad spend vs new customer acquisition -- Laura Geller (seasonally adjusted)</title>
 <style>
@@ -55,6 +65,8 @@
   table.dtable td:first-child, table.dtable th:first-child { text-align: left; }
   table.corr-table td.corr-cell { cursor: pointer; color: #185fa5; font-weight: 700; }
   table.corr-table td.corr-cell:hover { background: #e6f1fb; text-decoration: underline; }
+  .corr-cell-static { color: #0b0b0b; font-weight: 400; }
+  .corr-cell-na { color: #898781; font-style: italic; }
   .table-scroll { max-height: 520px; overflow: auto; border: 1px solid #e1e0d9; max-width: 100%; margin-bottom: 8px; }
   details { margin-bottom: 24px; max-width: 100%; }
   summary { cursor: pointer; font-size: 15px; font-weight: 700; padding: 8px 0; }
@@ -376,7 +388,8 @@
 <tr><td>Organic revenue</td><td class="corr-cell" data-ds="on_incl" data-region="International" data-spend="total_spend" data-chan="Organic" data-metric="revenue" onclick="goToChart(this)">0.84</td><td class="corr-cell" data-ds="on_incl" data-region="International" data-spend="meta_spend" data-chan="Organic" data-metric="revenue" onclick="goToChart(this)">0.85</td><td class="corr-cell" data-ds="on_incl" data-region="International" data-spend="other_spend" data-chan="Organic" data-metric="revenue" onclick="goToChart(this)">0.34</td></tr>
 <tr><td>Direct orders</td><td class="corr-cell" data-ds="on_incl" data-region="International" data-spend="total_spend" data-chan="Direct" data-metric="orders" onclick="goToChart(this)">0.80</td><td class="corr-cell" data-ds="on_incl" data-region="International" data-spend="meta_spend" data-chan="Direct" data-metric="orders" onclick="goToChart(this)">0.83</td><td class="corr-cell" data-ds="on_incl" data-region="International" data-spend="other_spend" data-chan="Direct" data-metric="orders" onclick="goToChart(this)">0.21</td></tr>
 <tr><td>Direct revenue</td><td class="corr-cell" data-ds="on_incl" data-region="International" data-spend="total_spend" data-chan="Direct" data-metric="revenue" onclick="goToChart(this)">0.81</td><td class="corr-cell" data-ds="on_incl" data-region="International" data-spend="meta_spend" data-chan="Direct" data-metric="revenue" onclick="goToChart(this)">0.85</td><td class="corr-cell" data-ds="on_incl" data-region="International" data-spend="other_spend" data-chan="Direct" data-metric="revenue" onclick="goToChart(this)">0.19</td></tr></table>
-</div>
+</div><div id="stage3SplitBlocksHost" style="display:none"></div>
+
 <div id="corr-on_excl" class="ds-view active">
 <p class="appendix-note">Pearson r, monthly series, 2024-07 - 2026-06 (n=20 months). Not causal -- see data notes above. Click any value to jump to its chart. (deseasonalized)</p>
 <h3>Total</h3>
@@ -428,6 +441,7 @@
 <tr><td>Direct orders</td><td class="corr-cell" data-ds="on_excl" data-region="International" data-spend="total_spend" data-chan="Direct" data-metric="orders" onclick="goToChart(this)">0.89</td><td class="corr-cell" data-ds="on_excl" data-region="International" data-spend="meta_spend" data-chan="Direct" data-metric="orders" onclick="goToChart(this)">0.91</td><td class="corr-cell" data-ds="on_excl" data-region="International" data-spend="other_spend" data-chan="Direct" data-metric="orders" onclick="goToChart(this)">0.39</td></tr>
 <tr><td>Direct revenue</td><td class="corr-cell" data-ds="on_excl" data-region="International" data-spend="total_spend" data-chan="Direct" data-metric="revenue" onclick="goToChart(this)">0.88</td><td class="corr-cell" data-ds="on_excl" data-region="International" data-spend="meta_spend" data-chan="Direct" data-metric="revenue" onclick="goToChart(this)">0.91</td><td class="corr-cell" data-ds="on_excl" data-region="International" data-spend="other_spend" data-chan="Direct" data-metric="revenue" onclick="goToChart(this)">0.36</td></tr></table>
 </div>
+
 <div id="corr-off_incl" class="ds-view">
 <p class="appendix-note">Pearson r, monthly series, 2024-07 - 2026-06 (n=24 months). Not causal -- see data notes above. Click any value to jump to its chart. (raw, not seasonally adjusted)</p>
 <h3>Total</h3>
@@ -479,6 +493,7 @@
 <tr><td>Direct orders</td><td class="corr-cell" data-ds="off_incl" data-region="International" data-spend="total_spend" data-chan="Direct" data-metric="orders" onclick="goToChart(this)">0.90</td><td class="corr-cell" data-ds="off_incl" data-region="International" data-spend="meta_spend" data-chan="Direct" data-metric="orders" onclick="goToChart(this)">0.92</td><td class="corr-cell" data-ds="off_incl" data-region="International" data-spend="other_spend" data-chan="Direct" data-metric="orders" onclick="goToChart(this)">0.37</td></tr>
 <tr><td>Direct revenue</td><td class="corr-cell" data-ds="off_incl" data-region="International" data-spend="total_spend" data-chan="Direct" data-metric="revenue" onclick="goToChart(this)">0.91</td><td class="corr-cell" data-ds="off_incl" data-region="International" data-spend="meta_spend" data-chan="Direct" data-metric="revenue" onclick="goToChart(this)">0.92</td><td class="corr-cell" data-ds="off_incl" data-region="International" data-spend="other_spend" data-chan="Direct" data-metric="revenue" onclick="goToChart(this)">0.35</td></tr></table>
 </div>
+
 <div id="corr-off_excl" class="ds-view">
 <p class="appendix-note">Pearson r, monthly series, 2024-07 - 2026-06 (n=20 months). Not causal -- see data notes above. Click any value to jump to its chart. (raw, not seasonally adjusted)</p>
 <h3>Total</h3>
@@ -530,6 +545,7 @@
 <tr><td>Direct orders</td><td class="corr-cell" data-ds="off_excl" data-region="International" data-spend="total_spend" data-chan="Direct" data-metric="orders" onclick="goToChart(this)">0.89</td><td class="corr-cell" data-ds="off_excl" data-region="International" data-spend="meta_spend" data-chan="Direct" data-metric="orders" onclick="goToChart(this)">0.91</td><td class="corr-cell" data-ds="off_excl" data-region="International" data-spend="other_spend" data-chan="Direct" data-metric="orders" onclick="goToChart(this)">0.36</td></tr>
 <tr><td>Direct revenue</td><td class="corr-cell" data-ds="off_excl" data-region="International" data-spend="total_spend" data-chan="Direct" data-metric="revenue" onclick="goToChart(this)">0.88</td><td class="corr-cell" data-ds="off_excl" data-region="International" data-spend="meta_spend" data-chan="Direct" data-metric="revenue" onclick="goToChart(this)">0.91</td><td class="corr-cell" data-ds="off_excl" data-region="International" data-spend="other_spend" data-chan="Direct" data-metric="revenue" onclick="goToChart(this)">0.33</td></tr></table>
 </div>
+
 
 <h3 class="metric-sub-heading">Rankings: all correlations, highest to lowest</h3>
 <div id="rank-on_incl" class="ds-view">
@@ -806,6 +822,7 @@
 </div>
 </div>
 </div>
+
 <div id="rank-on_excl" class="ds-view active">
 <p class="appendix-note">The same 126 spend-vs-acquisition correlations as above, ranked. Split into three views: everything, new-customer-orders only, and new-customer-revenue only. Click any value to jump to its chart. (deseasonalized)</p>
 <button id="directFilterBtn" class="filter-btn">Hide same-channel pairs (e.g. Meta spend &rarr; Meta orders)</button>
@@ -1080,6 +1097,7 @@
 </div>
 </div>
 </div>
+
 <div id="rank-off_incl" class="ds-view">
 <p class="appendix-note">The same 126 spend-vs-acquisition correlations as above, ranked. Split into three views: everything, new-customer-orders only, and new-customer-revenue only. Click any value to jump to its chart. (raw, not seasonally adjusted)</p>
 <button id="directFilterBtn" class="filter-btn">Hide same-channel pairs (e.g. Meta spend &rarr; Meta orders)</button>
@@ -1354,6 +1372,7 @@
 </div>
 </div>
 </div>
+
 <div id="rank-off_excl" class="ds-view">
 <p class="appendix-note">The same 126 spend-vs-acquisition correlations as above, ranked. Split into three views: everything, new-customer-orders only, and new-customer-revenue only. Click any value to jump to its chart. (raw, not seasonally adjusted)</p>
 <button id="directFilterBtn" class="filter-btn">Hide same-channel pairs (e.g. Meta spend &rarr; Meta orders)</button>
@@ -1629,6 +1648,7 @@
 </div>
 </div>
 
+
 <h3 class="metric-sub-heading">Does a channel's own spend drive its own acquisition most directly?</h3>
 <div id="dominance-on_incl" class="ds-view">
 <p class="appendix-note">Tests the assumption behind the "hide same-channel pairs" filter above: that e.g. Meta spend correlates with Meta's own orders/revenue more strongly than with any other channel's. For each spend metric x region x metric-type (orders/revenue), ranks all 7 targets in that group and checks whether the direct (same-channel) target comes out on top. (deseasonalized)</p>
@@ -1666,6 +1686,7 @@
 </div>
 </details>
 </div>
+
 <div id="dominance-on_excl" class="ds-view active">
 <p class="appendix-note">Tests the assumption behind the "hide same-channel pairs" filter above: that e.g. Meta spend correlates with Meta's own orders/revenue more strongly than with any other channel's. For each spend metric x region x metric-type (orders/revenue), ranks all 7 targets in that group and checks whether the direct (same-channel) target comes out on top. (deseasonalized)</p>
 <div class="verdict-box verdict-mixed">
@@ -1702,6 +1723,7 @@
 </div>
 </details>
 </div>
+
 <div id="dominance-off_incl" class="ds-view">
 <p class="appendix-note">Tests the assumption behind the "hide same-channel pairs" filter above: that e.g. Meta spend correlates with Meta's own orders/revenue more strongly than with any other channel's. For each spend metric x region x metric-type (orders/revenue), ranks all 7 targets in that group and checks whether the direct (same-channel) target comes out on top. (raw, not seasonally adjusted)</p>
 <div class="verdict-box verdict-mixed">
@@ -1738,6 +1760,7 @@
 </div>
 </details>
 </div>
+
 <div id="dominance-off_excl" class="ds-view">
 <p class="appendix-note">Tests the assumption behind the "hide same-channel pairs" filter above: that e.g. Meta spend correlates with Meta's own orders/revenue more strongly than with any other channel's. For each spend metric x region x metric-type (orders/revenue), ranks all 7 targets in that group and checks whether the direct (same-channel) target comes out on top. (raw, not seasonally adjusted)</p>
 <div class="verdict-box verdict-mixed">
@@ -1774,6 +1797,7 @@
 </div>
 </details>
 </div>
+
 
 </div>
 <div class="metric-view" id="metricView-cac">
@@ -1832,6 +1856,7 @@
 </div>
 </div>
 </div>
+
 <div id="caccr-on_excl" class="ds-view active">
 <p class="appendix-note">Cost to acquire a customer (spend &divide; new customer orders) for Total, Meta, and Other Paid -- the only 3 entities that carry spend. Each of the 3 spend metrics correlated against each of the 3 CAC metrics, across all 3 regions (27 pairs). Pearson r, monthly series, 2024-07 - 2026-06. Click any value to jump to its chart. (deseasonalized)</p>
 <h3>Total</h3>
@@ -1886,6 +1911,7 @@
 </div>
 </div>
 </div>
+
 <div id="caccr-off_incl" class="ds-view">
 <p class="appendix-note">Cost to acquire a customer (spend &divide; new customer orders) for Total, Meta, and Other Paid -- the only 3 entities that carry spend. Each of the 3 spend metrics correlated against each of the 3 CAC metrics, across all 3 regions (27 pairs). Pearson r, monthly series, 2024-07 - 2026-06. Click any value to jump to its chart. (raw, not seasonally adjusted)</p>
 <h3>Total</h3>
@@ -1940,6 +1966,7 @@
 </div>
 </div>
 </div>
+
 <div id="caccr-off_excl" class="ds-view">
 <p class="appendix-note">Cost to acquire a customer (spend &divide; new customer orders) for Total, Meta, and Other Paid -- the only 3 entities that carry spend. Each of the 3 spend metrics correlated against each of the 3 CAC metrics, across all 3 regions (27 pairs). Pearson r, monthly series, 2024-07 - 2026-06. Click any value to jump to its chart. (raw, not seasonally adjusted)</p>
 <h3>Total</h3>
@@ -1995,6 +2022,7 @@
 </div>
 </div>
 
+
 <h3 class="metric-sub-heading">Does a channel's own spend drive its own CAC most directly?</h3>
 <div id="cacdom-on_incl" class="ds-view">
 <p class="appendix-note">Tests whether e.g. Meta spend correlates most strongly (by |r|) with Meta's own CAC compared to Total's or Other Paid's CAC. Only 3 possible targets per check (Total, Meta, Other Paid CAC), across 3 spend metrics x 3 regions = 9 checks. (deseasonalized)</p>
@@ -2023,6 +2051,7 @@
 </div>
 </details>
 </div>
+
 <div id="cacdom-on_excl" class="ds-view active">
 <p class="appendix-note">Tests whether e.g. Meta spend correlates most strongly (by |r|) with Meta's own CAC compared to Total's or Other Paid's CAC. Only 3 possible targets per check (Total, Meta, Other Paid CAC), across 3 spend metrics x 3 regions = 9 checks. (deseasonalized)</p>
 <div class="verdict-box verdict-false">
@@ -2050,6 +2079,7 @@
 </div>
 </details>
 </div>
+
 <div id="cacdom-off_incl" class="ds-view">
 <p class="appendix-note">Tests whether e.g. Meta spend correlates most strongly (by |r|) with Meta's own CAC compared to Total's or Other Paid's CAC. Only 3 possible targets per check (Total, Meta, Other Paid CAC), across 3 spend metrics x 3 regions = 9 checks. (raw, not seasonally adjusted)</p>
 <div class="verdict-box verdict-false">
@@ -2077,6 +2107,7 @@
 </div>
 </details>
 </div>
+
 <div id="cacdom-off_excl" class="ds-view">
 <p class="appendix-note">Tests whether e.g. Meta spend correlates most strongly (by |r|) with Meta's own CAC compared to Total's or Other Paid's CAC. Only 3 possible targets per check (Total, Meta, Other Paid CAC), across 3 spend metrics x 3 regions = 9 checks. (raw, not seasonally adjusted)</p>
 <div class="verdict-box verdict-false">
@@ -2104,6 +2135,7 @@
 </div>
 </details>
 </div>
+
 
 </div>
 <div class="metric-view" id="metricView-roas">
@@ -2162,6 +2194,7 @@
 </div>
 </div>
 </div>
+
 <div id="roascr-on_excl" class="ds-view active">
 <p class="appendix-note">Return on ad spend (revenue &divide; spend) for Total, Meta, and Other Paid -- the only 3 entities that carry spend. Each of the 3 spend metrics correlated against each of the 3 ROAS metrics, across all 3 regions (27 pairs). Pearson r, monthly series, 2024-07 - 2026-06. Click any value to jump to its chart. (deseasonalized)</p>
 <h3>Total</h3>
@@ -2216,6 +2249,7 @@
 </div>
 </div>
 </div>
+
 <div id="roascr-off_incl" class="ds-view">
 <p class="appendix-note">Return on ad spend (revenue &divide; spend) for Total, Meta, and Other Paid -- the only 3 entities that carry spend. Each of the 3 spend metrics correlated against each of the 3 ROAS metrics, across all 3 regions (27 pairs). Pearson r, monthly series, 2024-07 - 2026-06. Click any value to jump to its chart. (raw, not seasonally adjusted)</p>
 <h3>Total</h3>
@@ -2270,6 +2304,7 @@
 </div>
 </div>
 </div>
+
 <div id="roascr-off_excl" class="ds-view">
 <p class="appendix-note">Return on ad spend (revenue &divide; spend) for Total, Meta, and Other Paid -- the only 3 entities that carry spend. Each of the 3 spend metrics correlated against each of the 3 ROAS metrics, across all 3 regions (27 pairs). Pearson r, monthly series, 2024-07 - 2026-06. Click any value to jump to its chart. (raw, not seasonally adjusted)</p>
 <h3>Total</h3>
@@ -2325,6 +2360,7 @@
 </div>
 </div>
 
+
 <h3 class="metric-sub-heading">Does a channel's own spend drive its own ROAS most directly?</h3>
 <div id="roasdom-on_incl" class="ds-view">
 <p class="appendix-note">Tests whether e.g. Meta spend correlates most strongly (by |r|) with Meta's own ROAS compared to Total's or Other Paid's ROAS. Only 3 possible targets per check (Total, Meta, Other Paid ROAS), across 3 spend metrics x 3 regions = 9 checks. (deseasonalized)</p>
@@ -2353,6 +2389,7 @@
 </div>
 </details>
 </div>
+
 <div id="roasdom-on_excl" class="ds-view active">
 <p class="appendix-note">Tests whether e.g. Meta spend correlates most strongly (by |r|) with Meta's own ROAS compared to Total's or Other Paid's ROAS. Only 3 possible targets per check (Total, Meta, Other Paid ROAS), across 3 spend metrics x 3 regions = 9 checks. (deseasonalized)</p>
 <div class="verdict-box verdict-false">
@@ -2380,6 +2417,7 @@
 </div>
 </details>
 </div>
+
 <div id="roasdom-off_incl" class="ds-view">
 <p class="appendix-note">Tests whether e.g. Meta spend correlates most strongly (by |r|) with Meta's own ROAS compared to Total's or Other Paid's ROAS. Only 3 possible targets per check (Total, Meta, Other Paid ROAS), across 3 spend metrics x 3 regions = 9 checks. (raw, not seasonally adjusted)</p>
 <div class="verdict-box verdict-false">
@@ -2407,6 +2445,7 @@
 </div>
 </details>
 </div>
+
 <div id="roasdom-off_excl" class="ds-view">
 <p class="appendix-note">Tests whether e.g. Meta spend correlates most strongly (by |r|) with Meta's own ROAS compared to Total's or Other Paid's ROAS. Only 3 possible targets per check (Total, Meta, Other Paid ROAS), across 3 spend metrics x 3 regions = 9 checks. (raw, not seasonally adjusted)</p>
 <div class="verdict-box verdict-false">
@@ -2434,6 +2473,7 @@
 </div>
 </details>
 </div>
+
 
 </div>
 </div>
@@ -5080,11 +5120,14 @@ showNoneBtn.onclick = () => {
 
 function showDsSections(ds){
   const isHolidayOnly = ds.endsWith('_holidayonly');
-  // 'cs' (Channel summary) and 'detail' (Monthly data) have pre-baked -split
-  // siblings (cs-<ds>-split / detail-<ds>-split) for the "split Other Paid"
-  // toggle -- everything else (corr/rank/caccr/roascr/cacdom/roasdom/dominance)
-  // is unaffected by otherPaidSplit in this pass.
-  const splitAware = ['cs', 'detail'];
+  // 'cs' (Channel summary), 'detail' (Monthly data), and all 7 pairwise
+  // correlation/ranking/dominance-check sections (corr/rank/caccr/roascr/
+  // cacdom/roasdom/dominance) have pre-baked -split siblings for the
+  // "split Other Paid" toggle. Holiday-only has no corr/rank/etc. blocks at
+  // all (gated out -- see corrHolidayOnlyGate below), so there's nothing to
+  // split there either; the -split siblings simply don't exist for those
+  // keys and the lookup below is a no-op for them.
+  const splitAware = ['cs', 'detail', 'corr', 'rank', 'caccr', 'roascr', 'cacdom', 'roasdom', 'dominance'];
   ['ds-view','cs','corr','rank','caccr','roascr','cacdom','roasdom','dominance','detail'].forEach(prefix => {
     ['on_incl','on_excl','off_incl','off_excl','on_holidayonly','off_holidayonly'].forEach(k => {
       const el = document.getElementById(prefix+'-'+k);
@@ -5174,7 +5217,13 @@ holidayToggleBtn.onclick = () => {
 };
 
 const otherPaidSplitBtn = document.getElementById('otherPaidSplitBtn');
+const __otherPaidSplitBtnOrigText = otherPaidSplitBtn.textContent;
+if (!window.__stage3BlocksLoaded) {
+  otherPaidSplitBtn.disabled = true;
+  otherPaidSplitBtn.textContent = __otherPaidSplitBtnOrigText + ' (loading...)';
+}
 otherPaidSplitBtn.onclick = () => {
+  if (otherPaidSplitBtn.disabled) return;
   otherPaidSplit = !otherPaidSplit;
   otherPaidSplitBtn.classList.toggle('active', otherPaidSplit);
   otherPaidSplitBtn.textContent = otherPaidSplit ? 'Other Paid: Split' : 'Other Paid: Grouped';
@@ -6825,5 +6874,19 @@ renderSaturationSection();
 .rec-item p.rec-line:first-of-type { margin-top: 8px; }
 </style>
 
+<script>
+window.__stage3BlocksPromise.then(function(){
+  var host = document.getElementById('stage3SplitBlocksHost');
+  if (host && window.__stage3BlocksHtml) {
+    host.insertAdjacentHTML('afterend', window.__stage3BlocksHtml);
+  }
+  window.__stage3BlocksLoaded = true;
+  var btn = document.getElementById('otherPaidSplitBtn');
+  if (btn && btn.disabled) {
+    btn.disabled = false;
+    btn.textContent = btn.textContent.replace(' (loading...)', '');
+  }
+});
+</script>
 </body>
 </html>
