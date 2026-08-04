@@ -233,6 +233,9 @@
 
 <div class="top-kpi-block" id="topKpiBlock">
 <p class="method-note" id="kpiMethodNote">Headline totals for the trailing 12 months (This Year: 2025-07 to 2026-06) vs. the 12 months before that (Last Year). Respects the seasonal adjustment and holiday-exclusion toggles below -- see "Data notes &amp; assumptions" in the Appendix for methodology.</p>
+<div class="topbar-group topbar-group-left" style="margin-bottom: 10px;">
+  <button id="otherPaidSplitBtn" class="topbar-btn topbar-btn-accent1">Other Paid: Grouped</button>
+</div>
 <div id="kpiRow"></div>
 </div>
 
@@ -241,7 +244,6 @@
   <div class="topbar-group topbar-group-left">
     <button id="seasonalToggleBtn" class="topbar-btn topbar-btn-accent1 active">Seasonal adjustment: ON</button>
     <button id="holidayToggleBtn" class="topbar-btn topbar-btn-accent2 active">Show holiday months (Nov/Dec)</button>
-    <button id="otherPaidSplitBtn" class="topbar-btn topbar-btn-accent1">Other Paid: Grouped</button>
   </div>
   <div class="topbar-group topbar-group-mid">
     <button id="collapseAllBtn" class="topbar-btn topbar-btn-neutral">Collapse all sections</button>
@@ -4746,6 +4748,38 @@ const groupKeys = [...Object.keys(spendColors).map(k => ({key:'spend_'+k, label:
 const groupState = {};
 groupKeys.forEach(g => groupState[g.key] = true);
 
+// -- Other Paid split (otherPaidSplit toggle) -- Trend chart wiring --------
+// When otherPaidSplit is true, every Trend chart line/series that would show
+// a single 'Other Paid' value instead shows one line per subchannel, reading
+// DATA_SPLIT[currentDs] the same way the grouped code reads DATA[currentDs].
+const SPLIT_CHANNELS = ['TikTokShop','Television','AppLovin','GoogleSearch','Rokt','Pinterest','YouTube','TikTokSocial','Bing','Other'];
+const SPLIT_CHAN_COLOR_MAP = {
+  TikTokShop:'#e6194b', Television:'#4363d8', AppLovin:'#42d4f4', GoogleSearch:'#f032e6',
+  Rokt:'#9a6324', Pinterest:'#800000', YouTube:'#000075', TikTokSocial:'#dcbeff',
+  Bing:'#469990', Other:'#aaffc3'
+};
+const splitSpendColors = {};
+const splitSpendNames = {};
+const splitChanColors = {};
+const splitCacRoasColors = {};
+SPLIT_CHANNELS.forEach(ch => {
+  const c = SPLIT_CHAN_COLOR_MAP[ch];
+  splitSpendColors[ch+'_spend'] = c;
+  splitSpendNames[ch+'_spend'] = ch + ' spend';
+  splitChanColors[ch] = c;
+  splitCacRoasColors[ch+' CAC'] = c;
+  splitCacRoasColors[ch+' ROAS'] = c;
+});
+function otherPaidSplitActive(){
+  return typeof otherPaidSplit !== 'undefined' && otherPaidSplit &&
+    typeof DATA_SPLIT !== 'undefined' && !!DATA_SPLIT[currentDs];
+}
+const splitGroupKeys = [...Object.keys(splitSpendColors).map(k => ({key:'spend_'+k, label:splitSpendNames[k]})),
+  ...Object.keys(splitChanColors).map(k => ({key:'chan_'+k, label:k})),
+  ...Object.keys(splitCacRoasColors).map(k => ({key:'cacroas_'+k, label:k}))];
+splitGroupKeys.forEach(g => groupState[g.key] = true);
+const groupedOtherPaidKeys = ['spend_other_spend', 'chan_Other Paid', 'cacroas_Other Paid CAC', 'cacroas_Other Paid ROAS'];
+
 function computeMax(payload, region, metric, kind){
   const src = kind === 'peak' ? payload.pkSpend[region] : payload.avgSpend[region];
   const chanSrc = kind === 'peak' ? payload.pkChan[region] : payload.avgChan[region];
@@ -4754,6 +4788,15 @@ function computeMax(payload, region, metric, kind){
   Object.values(src).forEach(arr => arr.forEach(v => { if (v > m) m = v; }));
   Object.values(chanSrc).forEach(ch => ch[metric].forEach(v => { if (v > m) m = v; }));
   Object.values(crSrc).forEach(arr => arr.forEach(v => { if (v > m) m = v; }));
+  if (otherPaidSplitActive()) {
+    const sp = DATA_SPLIT[currentDs];
+    const splitSrc = kind === 'peak' ? sp.pkSpend[region] : sp.avgSpend[region];
+    const splitChanSrc = kind === 'peak' ? sp.pkChan[region] : sp.avgChan[region];
+    const splitCrSrc = kind === 'peak' ? sp.pkCacRoas[region] : sp.avgCacRoas[region];
+    Object.values(splitSrc).forEach(arr => arr.forEach(v => { if (v > m) m = v; }));
+    Object.values(splitChanSrc).forEach(ch => ch[metric].forEach(v => { if (v > m) m = v; }));
+    Object.values(splitCrSrc).forEach(arr => arr.forEach(v => { if (v > m) m = v; }));
+  }
   return Math.ceil((m + 5) / 5) * 5;
 }
 
@@ -4770,7 +4813,12 @@ function dollarMax(payload, region){
   const raw = payload.rawCacRoas[region];
   const key = dollarAxisMode === 'cac' ? 'CAC' : 'ROAS';
   let m = 0;
-  dollarEntities.forEach(e => { (raw[e + ' ' + key] || []).forEach(v => { if (v > m) m = v; }); });
+  const entities = otherPaidSplitActive() ? dollarEntities.filter(e => e !== 'Other Paid').concat(SPLIT_CHANNELS) : dollarEntities;
+  const splitRaw = otherPaidSplitActive() ? DATA_SPLIT[currentDs].rawCacRoas[region] : null;
+  entities.forEach(e => {
+    const src = (splitRaw && SPLIT_CHANNELS.includes(e)) ? splitRaw : raw;
+    (src[e + ' ' + key] || []).forEach(v => { if (v > m) m = v; });
+  });
   if (m === 0) return 1;
   return Math.ceil(m * 1.15 * 100) / 100;
 }
@@ -4779,10 +4827,15 @@ function dollarDatasetsFor(payload, region){
   if (dollarAxisMode === 'none') return [];
   const raw = payload.rawCacRoas[region];
   const key = dollarAxisMode === 'cac' ? 'CAC' : 'ROAS';
-  return dollarEntities.map(e => {
-    const c = cacRoasColors[e + ' ' + key];
+  const useSplit = otherPaidSplitActive();
+  const entities = useSplit ? dollarEntities.filter(e => e !== 'Other Paid').concat(SPLIT_CHANNELS) : dollarEntities;
+  const splitRaw = useSplit ? DATA_SPLIT[currentDs].rawCacRoas[region] : null;
+  return entities.map(e => {
+    const isSplitEntity = useSplit && SPLIT_CHANNELS.includes(e);
+    const c = isSplitEntity ? SPLIT_CHAN_COLOR_MAP[e] : cacRoasColors[e + ' ' + key];
+    const data = isSplitEntity ? splitRaw[e + ' ' + key] : raw[e + ' ' + key];
     return {
-      data: raw[e + ' ' + key], label: '$ ' + e + ' ' + key,
+      data, label: '$ ' + e + ' ' + key,
       borderColor: c, backgroundColor: c, borderWidth: 1, borderDash: [1,1],
       pointRadius: 0, tension: 0.25, yAxisID: 'y2', hidden: !groupState['chan_'+e],
       __chanKey: 'chan_'+e,
@@ -4790,40 +4843,64 @@ function dollarDatasetsFor(payload, region){
   });
 }
 
-// TODO(otherPaidSplit): the Trend chart section (buildChart/groupKeys/chips below) still
-// always reads the grouped DATA[currentDs] channels (chanColors keys) regardless of the
-// otherPaidSplit toggle. To surface the 10 DATA_SPLIT sub-channels here, extend groupKeys
-// with 'chan_<subchannel>' entries sourced from DATA_SPLIT[currentDs].pkChan/avgChan when
-// otherPaidSplit is true (mirroring the chanColors.forEach loop below), assign each a
-// color, and add matching legend chips -- gated so the existing 6-line grouped chart is
-// unaffected when otherPaidSplit is false. Deferred in this pass; see report for details.
 function buildChart(canvasId, metric, kind){
   const payload = DATA[currentDs];
   const spend = kind === 'peak' ? payload.pkSpend[currentRegion] : payload.avgSpend[currentRegion];
   const chanData = kind === 'peak' ? payload.pkChan[currentRegion] : payload.avgChan[currentRegion];
   const crData = kind === 'peak' ? payload.pkCacRoas[currentRegion] : payload.avgCacRoas[currentRegion];
   const yMax = computeMax(payload, currentRegion, metric, kind);
+  const useSplit = otherPaidSplitActive();
+  const splitPayload = useSplit ? DATA_SPLIT[currentDs] : null;
+  const splitSpendData = useSplit ? (kind === 'peak' ? splitPayload.pkSpend[currentRegion] : splitPayload.avgSpend[currentRegion]) : null;
+  const splitChanData = useSplit ? (kind === 'peak' ? splitPayload.pkChan[currentRegion] : splitPayload.avgChan[currentRegion]) : null;
+  const splitCrData = useSplit ? (kind === 'peak' ? splitPayload.pkCacRoas[currentRegion] : splitPayload.avgCacRoas[currentRegion]) : null;
   const datasets = [];
   const meta = [];
   Object.keys(spendColors).forEach(k => {
+    if (useSplit && k === 'other_spend') return;
     const c = spendColors[k];
     datasets.push({ data: spend[k], borderColor: c, backgroundColor: c, borderWidth: 3, pointRadius: 0, tension: 0.25, hidden: !groupState['spend_'+k] });
     meta.push({group:'spend_'+k, label: spendNames[k]});
   });
+  if (useSplit) {
+    Object.keys(splitSpendColors).forEach(k => {
+      const c = splitSpendColors[k];
+      datasets.push({ data: splitSpendData[k], borderColor: c, backgroundColor: c, borderWidth: 3, pointRadius: 0, tension: 0.25, hidden: !groupState['spend_'+k] });
+      meta.push({group:'spend_'+k, label: splitSpendNames[k]});
+    });
+  }
   Object.keys(chanColors).forEach(k => {
+    if (useSplit && k === 'Other Paid') return;
     const c = chanColors[k];
     const width = k === 'Total' ? 2.5 : 1.5;
     const dash = k === 'Total' ? [2,2] : [];
     datasets.push({ data: chanData[k][metric], borderColor: c, backgroundColor: c, borderWidth: width, borderDash: dash, pointRadius: 1.5, tension: 0.25, hidden: !groupState['chan_'+k] });
     meta.push({group:'chan_'+k, label: k+' new customer '+metric});
   });
+  if (useSplit) {
+    Object.keys(splitChanColors).forEach(k => {
+      const c = splitChanColors[k];
+      datasets.push({ data: splitChanData[k][metric], borderColor: c, backgroundColor: c, borderWidth: 1.5, borderDash: [], pointRadius: 1.5, tension: 0.25, hidden: !groupState['chan_'+k] });
+      meta.push({group:'chan_'+k, label: k+' new customer '+metric});
+    });
+  }
   Object.keys(cacRoasColors).forEach(k => {
+    if (useSplit && k.indexOf('Other Paid ') === 0) return;
     const c = cacRoasColors[k];
     const isRoas = k.endsWith('ROAS');
     const dash = isRoas ? cacRoasDash.ROAS : cacRoasDash.CAC;
     datasets.push({ data: crData[k], borderColor: c, backgroundColor: c, borderWidth: 2, borderDash: dash, pointRadius: 0, tension: 0.25, hidden: !groupState['cacroas_'+k] });
     meta.push({group:'cacroas_'+k, label: k});
   });
+  if (useSplit) {
+    Object.keys(splitCacRoasColors).forEach(k => {
+      const c = splitCacRoasColors[k];
+      const isRoas = k.endsWith('ROAS');
+      const dash = isRoas ? cacRoasDash.ROAS : cacRoasDash.CAC;
+      datasets.push({ data: splitCrData[k], borderColor: c, backgroundColor: c, borderWidth: 2, borderDash: dash, pointRadius: 0, tension: 0.25, hidden: !groupState['cacroas_'+k] });
+      meta.push({group:'cacroas_'+k, label: k});
+    });
+  }
   dollarDatasetsFor(payload, currentRegion).forEach(d => { datasets.push(d); meta.push({group: d.__chanKey, label: d.label, isDollar: true}); });
 
   const dMax = dollarMax(payload, currentRegion);
@@ -4926,9 +5003,9 @@ centerMidGroup();
 
 const legendBox = document.getElementById('legendBox');
 const colorFor = (key) => {
-  if (key.startsWith('spend_')) return spendColors[key.replace('spend_','')];
-  if (key.startsWith('chan_')) return chanColors[key.replace('chan_','')];
-  return cacRoasColors[key.replace('cacroas_','')];
+  if (key.startsWith('spend_')) return spendColors[key.replace('spend_','')] || splitSpendColors[key.replace('spend_','')];
+  if (key.startsWith('chan_')) return chanColors[key.replace('chan_','')] || splitChanColors[key.replace('chan_','')];
+  return cacRoasColors[key.replace('cacroas_','')] || splitCacRoasColors[key.replace('cacroas_','')];
 };
 groupKeys.forEach(g => {
   const chip = document.createElement('button');
@@ -4946,6 +5023,33 @@ groupKeys.forEach(g => {
   legendBox.appendChild(chip);
   chips[g.key] = chip;
 });
+// Split-mode chips (10 subchannels x spend/orders-revenue/CAC/ROAS): created
+// once up front like the grouped chips above, but hidden by default since
+// otherPaidSplit starts false. applyOtherPaidSplitChipVisibility() below
+// swaps which set is visible whenever the toggle changes.
+splitGroupKeys.forEach(g => {
+  const chip = document.createElement('button');
+  chip.textContent = g.label;
+  const color = colorFor(g.key);
+  chip.style.border = '1.5px solid ' + color;
+  chip.style.display = 'none';
+  chip.dataset.key = g.key;
+  chip.dataset.active = groupState[g.key] ? 'true' : 'false';
+  chip.style.opacity = groupState[g.key] ? '1' : '0.35';
+  chip.onclick = () => {
+    setGroupActive(g.key, !(chip.dataset.active === 'true'));
+    document.getElementById('showAllBtn').classList.remove('active');
+    document.getElementById('showNoneBtn').classList.remove('active');
+  };
+  legendBox.appendChild(chip);
+  chips[g.key] = chip;
+});
+function applyOtherPaidSplitChipVisibility(){
+  const isSplit = otherPaidSplitActive();
+  groupedOtherPaidKeys.forEach(k => { if (chips[k]) chips[k].style.display = isSplit ? 'none' : ''; });
+  splitGroupKeys.forEach(g => { if (chips[g.key]) chips[g.key].style.display = isSplit ? '' : 'none'; });
+}
+applyOtherPaidSplitChipVisibility();
 
 function setGroupActive(key, active){
   groupState[key] = active;
@@ -4964,12 +5068,12 @@ function setGroupActive(key, active){
 const showAllBtn = document.getElementById('showAllBtn');
 const showNoneBtn = document.getElementById('showNoneBtn');
 showAllBtn.onclick = () => {
-  groupKeys.forEach(g => setGroupActive(g.key, true));
+  groupKeys.concat(splitGroupKeys).forEach(g => setGroupActive(g.key, true));
   showAllBtn.classList.add('active');
   showNoneBtn.classList.remove('active');
 };
 showNoneBtn.onclick = () => {
-  groupKeys.forEach(g => setGroupActive(g.key, false));
+  groupKeys.concat(splitGroupKeys).forEach(g => setGroupActive(g.key, false));
   showNoneBtn.classList.add('active');
   showAllBtn.classList.remove('active');
 };
@@ -5074,9 +5178,11 @@ otherPaidSplitBtn.onclick = () => {
   otherPaidSplit = !otherPaidSplit;
   otherPaidSplitBtn.classList.toggle('active', otherPaidSplit);
   otherPaidSplitBtn.textContent = otherPaidSplit ? 'Other Paid: Split' : 'Other Paid: Grouped';
-  // Same render fan-out as the seasonal/holiday toggles. Yield drivers /
-  // Saturation / Lag / Reallocation are intentionally NOT split-aware yet
-  // (later pass) -- they keep reading the grouped DATA/KPI_DATA regardless.
+  if (typeof applyOtherPaidSplitChipVisibility === 'function') applyOtherPaidSplitChipVisibility();
+  // Same render fan-out as the seasonal/holiday toggles. Trend charts above
+  // are split-aware (buildChart); Yield drivers / Saturation / Lag /
+  // Reallocation are intentionally NOT split-aware yet (later pass) -- they
+  // keep reading the grouped DATA/KPI_DATA regardless.
   updateDs();
 };
 
