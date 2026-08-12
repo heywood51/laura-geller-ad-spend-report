@@ -4969,9 +4969,9 @@ table.realloc-grid td:first-child { text-align: left; font-weight: 700; }
 </details>
 
 <details class="section-details" id="totalYieldDetails">
-<summary>Highest &amp; lowest yield drivers</summary>
+<summary>Highest &amp; lowest yield drivers (and how much of that yield is cross-channel spillover)</summary>
 <div class="details-body">
-<p class="method-note">Two ways to rank the same spend levers by how well they're working. <strong>Total business effect</strong> ranks each channel by its full, summed impact on the whole business in real economic terms (implied cost per order) -- the more decision-useful answer to "where should the next dollar go." <strong>Statistical reliability</strong> ranks every individual (spend, target) pair instead -- including CAC and ROAS, not just orders/revenue -- by how confident the underlying regression is, regardless of the pair's real-world size; a pair can rank #1 there on pure statistical confidence while implying a far worse cost-per-order than a channel's own direct spend (see its own note below for why that can happen). Both use the same underlying Simple-mode, This Period marginal-effect regressions, pooled across Total, US, and International.</p>
+<p class="method-note">Three related checks on the same spend levers. <strong>Total business effect</strong> ranks each channel by its full, summed impact on the whole business in real economic terms (implied cost per order) -- the more decision-useful answer to "where should the next dollar go." <strong>Statistical reliability</strong> ranks every individual (spend, target) pair instead -- including CAC and ROAS, not just orders/revenue -- by how confident the underlying regression is, regardless of the pair's real-world size; a pair can rank #1 there on pure statistical confidence while implying a far worse cost-per-order than a channel's own direct spend (see its own note below for why that can happen). <strong>Where that effect comes from</strong> checks whether the cross-channel spillover baked into the "Total business effect" number is actually real, or just two channels riding the same demand cycle. All three use the same underlying Simple-mode, This Period marginal-effect regressions, pooled across Total, US, and International.</p>
 
 <h3>Total business effect</h3>
 <p class="method-note">Ranks every spend lever you can actually move budget between (Meta and Other Paid, or in split mode Meta and each of Other Paid's 10 constituent sub-channels) by its TOTAL effect on the business -- its own direct effect plus every bit of cross-channel spillover it causes, added together into one number -- rather than one (spend, target) pair at a time like the statistical-reliability ranking below. This uses the same Simple-mode marginal-effect regression as the sections above, but against the "Total" new customer orders and "Total" revenue targets specifically: because a regression slope is built from covariance, and covariance is linear, a channel's slope against Total orders is mathematically exactly equal to the sum of its slopes against every individual destination channel (Meta, Other Paid or its sub-channels, CRM Email, CRM SMS, Organic, Direct) added together -- so it really is the full effect, not just whichever single pair happens to look strongest. Levers are ranked by implied marginal CAC (dollars spent per additional total new customer order this period), from cheapest to most expensive, among levers with a statistically significant, favorable total effect; marginal ROAS (total revenue per dollar spent) is shown alongside for reference.</p>
@@ -5002,6 +5002,12 @@ table.realloc-grid td:first-child { text-align: left; font-weight: 700; }
 </div>
 </div>
 
+<div id="haloDetails" class="yield-subsection">
+<h3>Where that effect comes from -- and is the cross-channel part real?</h3>
+<p class="method-note">The "Total business effect" ranking above includes each channel's full cross-channel reach -- its own direct effect on its own orders, plus every bit of apparent lift on every <em>other</em> channel's orders, added together into one number. This checks that second part specifically, pair by pair: does a lever's spend actually correlate with new-customer orders on each other channel this period, and does that correlation hold up a month later (more consistent with a real causal lift) or collapse (more likely two channels riding the same demand cycle, not a real effect)? Any cross-channel number that fails this check is still baked into the "Total business effect" ranking above -- it just shouldn't be trusted as a reason that ranking is better than it looks. Regression is simple mode (single predictor, this period), Total-region-and-toggle-aware like the rest of the page. This is a first-pass correlational check, not a controlled experiment -- it can rule a pattern <em>in</em> as worth investigating further, but it can't fully rule causation <em>in</em> on its own, only rule the more obvious confound <em>out</em> (or fail to).</p>
+<div id="haloBody"><p class="caveat">Loading...</p></div>
+</div>
+
 </div>
 </details>
 
@@ -5011,14 +5017,6 @@ table.realloc-grid td:first-child { text-align: left; font-weight: 700; }
 <p class="method-note">The Marginal effect section above fits one straight-line slope per channel across the whole period -- $ per additional customer, assumed constant no matter how much was already being spent. This checks that assumption: for each channel's own spend vs. its own orders/revenue (Total spend vs. Total, Meta spend vs. Meta, Other Paid spend vs. Other Paid -- the pairs where "diminishing returns" has a clean causal story), months are split into the below-median-spend half and the above-median-spend half for that specific channel, and a separate slope is fit in each half. A meaningfully smaller (or negative) slope in the high-spend half is evidence of diminishing returns; a larger one is the opposite -- evidence of scale actually helping. With only ~10-12 months per half, a single unusual month can swing a half's slope, so treat anything not flagged significant as inconclusive rather than "no effect."</p>
 <div id="saturationHolidayOnlyGate" class="caveat holidayonly-gate">This check isn't available for the holiday-only view -- splitting 4 months in half leaves just 2 data points per half, nowhere near enough to fit a regression. Switch the holiday toggle to "excluding" or "including" holiday months to see this section again.</div>
 <div id="saturationResult"></div>
-</div>
-</details>
-
-<details class="section-details" id="haloDetails">
-<summary>Is there a halo effect? (Does spend on one channel lift orders on others?)</summary>
-<div class="details-body">
-<p class="method-note">For every paid spend lever, this checks whether that lever's spend correlates with new-customer orders on every <em>other</em> channel this period -- and then applies a discriminating test: a same-month correlation that collapses a month later is the signature of a shared demand cycle (a good month lifts every channel's numbers together), not evidence that the lever itself is causing people to convert elsewhere. A real causal halo should hold up, or at least not fully collapse, at a one-month lag. Regression is simple mode (single predictor, this period), Total-region-and-toggle-aware like the rest of the page. This is a first-pass correlational check, not a controlled experiment -- it can rule a pattern <em>in</em> as worth investigating further, but it can't fully rule causation <em>in</em> on its own, only rule the more obvious confound <em>out</em> (or fail to).</p>
-<div id="haloBody"><p class="caveat">Loading...</p></div>
 </div>
 </details>
 
@@ -5046,13 +5044,8 @@ table.realloc-grid td:first-child { text-align: left; font-weight: 700; }
 <h4>Same combinations, ranked highest to lowest</h4>
 <div id="reallocRankedWrap"></div>
 </div>
-</div>
-</details>
-
-<details class="section-details" id="optimalShiftDetails">
-<summary>Is there an optimal spend split? (Solving for the best allocation, not just testing one move)</summary>
-<div class="details-body">
-<p class="method-note">The reallocation calculator above tests one $ amount at a time, using the slope right at today's spend level. This section tries to go further and actually solve for the order-maximizing split between two channels, by fitting a diminishing-returns curve (orders = a &times; spend<sup>b</sup>) to each channel's own this-period monthly spend/orders history. An optimal split only exists mathematically where <em>both</em> channels in a pair show real diminishing returns (0&lt;b&lt;1, i.e. each additional dollar returns a bit less than the one before); where that holds, the point estimate is bootstrapped (200 resamples) to show how stable it actually is. Total-region-and-toggle-aware like the rest of the page.</p>
+<h3>Is there an optimal split? (going further than the calculator above)</h3>
+<p class="method-note">The calculator above tests one $ amount at a time, using the slope right at today's spend level. This tries to go further and actually solve for the order-maximizing split between two channels, by fitting a diminishing-returns curve (orders = a &times; spend<sup>b</sup>) to each channel's own this-period monthly spend/orders history. An optimal split only exists mathematically where <em>both</em> channels in a pair show real diminishing returns (0&lt;b&lt;1, i.e. each additional dollar returns a bit less than the one before); where that holds, the point estimate is bootstrapped (200 resamples) to show how stable it actually is.</p>
 <div id="optimalShiftBody"><p class="caveat">Loading...</p></div>
 </div>
 </details>
@@ -9326,6 +9319,7 @@ function renderOptimalShiftSection(){
   const el = document.getElementById('optimalShiftBody');
   if (!el) return;
   const ds = (typeof currentDs !== 'undefined') ? currentDs : 'on_excl';
+  if (ds.endsWith('_holidayonly')) { el.innerHTML = ''; return; }
   const region = (typeof currentRegion !== 'undefined') ? currentRegion : 'Total';
   const split = (typeof otherPaidSplit !== 'undefined') ? otherPaidSplit : false;
   const fitsObj = ELASTICITY_FITS[ds] && ELASTICITY_FITS[ds][region];
