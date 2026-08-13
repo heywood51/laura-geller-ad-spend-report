@@ -271,7 +271,7 @@ table.realloc-grid td:first-child { text-align: left; font-weight: 700; }
 <body>
 
 <h1>Ad spend vs new customer acquisition -- Laura Geller</h1>
-<p class="subtitle">Ad spend vs. new-customer orders and revenue, This Year (Aug '25 - Jul '26) vs. Last Year (Aug '24 - Jul '25). <span style="display:inline-block;background:#f4f3ef;border:1px solid #dedcd3;border-radius:3px;padding:1px 7px;font-size:12px;color:#555;margin-right:6px">Data through 20 Jul 2026</span><strong>Start with "What each channel actually returns"</strong> &mdash; every channel estimated jointly on 238 weeks of data, on a contribution-margin basis. It is where the conclusions and the numbers to act on live. Toggles below adjust for seasonality and holiday months and switch regions; click a chip to show or hide a series, or a correlation value to jump to its chart. Every section collapses -- click its heading.</p>
+<p class="subtitle">Ad spend vs. new-customer orders and revenue, This Year (Aug '25 - Jul '26) vs. Last Year (Aug '24 - Jul '25). <span style="display:inline-block;background:#f4f3ef;border:1px solid #dedcd3;border-radius:3px;padding:1px 7px;font-size:12px;color:#555;margin-right:6px">Data through 20 Jul 2026</span><strong>Start with "What each channel actually returns"</strong> &mdash; every channel estimated jointly on 238 weeks of data, on a contribution-margin basis. Toggles below adjust for seasonality and holiday months and switch regions; click a chip to show or hide a series, or a correlation value to jump to its chart. Every section collapses -- click its heading.</p>
 
 <div class="top-kpi-block" id="topKpiBlock">
 <div class="topbar-group topbar-group-left" style="margin-bottom: 10px;">
@@ -301,7 +301,7 @@ table.realloc-grid td:first-child { text-align: left; font-weight: 700; }
 
 
 <div class="headline-box" style="max-width:1100px">
-<div style="font-size:15px;margin-bottom:6px"><strong>The number this report exists to explain</strong></div>
+
 <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:flex-end;margin:4px 0 10px">
   <div><div style="font-size:31px;font-weight:700;color:#b3261e;line-height:1">0.91x</div>
        <div style="font-size:12px;color:#666">first-order contribution margin<br>per $1 of ad spend, this year</div></div>
@@ -315,14 +315,9 @@ Every dollar of ad spend now returns about <strong>0.91</strong> of contribution
 <br><br><span style="font-size:12px;color:#777">Contribution margin = net revenue including shipping, less COGS, less $6.24 per order fulfilment, less 8% variable cost, on new-customer orders only. Raw, holiday-inclusive, trailing twelve months versus the twelve before. Does not respond to the toggles.</span>
 </div>
 
-<div class="note" style="max-width:1100px;background:#f4f3ef;border-left:4px solid #1F3864;padding:12px 16px;margin:0 0 18px;font-size:13.5px;line-height:1.6">
-<strong>How to read this report, if you are new to it.</strong> There are three layers.
-<br>&bull; <strong><a href="#correctedDetails" onclick="event.preventDefault(); openAndScrollTo(document.getElementById('correctedDetails'), 'start');">What each channel actually returns</a></strong> &mdash; the conclusions and the numbers to act on. Start and, if you only read one thing, finish here.
-<br>&bull; <strong><a href="#mostImportantDetails" onclick="event.preventDefault(); openAndScrollTo(document.getElementById('mostImportantDetails'), 'start');">Most important findings and recommendations</a></strong> &mdash; twelve findings and five recommendations, each linked to its evidence.
-<br>&bull; <strong>Everything else</strong> &mdash; the original exploratory sections, kept because they are useful for interrogating a specific channel or pair. Several carry a correction note explaining where their numbers are biased and by how much; those notes are not decoration, and the sections should not be quoted without them.
-</div>
-<details class="section-details" id="correctedDetails" open>
-<summary>What each channel actually returns &mdash; start here</summary>
+
+<details class="section-details" id="correctedDetails">
+<summary>What each channel actually returns</summary>
 <div class="details-body">
 <p class="method-note">Channel effects are estimated on a weekly panel &mdash; <strong>238 observations per region, 2022-01-03 to 2026-07-20</strong> &mdash; with all ten channels in one model, so each channel is measured while the others are held constant. Controls: promotional discount depth, promo days, gift-with-purchase, November/December, a linear trend and three annual Fourier harmonics. Outcomes are first-differenced with Newey-West HAC(6) standard errors. The headline metric is contribution margin rather than revenue, because promotional discounts ran 40&ndash;75% in most weeks and revenue alone overstates what a sale is worth. Every figure in the calculators further down this page resolves through these same estimates.</p>
 
