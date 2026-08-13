@@ -190,6 +190,8 @@ window.__stage3BlocksPromise = fetch('stage3_split_blocks.html').then(function(r
 .pair-info-panel .panel-line strong { font-weight: 700; }
 .pair-info-panel .panel-na { color: #888; font-style: italic; }
 .pair-info-panel .panel-takeaway { margin-top: 10px; padding-top: 10px; border-top: 1px solid #dedcd3; font-weight: 600; }
+.pair-info-panel .panel-interp { margin-top: 8px; font-size: 12px; color: #555; }
+.pair-info-panel .panel-interp a { color: #1F3864; }
 .val-neutral { color: #6b6a63; font-weight: 700; }
 
 @media (max-width: 900px) {
@@ -7799,6 +7801,52 @@ function movementAdjective(entry, rollDesc, kind){
   return magnitudeAdjective(Math.abs(signed), 0.15, 0.08);
 }
 
+
+// --- Plain-language description of a correlation, used by the trend-chart pair panels. ---
+// Deliberately avoids calling a correlation "good" or "bad": a tight fit between a channel's
+// spend and some other channel's orders is usually shared demand, not influence, so praising it
+// would contradict the corrected analysis. Favourability is carried by the colour spans instead.
+function pairStrengthPhrase(r){
+  const a = Math.abs(r);
+  if (a >= 0.85) return 'move almost in lockstep';
+  if (a >= 0.70) return 'track each other closely';
+  if (a >= 0.50) return 'move together fairly clearly';
+  if (a >= 0.30) return 'move together loosely';
+  if (a >= 0.15) return 'are only faintly related';
+  return 'look essentially unrelated';
+}
+function pairRollPhrase(rollDesc){
+  if (!rollDesc) return null;
+  if (rollDesc.dirLabel === 'trending up') return 'has been rising';
+  if (rollDesc.dirLabel === 'trending down') return 'has been falling';
+  return 'has held roughly steady';
+}
+// Is this a channel's own spend against its own results?
+function pairIsSameChannel(spendKey, entityLabel){
+  if (!spendKey || !entityLabel) return false;
+  const s = String(spendKey).toLowerCase().replace(/_spend$/,'').replace(/[^a-z]/g,'');
+  const e = String(entityLabel).toLowerCase().replace(/[^a-z]/g,'');
+  if (!s || !e) return false;
+  if (s === 'total' && e === 'total') return true;
+  if (s === 'other' && e === 'otherpaid') return true;
+  return s === e;
+}
+function pairInterpretation(spendKey, entityLabel){
+  const link = function(id,label){ return '<a href="#'+id+'" onclick="event.preventDefault(); openAndScrollTo(document.getElementById(\''+id+'\'), \'start\');">'+label+'</a>'; };
+  if (pairIsSameChannel(spendKey, entityLabel)) {
+    return 'This is a channel measured against its own results, so a tight fit is close to definitional &mdash; '
+      + 'it confirms the two series were recorded together, not that the spend caused the orders.';
+  }
+  return 'This is one channel’s spend against a <em>different</em> channel’s results. A tight fit here is more often both '
+    + 'responding to the same demand than one driving the other &mdash; ' + link('haloDetails','the halo check')
+    + ' tests exactly that, and finds the apparent spillover collapses at a one-month lag in nearly every case.';
+}
+function pairEffectPointer(){
+  return 'Correlation cannot tell you the size of an effect. For what an additional dollar into this channel actually '
+    + 'returns, with every other channel held constant, see the per-channel drill-down in '
+    + '<a href="#correctedDetails" onclick="event.preventDefault(); openAndScrollTo(document.getElementById(\'correctedDetails\'), \'start\');">Corrected marginal analysis</a>.';
+}
+
 function buildOpeningLine(kind, entry, rollDesc){
   if (!entry && !rollDesc) return null;
   const now = nowStatus(entry, kind);
@@ -7810,7 +7858,7 @@ function buildOpeningLine(kind, entry, rollDesc){
   const movement = trendStatus(entry, rollDesc, kind);
 
   if (movement === 'neutral') {
-    return `This relationship is looking ${nowSpan} this period, and it's ${colorSpan('trending neutrally', 'neutral')}. Here's why:`;
+    return pairOpeningSentence(entry, rollDesc, kind);
   }
 
   const movAdj = movementAdjective(entry, rollDesc, kind);
@@ -7832,11 +7880,27 @@ function buildOpeningLine(kind, entry, rollDesc){
   // now AND still very good where it's heading -- not just both "good" at different strengths),
   // "trending X toward Y" reads like it's changing category when it isn't. Say it's holding
   // steady in that tier instead, while still surfacing the real underlying movement.
-  if (destDescriptor === nowDescriptor) {
-    return `This relationship is looking ${nowSpan} this period, and it's staying that way -- despite trending ${directionSpan}. Here's why:`;
-  }
+  return pairOpeningSentence(entry, rollDesc, kind);
+}
 
-  return `This relationship is looking ${nowSpan} this period, and it's trending ${directionSpan} toward ${destinationSpan}. Here's why:`;
+// One natural sentence: how closely the two series move, and which way that has been going.
+function pairOpeningSentence(entry, rollDesc, kind){
+  const r = entry ? entry.r_ty : (rollDesc ? rollDesc.recentAvg : null);
+  if (r === null || r === undefined) return null;
+  const status = pointStatus(r, kind);
+  const phrase = colorSpan(pairStrengthPhrase(r), status);
+  const opposite = (r <= -0.15) ? ', in opposite directions' : '';
+  let s = `These two series ${phrase}${opposite} this period (r = ${colorSpan(fmtRPlain(r), status)}).`;
+  const rollPhrase = pairRollPhrase(rollDesc);
+  if (rollPhrase) {
+    const rollStatus = rollDesc.dirLabel === 'holding roughly steady' ? 'neutral' : classifyDelta(rollDesc.diff, kind, 0.03);
+    s += ` Across the rolling 6-month windows r ${colorSpan(rollPhrase, rollStatus)}`;
+    if (rollDesc.dirLabel !== 'holding roughly steady') {
+      s += `, from ${fmtRPlain(rollDesc.first)} to ${fmtRPlain(rollDesc.last)}`;
+    }
+    s += '.';
+  }
+  return s;
 }
 
 function buildTakeaway(kind, entry, rollDesc){
@@ -7844,15 +7908,17 @@ function buildTakeaway(kind, entry, rollDesc){
   const parts = [];
   const deltaStatus = classifyDelta(entry.delta, kind, 0.02);
   const strengthWord = (Math.abs(entry.r_ty) > Math.abs(entry.r_ly)) ? 'strengthened' : 'weakened';
-  const sigWord = entry.sig ? 'a statistically significant shift' : 'not a statistically significant shift';
-  parts.push(`The relationship has ${colorSpan(strengthWord, deltaStatus)} from r = ${fmtRPlain(entry.r_ly)} to r = ${fmtRPlain(entry.r_ty)} (${sigWord}).`);
+  parts.push(`The relationship has ${colorSpan(strengthWord, deltaStatus)} from r = ${fmtRPlain(entry.r_ly)} to r = ${fmtRPlain(entry.r_ty)}.`);
+  parts.push(entry.sig
+    ? `That change clears the uncorrected p&lt;0.05 bar &mdash; but 956 pairs are tested in this view, and only about one in eight such flags survives correction for the number of tests run, so treat it as a candidate rather than a result.`
+    : `That change is within the range of ordinary month-to-month noise for a sample this size.`);
   if (entry.yoy_r !== null && entry.yoy_r !== undefined) {
     const closeness = Math.abs(entry.yoy_r - entry.r_ty) < 0.1 ? 'consistent with' : 'a bit different from';
     parts.push(`The trailing-12-month view (r = ${colorSpan(fmtRPlain(entry.yoy_r), classifyValue(entry.yoy_r, kind))}) is ${closeness} the current period.`);
   }
   if (rollDesc) {
     const rollTrendStatus = rollDesc.dirLabel === 'holding roughly steady' ? 'neutral' : classifyDelta(rollDesc.diff, kind, 0.03);
-    parts.push(`Over the rolling 6-month windows from ${rollDesc.firstMonth} to ${rollDesc.lastMonth}, it's been ${colorSpan(rollDesc.dirLabel, rollTrendStatus)} (r ranged ${rollDesc.min.toFixed(2)} to ${rollDesc.max.toFixed(2)}).`);
+    parts.push(`Across the rolling windows from ${rollDesc.firstMonth} to ${rollDesc.lastMonth}, r ranged ${rollDesc.min.toFixed(2)} to ${rollDesc.max.toFixed(2)}.`);
   }
   return parts.join(' ');
 }
@@ -7881,15 +7947,12 @@ function renderPanelBody(kind, entry, rollDesc, region, spendKey){
   } else {
     html += `<p class="panel-line panel-na">Split-period / year-over-year comparison not available for this pair.</p>`;
   }
-  if (rollDesc) {
-    const firstStatus = classifyValue(rollDesc.first, kind);
-    const lastStatus = classifyValue(rollDesc.last, kind);
-    const rollTrendStatus = rollDesc.dirLabel === 'holding roughly steady' ? 'neutral' : classifyDelta(rollDesc.diff, kind, 0.03);
-    html += `<p class="panel-line"><strong>Rolling 6-month trend:</strong> r = ${colorSpan(fmtRPlain(rollDesc.first), firstStatus)} (${rollDesc.firstMonth}) &rarr; ${colorSpan(fmtRPlain(rollDesc.last), lastStatus)} (${rollDesc.lastMonth}), ${colorSpan(rollDesc.dirLabel, rollTrendStatus)}</p>`;
-  } else {
+  if (!rollDesc) {
     html += `<p class="panel-line panel-na">Rolling-window trend not available for this pair.</p>`;
   }
   html += `<p class="panel-takeaway">${buildTakeaway(kind, entry, rollDesc)}</p>`;
+  html += `<p class="panel-line panel-interp">${pairInterpretation(spendKey, panelChanLabel)}</p>`;
+  html += `<p class="panel-line panel-interp">${pairEffectPointer()}</p>`;
   return html;
 }
 
@@ -7900,6 +7963,7 @@ function renderPanelBody(kind, entry, rollDesc, region, spendKey){
 // opening line/takeaway (based on whichever metric has the stronger relationship right now),
 // a compact orders-vs-revenue table for this-period/last-period/YoY, and the rolling 6-month
 // trend shown once (today it's literally the same underlying series for both metrics).
+let panelChanLabel = null;
 function buildCombinedCorrelationBody(ordersEntry, revenueEntry, rollDesc, region, spendKey){
   if (!ordersEntry && !revenueEntry && !rollDesc) {
     return '<p class="panel-na">No deeper trend data is available for this specific pair.</p>';
@@ -7932,16 +7996,13 @@ function buildCombinedCorrelationBody(ordersEntry, revenueEntry, rollDesc, regio
     html += `<p class="panel-line panel-na">Split-period / year-over-year comparison not available for this pair.</p>`;
   }
 
-  if (rollDesc) {
-    const firstStatus = classifyValue(rollDesc.first, 'orders_revenue');
-    const lastStatus = classifyValue(rollDesc.last, 'orders_revenue');
-    const rollTrendStatus = rollDesc.dirLabel === 'holding roughly steady' ? 'neutral' : classifyDelta(rollDesc.diff, 'orders_revenue', 0.03);
-    html += `<p class="panel-line"><strong>Rolling 6-month trend:</strong> r = ${colorSpan(fmtRPlain(rollDesc.first), firstStatus)} (${rollDesc.firstMonth}) &rarr; ${colorSpan(fmtRPlain(rollDesc.last), lastStatus)} (${rollDesc.lastMonth}), ${colorSpan(rollDesc.dirLabel, rollTrendStatus)}</p>`;
-  } else {
+  if (!rollDesc) {
     html += `<p class="panel-line panel-na">Rolling-window trend not available for this pair.</p>`;
   }
 
   html += `<p class="panel-takeaway">${buildTakeaway('orders_revenue', primary, rollDesc)}</p>`;
+  html += `<p class="panel-line panel-interp">${pairInterpretation(spendKey, panelChanLabel)}</p>`;
+  html += `<p class="panel-line panel-interp">${pairEffectPointer()}</p>`;
   return html;
 }
 
@@ -7961,6 +8022,7 @@ function showChannelPairPanel(chan, region, spendKey, ds){
   const rollDesc = rollingDescription(series);
 
   titleEl.textContent = `${chan} vs ${spendLabelFull[spendKey] || spendKey} -- ${region}`;
+  panelChanLabel = chan;
   let bodyHtml = buildCombinedCorrelationBody(ordersEntry, revenueEntry, rollDesc, region, spendKey);
   if (typeof buildCombinedMarginalBlock === 'function') {
     const dsForMarg = (typeof MARGINAL_EFFECTS !== 'undefined' && MARGINAL_EFFECTS[ds]) ? ds : null;
@@ -7985,6 +8047,7 @@ function showPairPanel(metric, title, kind, region, spendKey, entityLabel, ds){
   const rollDesc = rollingDescription(series);
 
   titleEl.textContent = `${entityLabel} vs ${spendLabelFull[spendKey] || spendKey} -- ${region}`;
+  panelChanLabel = entityLabel;
   let bodyHtml = renderPanelBody(kind, entry, rollDesc, region, spendKey);
   if (typeof buildMarginalPanelBlock === 'function') {
     const dsForMarg = (typeof MARGINAL_EFFECTS !== 'undefined' && MARGINAL_EFFECTS[ds]) ? ds : null;
@@ -8549,7 +8612,7 @@ function buildCombinedMarginalBlock(region, spendKey, chan, ds){
     html += `<tr><td>${r.label}</td><td>${tySpan}</td><td>${lySpan}</td></tr>`;
   });
   html += `</table>`;
-  html += `<button class="marg-jump-link" onclick="jumpToMarginalFor('${spendKey}','${chan}','${region}')">See full marginal effect breakdown &darr;</button></div>`;
+  html += `<p class="panel-interp">These slopes come from single-channel regressions, so each absorbs the effect of every other channel moving at the same time and generally runs high &mdash; often several times too favourable for the smaller channels. The jointly estimated version is in <a href="#correctedDetails" onclick="event.preventDefault(); openAndScrollTo(document.getElementById('correctedDetails'), 'start');">Corrected marginal analysis</a>.</p><button class="marg-jump-link" onclick="jumpToMarginalFor('${spendKey}','${chan}','${region}')">See full marginal effect breakdown &darr;</button></div>`;
   return html;
 }
 
@@ -8589,7 +8652,7 @@ function buildMarginalPanelBlock(kind, region, spendKey, entityLabel, metric, ds
   }
 
   return `<div class="panel-marginal-block"><p class="panel-marginal-heading">Marginal effect (Simple regression, ${region})</p>` +
-    `<p class="panel-line">${line}</p>` +
+    `<p class="panel-line">${line}</p>` + `<p class="panel-interp">This slope comes from a single-channel regression, so it absorbs the effect of every other channel moving at the same time and generally runs high &mdash; often several times too favourable for the smaller channels. The jointly estimated version is in <a href="#correctedDetails" onclick="event.preventDefault(); openAndScrollTo(document.getElementById('correctedDetails'), 'start');">Corrected marginal analysis</a>.</p>` +
     `<button class="marg-jump-link" onclick="jumpToMarginalFor('${spendKey}','${entityLabel}','${region}')">See full marginal effect breakdown &darr;</button></div>`;
 }
 
