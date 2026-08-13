@@ -4732,96 +4732,13 @@ The natural reading of a 44&ndash;56% hit rate is "channels don't really drive t
 </div>
 </details>
 
-<details class="section-details" id="marginalDetails">
-<summary>Marginal effect: what does an extra dollar of spend actually buy?</summary>
-<div class="details-body">
-<p class="method-note">Correlation tells you how tightly two things move together -- not how big the effect is. This uses regression instead, estimating the actual orders, revenue, CAC, or ROAS that come with each additional increment of spend. Orders and revenue are per additional $1,000; CAC and ROAS barely move at that scale, so they're per additional $100,000. Pick a spend channel, outcome, and region -- the result updates automatically, with CAC and ROAS for the relevant spend-bearing entities alongside.</p>
 
 
-<div class="marg-controls">
-<span>How does spending money on</span>
-<select id="margSpendSelect"><option value="total_spend">Total spend</option><option value="meta_spend">Meta spend</option><option value="other_spend">Other paid spend</option></select>
-<span>affect performance for</span>
-<select id="margTargetSelect"><option value="Total">Total</option><option value="Meta">Meta</option><option value="Other Paid">Other Paid</option><option value="CRM Email">CRM Email</option><option value="CRM SMS">CRM SMS</option><option value="Organic">Organic</option><option value="Direct">Direct</option></select>
-<span>?</span>
-</div>
 
-<div class="marg-mode-row">
-  <button id="margModeSimple" class="filter-btn active">Simple</button>
-  <button id="margModeControlled" class="filter-btn">Controlled (holds the other paid channel's spend constant)</button>
-  <p class="marg-mode-note" id="margModeNote"></p>
-</div>
 
-<div id="margResult"></div>
-</div>
-</details>
 
-<details class="section-details" id="totalYieldDetails">
-<summary>Highest &amp; lowest yield drivers (and how much of that yield is cross-channel spillover)</summary>
-<div class="details-body"><div class="supersede"><strong>A note on the "Other" sub-channel, which appears throughout these rankings.</strong> "Other" is not a channel &mdash; it is the residual bucket for paid spend and attributed orders that do not map to a named platform, and it behaves like one. On roughly $41,000 a month it produces some of the largest and least stable coefficients anywhere in this report: it out-correlates Meta's own spend against Meta's own orders (r=0.988 against 0.957), it shows a statistically significant effect running in the <em>wrong</em> direction on the yield ranking, and its fitted spend response is negative. Treat any result in which "Other" appears near the top or bottom of a ranking as an artefact of a small, heterogeneous bucket rather than a finding about a real marketing channel.</div>
-<p class="method-note">Three checks on the same spend levers, all built from the same Simple-mode, This Period marginal-effect regressions, pooled across Total, US, and International. <strong>Total business effect</strong> ranks each channel by its full summed impact in economic terms (implied cost per order) -- the most decision-useful answer to "where should the next dollar go." <strong>Statistical reliability</strong> ranks every individual (spend, target) pair -- including CAC and ROAS -- by regression confidence alone, regardless of real-world size, so a pair can rank #1 there while implying a far worse cost per order than a channel's own direct spend. <strong>Where that effect comes from</strong> checks whether the cross-channel spillover baked into the first number is real, or just two channels riding the same demand cycle.</p>
 
-<h3>Total business effect</h3>
-<p class="method-note">Ranks every spend lever you can actually move budget between (Meta and Other Paid, or in split mode Meta and each of Other Paid's 10 sub-channels) by its TOTAL effect -- its own direct effect plus every bit of cross-channel spillover it causes, in one number -- rather than one (spend, target) pair at a time like the reliability ranking below. It uses the same Simple-mode marginal-effect regression as the sections above, against the "Total" orders and revenue targets specifically. That works because a regression slope is built from covariance, and covariance is linear: a channel's slope against Total orders is mathematically exactly the sum of its slopes against every individual destination channel. So this really is the full effect, not whichever single pair looks strongest. Levers are ranked by implied marginal CAC (dollars per additional total new customer order this period), cheapest first, among levers with a statistically significant favorable total effect; marginal ROAS is shown alongside.</p>
-<div id="totalYieldHolidayOnlyGate" class="caveat holidayonly-gate">This ranking isn't available for the holiday-only view -- it's built from the same marginal-effect regression, which can't run reliably on 4 months of data. Switch the holiday toggle to "excluding" or "including" to see it.</div>
-<div id="totalYieldBody">
-<h4>Highest yield -- worth investing in</h4>
-<div id="totalYieldBest"></div>
-<h4>Lowest yield -- probably not worthwhile</h4>
-<div id="totalYieldWorst"></div>
-<div id="totalYieldBadWrap">
-<h4>Moving in the wrong direction</h4>
-<div id="totalYieldBad"></div>
-</div>
-</div>
 
-<div id="yieldAllRegionsDetails" class="yield-subsection">
-<h3>Most vs. least statistically reliable relationships (t-stat ranking)</h3>
-<p class="method-note">Ranks every spend lever -- Meta and Other Paid, or in split mode Meta and each of Other Paid's 10 sub-channels -- against every orders, CAC, and ROAS target, using the Simple-regression marginal effect from the Marginal effect section below, pooling all 3 regions into one top-10. Because the effects are in different units, they're ranked by statistical strength (t-stat = effect &divide; its own standard error, signed so higher is always more favorable) rather than raw size -- so unlike the total-business-effect ranking above, a #1 here says nothing about whether the underlying dollar amount is a good deal. This period only; each item names its region and links to its full breakdown.</p>
-<button id="yieldAllDirectFilterBtn" class="filter-btn">Hide same-channel pairs (e.g. Meta spend &rarr; Meta orders)</button>
-<p class="appendix-note" id="yieldAllDirectFilterNote">Same-channel pairs (a channel's own spend vs. its own results, e.g. Meta&rarr;Meta) are the least surprising -- hide them to focus on cross-channel spillover and CAC/ROAS effects.</p>
-<h4>Highest yield -- worth investing in</h4>
-<div id="yieldAllBest"></div>
-<h4>Lowest yield -- probably not worthwhile</h4>
-<div id="yieldAllWorst"></div>
-<div id="yieldAllBadWrap">
-<h4>Moving in the wrong direction</h4>
-<div id="yieldAllBad"></div>
-</div>
-</div>
-
-<div id="haloDetails" class="yield-subsection">
-<h3>Where that effect comes from -- and is the cross-channel part real?</h3>
-<p class="method-note">The "Total business effect" ranking above includes each channel's full cross-channel reach -- its own direct effect plus every bit of apparent lift on every <em>other</em> channel's orders. This checks that second part pair by pair: does a lever's spend actually correlate with new-customer orders on each other channel this period, and does that correlation hold up a month later (more consistent with a real causal lift) or collapse (more likely two channels riding the same demand cycle)? Cross-channel numbers that fail this check are still baked into the ranking above -- they just shouldn't be trusted as a reason it's better than it looks. Simple-mode regression, this period, region- and toggle-aware like the rest of the page. This is a correlational first pass, not a controlled experiment: it can rule the obvious confound <em>out</em>, or fail to, but it can't establish causation.</p>
-<div id="haloBody"><p class="caveat">Loading...</p></div>
-</div>
-
-</div>
-</details>
-
-<details class="section-details" id="lagDetails">
-<summary>Does spend take a month to show up? (lagged effects)</summary>
-<div class="details-body"><div class="verified-box"><strong>Re-tested at a grain that could actually detect a lag, and confirmed.</strong> A monthly test cannot see a three-day advertising response. Re-run on 943 daily observations with 0&ndash;10 day distributed lags and a geometric adstock grid search, the best-fitting decay rate is zero for the channels carrying about 85% of spend, with no fit improvement over a same-day model. Meta's effect summed across eleven days matches its weekly estimate. Detail in <a href="#correctedDetails" onclick="event.preventDefault(); openAndScrollTo(document.getElementById('correctedDetails'), 'start');">"What each channel actually returns"</a>.</div>
-<p class="method-note">Everywhere else on this page, spend and outcomes are compared in the <em>same</em> month. This checks whether last month's spend lines up with <em>this</em> month's new customers better than this month's own spend does -- a delayed effect (an ad seen in month 1 converting in month 2). Same-month r (lag 0) and next-month r (lag 1) are both plain Pearson correlations over calendar-adjacent month pairs; for holiday-excluding views Nov/Dec are skipped rather than treated as adjacent to January. Pooled across all 3 regions. Only pairs with at least a moderate relationship (|r| &ge; 0.3 at either lag) are considered, and only ranked below if the two lags differ by more than 0.05 -- so this isn't chasing a "lag effect" on a relationship that barely exists or barely shifts.</p>
-<div id="lagHolidayOnlyGate" class="caveat holidayonly-gate">Lagged effects aren't available for the holiday-only view, for the same reason as the correlation sections: 4 months isn't enough for a reliable correlation, same-month or lagged. Switch the holiday toggle to "excluding" or "including" to see this section.</div>
-<h4>Where next month looks more related than this month</h4>
-<p class="appendix-note">Positive difference = the lag-1 relationship is stronger -- next month's spend-outcome pairing beats this month's.</p>
-<div id="lagStronger"></div>
-<h4>Where this month dominates -- little sign of carryover</h4>
-<p class="appendix-note">Negative difference = the same-month relationship is stronger, or the lag-1 relationship is actually weaker -- no evidence spend takes a month to show up here.</p>
-<div id="lagWeaker"></div>
-<div class="callout">Across every region, channel, and toggle state tested, no pair shows a next-month relationship even 0.05 r stronger than its same-month one -- the largest gap anywhere in this data is +0.04 (International Other Paid spend vs. CRM SMS orders, raw, holiday months excluded), still below the threshold above. Whatever relationship spend has with acquisition here is already visible in the same month; nothing suggests spend needs a month to "catch up."</div>
-</div>
-</details>
-
-<details class="section-details" id="saturationDetails">
-<summary>Are we past the point of good returns? (diminishing returns check)</summary>
-<div class="details-body"><div class="verified-box"><strong>Re-tested and confirmed.</strong> This check was re-run on 238 weekly observations instead of ~10 monthly ones, with all channels and controls in one model. No channel shows statistically detectable curvature at that grain either, so the cautious reading below holds up rather than being a small-sample artefact. Detail in <a href="#correctedDetails" onclick="event.preventDefault(); openAndScrollTo(document.getElementById('correctedDetails'), 'start');">"What each channel actually returns"</a>.</div>
-<p class="method-note">The Marginal effect section above fits one straight-line slope per channel across the whole period -- $ per additional customer, assumed constant no matter how much was already being spent. This tests that assumption: for each channel's own spend vs. its own orders/revenue (the pairs where "diminishing returns" has a clean causal story), months are split into the below-median and above-median spend half for that channel, and a separate slope is fit in each. A meaningfully smaller or negative slope in the high-spend half is evidence of diminishing returns; a larger one is evidence scale is helping. With only ~10-12 months per half, one unusual month can swing a slope -- treat anything not flagged significant as inconclusive, not as "no effect."</p>
-<div id="saturationHolidayOnlyGate" class="caveat holidayonly-gate">This check isn't available for the holiday-only view -- splitting 4 months in half leaves 2 points per half, nowhere near enough to fit a regression. Switch the holiday toggle to "excluding" or "including" to see this section.</div>
-<div id="saturationResult"></div>
-</div>
-</details>
 
 <details class="section-details" id="appendixDetails">
 <summary>Appendix: supporting data</summary>
@@ -6197,6 +6114,94 @@ The natural reading of a 44&ndash;56% hit rate is "channels don't really drive t
 </details>
 </div>
 
+<details id="supersededDetails">
+<summary><strong>Superseded analyses</strong> &mdash; earlier methods, kept for reference</summary>
+<p class="note-line">These four sections answer questions that are answered better, on more data, in <a href="#correctedDetails" onclick="event.preventDefault(); openAndScrollTo(document.getElementById('correctedDetails'), 'start');">What each channel actually returns</a>. Marginal effect and Yield drivers now read from the same estimates as that section but present them less clearly; Lagged effects tests for a delay at monthly grain, which cannot detect one; Saturation splits ~10 monthly points per half where the weekly test uses 238. Retained so the working is available, not because anything here should drive a decision.</p>
+<details class="section-details" id="marginalDetails">
+<summary>Marginal effect: what does an extra dollar of spend actually buy?</summary>
+<div class="details-body">
+<p class="method-note">Correlation tells you how tightly two things move together -- not how big the effect is. This uses regression instead, estimating the actual orders, revenue, CAC, or ROAS that come with each additional increment of spend. Orders and revenue are per additional $1,000; CAC and ROAS barely move at that scale, so they're per additional $100,000. Pick a spend channel, outcome, and region -- the result updates automatically, with CAC and ROAS for the relevant spend-bearing entities alongside.</p>
+
+
+<div class="marg-controls">
+<span>How does spending money on</span>
+<select id="margSpendSelect"><option value="total_spend">Total spend</option><option value="meta_spend">Meta spend</option><option value="other_spend">Other paid spend</option></select>
+<span>affect performance for</span>
+<select id="margTargetSelect"><option value="Total">Total</option><option value="Meta">Meta</option><option value="Other Paid">Other Paid</option><option value="CRM Email">CRM Email</option><option value="CRM SMS">CRM SMS</option><option value="Organic">Organic</option><option value="Direct">Direct</option></select>
+<span>?</span>
+</div>
+
+<div class="marg-mode-row">
+  <button id="margModeSimple" class="filter-btn active">Simple</button>
+  <button id="margModeControlled" class="filter-btn">Controlled (holds the other paid channel's spend constant)</button>
+  <p class="marg-mode-note" id="margModeNote"></p>
+</div>
+
+<div id="margResult"></div>
+</div>
+</details><details class="section-details" id="totalYieldDetails">
+<summary>Highest &amp; lowest yield drivers (and how much of that yield is cross-channel spillover)</summary>
+<div class="details-body"><div class="supersede"><strong>A note on the "Other" sub-channel, which appears throughout these rankings.</strong> "Other" is not a channel &mdash; it is the residual bucket for paid spend and attributed orders that do not map to a named platform, and it behaves like one. On roughly $41,000 a month it produces some of the largest and least stable coefficients anywhere in this report: it out-correlates Meta's own spend against Meta's own orders (r=0.988 against 0.957), it shows a statistically significant effect running in the <em>wrong</em> direction on the yield ranking, and its fitted spend response is negative. Treat any result in which "Other" appears near the top or bottom of a ranking as an artefact of a small, heterogeneous bucket rather than a finding about a real marketing channel.</div>
+<p class="method-note">Three checks on the same spend levers, all built from the same Simple-mode, This Period marginal-effect regressions, pooled across Total, US, and International. <strong>Total business effect</strong> ranks each channel by its full summed impact in economic terms (implied cost per order) -- the most decision-useful answer to "where should the next dollar go." <strong>Statistical reliability</strong> ranks every individual (spend, target) pair -- including CAC and ROAS -- by regression confidence alone, regardless of real-world size, so a pair can rank #1 there while implying a far worse cost per order than a channel's own direct spend. <strong>Where that effect comes from</strong> checks whether the cross-channel spillover baked into the first number is real, or just two channels riding the same demand cycle.</p>
+
+<h3>Total business effect</h3>
+<p class="method-note">Ranks every spend lever you can actually move budget between (Meta and Other Paid, or in split mode Meta and each of Other Paid's 10 sub-channels) by its TOTAL effect -- its own direct effect plus every bit of cross-channel spillover it causes, in one number -- rather than one (spend, target) pair at a time like the reliability ranking below. It uses the same Simple-mode marginal-effect regression as the sections above, against the "Total" orders and revenue targets specifically. That works because a regression slope is built from covariance, and covariance is linear: a channel's slope against Total orders is mathematically exactly the sum of its slopes against every individual destination channel. So this really is the full effect, not whichever single pair looks strongest. Levers are ranked by implied marginal CAC (dollars per additional total new customer order this period), cheapest first, among levers with a statistically significant favorable total effect; marginal ROAS is shown alongside.</p>
+<div id="totalYieldHolidayOnlyGate" class="caveat holidayonly-gate">This ranking isn't available for the holiday-only view -- it's built from the same marginal-effect regression, which can't run reliably on 4 months of data. Switch the holiday toggle to "excluding" or "including" to see it.</div>
+<div id="totalYieldBody">
+<h4>Highest yield -- worth investing in</h4>
+<div id="totalYieldBest"></div>
+<h4>Lowest yield -- probably not worthwhile</h4>
+<div id="totalYieldWorst"></div>
+<div id="totalYieldBadWrap">
+<h4>Moving in the wrong direction</h4>
+<div id="totalYieldBad"></div>
+</div>
+</div>
+
+<div id="yieldAllRegionsDetails" class="yield-subsection">
+<h3>Most vs. least statistically reliable relationships (t-stat ranking)</h3>
+<p class="method-note">Ranks every spend lever -- Meta and Other Paid, or in split mode Meta and each of Other Paid's 10 sub-channels -- against every orders, CAC, and ROAS target, using the Simple-regression marginal effect from the Marginal effect section below, pooling all 3 regions into one top-10. Because the effects are in different units, they're ranked by statistical strength (t-stat = effect &divide; its own standard error, signed so higher is always more favorable) rather than raw size -- so unlike the total-business-effect ranking above, a #1 here says nothing about whether the underlying dollar amount is a good deal. This period only; each item names its region and links to its full breakdown.</p>
+<button id="yieldAllDirectFilterBtn" class="filter-btn">Hide same-channel pairs (e.g. Meta spend &rarr; Meta orders)</button>
+<p class="appendix-note" id="yieldAllDirectFilterNote">Same-channel pairs (a channel's own spend vs. its own results, e.g. Meta&rarr;Meta) are the least surprising -- hide them to focus on cross-channel spillover and CAC/ROAS effects.</p>
+<h4>Highest yield -- worth investing in</h4>
+<div id="yieldAllBest"></div>
+<h4>Lowest yield -- probably not worthwhile</h4>
+<div id="yieldAllWorst"></div>
+<div id="yieldAllBadWrap">
+<h4>Moving in the wrong direction</h4>
+<div id="yieldAllBad"></div>
+</div>
+</div>
+
+<div id="haloDetails" class="yield-subsection">
+<h3>Where that effect comes from -- and is the cross-channel part real?</h3>
+<p class="method-note">The "Total business effect" ranking above includes each channel's full cross-channel reach -- its own direct effect plus every bit of apparent lift on every <em>other</em> channel's orders. This checks that second part pair by pair: does a lever's spend actually correlate with new-customer orders on each other channel this period, and does that correlation hold up a month later (more consistent with a real causal lift) or collapse (more likely two channels riding the same demand cycle)? Cross-channel numbers that fail this check are still baked into the ranking above -- they just shouldn't be trusted as a reason it's better than it looks. Simple-mode regression, this period, region- and toggle-aware like the rest of the page. This is a correlational first pass, not a controlled experiment: it can rule the obvious confound <em>out</em>, or fail to, but it can't establish causation.</p>
+<div id="haloBody"><p class="caveat">Loading...</p></div>
+</div>
+
+</div>
+</details><details class="section-details" id="lagDetails">
+<summary>Does spend take a month to show up? (lagged effects)</summary>
+<div class="details-body"><div class="verified-box"><strong>Re-tested at a grain that could actually detect a lag, and confirmed.</strong> A monthly test cannot see a three-day advertising response. Re-run on 943 daily observations with 0&ndash;10 day distributed lags and a geometric adstock grid search, the best-fitting decay rate is zero for the channels carrying about 85% of spend, with no fit improvement over a same-day model. Meta's effect summed across eleven days matches its weekly estimate. Detail in <a href="#correctedDetails" onclick="event.preventDefault(); openAndScrollTo(document.getElementById('correctedDetails'), 'start');">"What each channel actually returns"</a>.</div>
+<p class="method-note">Everywhere else on this page, spend and outcomes are compared in the <em>same</em> month. This checks whether last month's spend lines up with <em>this</em> month's new customers better than this month's own spend does -- a delayed effect (an ad seen in month 1 converting in month 2). Same-month r (lag 0) and next-month r (lag 1) are both plain Pearson correlations over calendar-adjacent month pairs; for holiday-excluding views Nov/Dec are skipped rather than treated as adjacent to January. Pooled across all 3 regions. Only pairs with at least a moderate relationship (|r| &ge; 0.3 at either lag) are considered, and only ranked below if the two lags differ by more than 0.05 -- so this isn't chasing a "lag effect" on a relationship that barely exists or barely shifts.</p>
+<div id="lagHolidayOnlyGate" class="caveat holidayonly-gate">Lagged effects aren't available for the holiday-only view, for the same reason as the correlation sections: 4 months isn't enough for a reliable correlation, same-month or lagged. Switch the holiday toggle to "excluding" or "including" to see this section.</div>
+<h4>Where next month looks more related than this month</h4>
+<p class="appendix-note">Positive difference = the lag-1 relationship is stronger -- next month's spend-outcome pairing beats this month's.</p>
+<div id="lagStronger"></div>
+<h4>Where this month dominates -- little sign of carryover</h4>
+<p class="appendix-note">Negative difference = the same-month relationship is stronger, or the lag-1 relationship is actually weaker -- no evidence spend takes a month to show up here.</p>
+<div id="lagWeaker"></div>
+<div class="callout">Across every region, channel, and toggle state tested, no pair shows a next-month relationship even 0.05 r stronger than its same-month one -- the largest gap anywhere in this data is +0.04 (International Other Paid spend vs. CRM SMS orders, raw, holiday months excluded), still below the threshold above. Whatever relationship spend has with acquisition here is already visible in the same month; nothing suggests spend needs a month to "catch up."</div>
+</div>
+</details><details class="section-details" id="saturationDetails">
+<summary>Are we past the point of good returns? (diminishing returns check)</summary>
+<div class="details-body"><div class="verified-box"><strong>Re-tested and confirmed.</strong> This check was re-run on 238 weekly observations instead of ~10 monthly ones, with all channels and controls in one model. No channel shows statistically detectable curvature at that grain either, so the cautious reading below holds up rather than being a small-sample artefact. Detail in <a href="#correctedDetails" onclick="event.preventDefault(); openAndScrollTo(document.getElementById('correctedDetails'), 'start');">"What each channel actually returns"</a>.</div>
+<p class="method-note">The Marginal effect section above fits one straight-line slope per channel across the whole period -- $ per additional customer, assumed constant no matter how much was already being spent. This tests that assumption: for each channel's own spend vs. its own orders/revenue (the pairs where "diminishing returns" has a clean causal story), months are split into the below-median and above-median spend half for that channel, and a separate slope is fit in each. A meaningfully smaller or negative slope in the high-spend half is evidence of diminishing returns; a larger one is evidence scale is helping. With only ~10-12 months per half, one unusual month can swing a slope -- treat anything not flagged significant as inconclusive, not as "no effect."</p>
+<div id="saturationHolidayOnlyGate" class="caveat holidayonly-gate">This check isn't available for the holiday-only view -- splitting 4 months in half leaves 2 points per half, nowhere near enough to fit a regression. Switch the holiday toggle to "excluding" or "including" to see this section.</div>
+<div id="saturationResult"></div>
+</div>
+</details>
+</details>
 </div>
 </details>
 
