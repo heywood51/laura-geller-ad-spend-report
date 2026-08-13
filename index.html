@@ -126,6 +126,9 @@ window.__stage3BlocksPromise = fetch('stage3_split_blocks.html').then(function(r
   .subtitle { font-size: 13px; color: #52514e; margin: 0 0 20px; max-width: 900px; }
   .method-note { font-size: 13px; color: #333; line-height: 1.6; max-width: 900px; margin: 0 0 14px; }
   .caveat { font-size: 12px; color: #a32d2d; background: #fcebeb; border-radius: 6px; padding: 8px 12px; max-width: 860px; margin: 0 0 16px; }
+  .val-good::after { content:' \2713'; font-size: 0.82em; opacity: 0.75; }
+  .val-bad::after  { content:' \2717'; font-size: 0.82em; opacity: 0.75; }
+  .sig-flag .val-good::after, .sig-flag .val-bad::after { content: ''; }
   .supersede { font-size: 12.5px; color: #8a4b00; background: #fff6e8; border-left: 4px solid #d98324; border-radius: 4px; padding: 10px 14px; max-width: 900px; margin: 0 0 16px; line-height:1.6; }
   .supersede strong { color: #8a4b00; }
   .headline-box { background: #fdf3f2; border-left: 5px solid #b3261e; border-radius: 4px; padding: 14px 18px; max-width: 940px; margin: 0 0 18px; font-size: 14px; line-height: 1.65; }
@@ -9209,6 +9212,42 @@ function ceChange(region, outcome, leverName){
   } else {
     setTimeout(refresh, 1200);
   }
+})();
+</script>
+
+<script>
+/* Toggle state in the URL, so a shared link opens on the view the sender was looking at. */
+(function(){
+  function write(){
+    try{
+      var h='#s='+((typeof seasonalOn!=='undefined'&&seasonalOn)?'1':'0')
+           +'&h='+(typeof holidayMode!=='undefined'?holidayMode:'excl')
+           +'&r='+encodeURIComponent(typeof currentRegion!=='undefined'?currentRegion:'Total');
+      history.replaceState(null,'',h);
+    }catch(e){}
+  }
+  function apply(){
+    var m={}; (location.hash||'').replace(/^#/,'').split('&').forEach(function(kv){
+      var a=kv.split('='); if(a[0]) m[a[0]]=decodeURIComponent(a[1]||''); });
+    if(!m.s && !m.h && !m.r) { write(); return; }
+    try{
+      if(m.s!==undefined && ((m.s==='1')!==seasonalOn)){ var b=document.getElementById('seasonalToggleBtn'); if(b) b.click(); }
+      if(m.h){ var g=document.getElementById('holidayToggleBtn'); for(var i=0;i<3 && g && holidayMode!==m.h;i++) g.click(); }
+      if(m.r){ var t=Array.prototype.slice.call(document.querySelectorAll('#regionTabs button'))
+                 .filter(function(x){return x.textContent.trim()===m.r;})[0]; if(t) t.click(); }
+    }catch(e){}
+    write();
+  }
+  function hook(){
+    ['seasonalToggleBtn','holidayToggleBtn'].forEach(function(id){
+      var b=document.getElementById(id); if(b) b.addEventListener('click',function(){ setTimeout(write,60); }); });
+    document.addEventListener('click',function(e){
+      if(e.target && e.target.closest && e.target.closest('#regionTabs')) setTimeout(write,60); });
+  }
+  function go(){ apply(); hook(); }
+  if(window.__stage3BlocksPromise && window.__stage3BlocksPromise.then)
+       window.__stage3BlocksPromise.then(function(){ setTimeout(go,300); });
+  else setTimeout(go,1500);
 })();
 </script>
 
