@@ -9256,5 +9256,33 @@ function ceChange(region, outcome, leverName){
 })();
 </script>
 
+<script>
+/* The "biggest mover" callouts surface whatever moved most, which is usually a thin-spend
+   channel where a few monthly points swing the correlation. One caution appended to each
+   summary rather than repeated in eight near-identical blocks of prose. */
+(function(){
+  function go(){
+    document.querySelectorAll('.exec-summary').forEach(function(el){
+      if(el.querySelector('.mover-caution')) return;
+      var p=document.createElement('p');
+      p.className='caveat mover-caution';
+      p.style.margin='10px 0 0';
+      p.innerHTML='<strong>Reading the movers above:</strong> these name whichever pair moved most, '
+        +'which is usually one of the thin-spend channels &mdash; Rokt, Pinterest, TikTok (Social), Bing, '
+        +'YouTube, Television, AppLovin or the catch-all "Other" &mdash; where a handful of monthly points '
+        +'swing a correlation from one end of the range to the other. Sub-channels carrying under about '
+        +'$1M a year, and the "Other" bucket in particular, should be read as candidates rather than '
+        +'findings. Apply the corrected significance threshold noted at the top of this section before '
+        +'acting on any single row.';
+      el.appendChild(p);
+    });
+  }
+  if(window.__stage3BlocksPromise && window.__stage3BlocksPromise.then)
+       window.__stage3BlocksPromise.then(function(){ setTimeout(go,300); });
+  else setTimeout(go,1200);
+  document.addEventListener('DOMContentLoaded',function(){ setTimeout(go,1500); });
+})();
+</script>
+
 </body>
 </html>
