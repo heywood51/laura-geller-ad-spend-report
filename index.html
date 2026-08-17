@@ -51,6 +51,10 @@ table.s td{white-space:nowrap}
 table.s td.wrap{white-space:normal}
 table.s.tight th,table.s.tight td{padding-left:7px;padding-right:8px}
 table.s.tight th{vertical-align:bottom;line-height:1.25}
+.hscroll{overflow-x:auto;border:1px solid #eeece5;border-radius:8px}
+.hscroll table{margin:0}
+td.stick,th.stick{position:sticky;left:0;background:#fff;z-index:2;box-shadow:1px 0 0 #eeece5}
+.hscroll tr:first-child th.stick,.hscroll tr:nth-child(2) th.stick{background:#faf9f6;z-index:3}
 table.s td{padding:7px 13px 7px 10px;border-bottom:1px solid #eeece5;font-variant-numeric:tabular-nums}
 table.s td.l{font-variant-numeric:normal;font-weight:600}
 .bar{height:7px;border-radius:4px;background:#e8e6df;position:relative;min-width:70px}
@@ -578,65 +582,63 @@ function draw(){
   const E=F.econ||{};
   const num=v=>Math.round(v).toLocaleString();
   const r1=v=>(v==null?'&mdash;':v.toFixed(1));
+  const mo=v=>(v==null?'&mdash;':money(v));
+  const rx=v=>(v==null?'&mdash;':v.toFixed(2)+'x');
+  const dl=v=>(v==null?'&mdash;':'$'+v.toFixed(2));
   const paid=Object.entries(E).filter(([k,v])=>v.paid).sort((a,b)=>(a[1].acac??9e9)-(b[1].acac??9e9));
   const free=Object.entries(E).filter(([k,v])=>!v.paid).sort((a,b)=>b[1].in_o-a[1].in_o);
   let s='';
   if(!paid.length){ s='<p style="color:#888;font-size:13.5px">Not enough spend history in this view.</p>'; }
   else{
     const B='border-left:2px solid #ddd9cf';
-    const row=([k,v])=>'<tr><td class="l">'+k+'</td>'
+    const ch=(a,b,up)=>(a!=null&&b!=null&&a>0)?pct(b,a,up):'&mdash;';
+    const row=([k,v])=>'<tr><td class="l stick">'+k+'</td>'
       +'<td>'+(v.paid?'$'+(v.spend/1e6).toFixed(2)+'M':'<span style="color:#bbb">none</span>')+'</td>'
-      +'<td>'+num(v.attr_o)+'</td>'
-      +'<td>'+(v.rep_cac?money(v.rep_cac):'&mdash;')+'</td>'
-      +'<td>'+(v.rep_roas!=null?v.rep_roas.toFixed(2)+'x':'&mdash;')+'</td>'
-      +'<td>'+(v.rep_cm!=null?'$'+v.rep_cm.toFixed(2):'&mdash;')+'</td>'
+      +'<td>'+num(v.attr_o)+'</td><td>'+mo(v.rep_cac)+'</td><td>'+rx(v.rep_roas)+'</td><td>'+dl(v.rep_cm)+'</td>'
       +'<td style="'+B+';color:#888">'+(v.paid?r1(v.naive_o):'&mdash;')+'</td>'
-      +'<td><strong>'+(v.paid?r1(v.tot_o):'&mdash;')+'</strong></td>'
-      +'<td>'+((v.paid&&v.naive_o>0&&v.tot_o)?pct(v.tot_o,v.naive_o,true):'&mdash;')+'</td>'
-      +'<td><strong>'+(v.acac?money(v.acac):'&mdash;')+'</strong></td>'
-      +'<td><strong>'+(v.aroas!=null?v.aroas.toFixed(2)+'x':'&mdash;')+'</strong></td>'
-      +'<td'+(v.acm!=null&&v.acm<1?' class="val-bad"':'')+'><strong>'+(v.acm!=null?'$'+v.acm.toFixed(2):'&mdash;')+'</strong></td>'
+      +'<td><strong>'+(v.paid?r1(v.tot_o):'&mdash;')+'</strong></td><td>'+ch(v.naive_o,v.tot_o,true)+'</td>'
+      +'<td style="color:#888">'+mo(v.cac)+'</td><td><strong>'+mo(v.acac)+'</strong></td><td>'+ch(v.cac,v.acac,false)+'</td>'
+      +'<td style="color:#888">'+rx(v.roas)+'</td><td><strong>'+rx(v.aroas)+'</strong></td><td>'+ch(v.roas,v.aroas,true)+'</td>'
+      +'<td style="color:#888">'+dl(v.cm)+'</td>'
+      +'<td'+(v.acm!=null&&v.acm<1?' class="val-bad"':'')+'><strong>'+dl(v.acm)+'</strong></td><td>'+ch(v.cm,v.acm,true)+'</td>'
       +'<td style="'+B+(v.in_o>0.5?';color:#b3261e;font-weight:600':'')+'">'+r1(v.in_o)+'</td></tr>';
-    s='<div style="overflow-x:auto"><table class="s tight">'
-     +'<tr><th rowspan="2">Channel</th><th rowspan="2">Spend / yr</th>'
-     +'<th colspan="4" style="border-bottom:1px solid #ddd9cf">Reported &mdash; the past year as attribution sees it</th>'
-     +'<th colspan="6" style="border-bottom:1px solid #ddd9cf;'+B+'">Marginal &mdash; what the next $1,000 a week does</th>'
-     +'<th rowspan="2" style="white-space:normal;max-width:76px;'+B+'">Credit received</th></tr>'
+    s='<div class="hscroll"><table class="s tight">'
+     +'<tr><th rowspan="2" class="stick">Channel</th><th rowspan="2">Spend / yr</th>'
+     +'<th colspan="4" style="border-bottom:1px solid #ddd9cf">Reported &mdash; past year, as attribution sees it</th>'
+     +'<th colspan="12" style="border-bottom:1px solid #ddd9cf;'+B+'">Per extra $1,000 a week &mdash; measured alone, then with everything else held still</th>'
+     +'<th rowspan="2" style="white-space:normal;max-width:80px;'+B+'">Credit received</th></tr>'
      +'<tr><th>Orders</th><th>CAC</th><th>ROAS</th><th>CM per $1</th>'
-     +'<th style="'+B+'">Orders<br><span style="font-weight:400;text-transform:none;letter-spacing:0;color:#999">alone</span></th>'
-     +'<th>Orders<br><span style="font-weight:400;text-transform:none;letter-spacing:0;color:#999">controlled</span></th><th>Change</th>'
-     +'<th>Cost /<br>order</th><th>ROAS</th><th>CM<br>per $1</th></tr>'
+     +'<th style="'+B+'">Orders</th><th>A-Orders</th><th>Change</th>'
+     +'<th>CAC</th><th>A-CAC</th><th>Change</th>'
+     +'<th>ROAS</th><th>A-ROAS</th><th>Change</th>'
+     +'<th>CM per $1</th><th>A-CM per $1</th><th>Change</th></tr>'
      +paid.map(row).join('')
-     +(free.length?'<tr><td colspan="13" style="padding:9px 10px 4px;font-size:11.5px;color:#8a877e;'
+     +(free.length?'<tr><td colspan="19" style="padding:9px 10px 4px;font-size:11.5px;color:#8a877e;'
         +'text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #eeece5">'
         +'No budget of their own &mdash; nothing to vary, so nothing can be shown about what they cause. They can only receive credit.</td></tr>':'')
-     +free.map(row).join('')+'</table></div>';
+     +free.map(row).join('')+'</table></div>'
+     +'<div class="cap" style="margin-top:5px">Scroll sideways for the full set. The channel column stays put.</div>';
     const cmp=paid.filter(([k,v])=>v.naive_o>0&&v.tot_o).sort((a,b)=>(b[1].tot_o/b[1].naive_o)-(a[1].tot_o/a[1].naive_o));
     const u=cmp[0], o=cmp[cmp.length-1];
-    s+='<p class="note" style="margin-top:12px"><strong>The two halves answer different questions, and are deliberately not subtracted from each other.</strong> '
-     +'The left is descriptive: what was spent over the past year and what attribution credited it with. Those are the numbers on everyone&rsquo;s dashboards and they are not in dispute. '
-     +'The right is the analysis: what the <em>next</em> $1,000 a week is shown to do. A yearly average and a marginal rate are different ideas, so comparing them tells you nothing about attribution error &mdash; '
-     +'an earlier version of this page differenced the two and reported an improvement for Meta that was mostly that confusion.</p>'
-     +'<p class="note"><strong>The correction lives inside the marginal block.</strong> &ldquo;Alone&rdquo; is that one channel regressed against that one outcome, which is what single-channel reporting effectively does. '
-     +'&ldquo;Controlled&rdquo; holds every other budget, promotions and seasonality still, and adds the orders the channel is shown to cause at <em>other</em> channels. Both are marginal, so the change between them is attribution error and nothing else. '
-     +'The remaining marginal columns follow from the controlled figure: cost per order is $1,000 divided by it, and margin applies '+('$'+(F.cmpo||0).toFixed(2))+' per order.</p>'
-     +'<p class="note"><strong>'+u[0]+'</strong> gains most from the correction &mdash; '+r1(u[1].naive_o)+' orders per $1,000 measured alone, '+r1(u[1].tot_o)+' once everything else is held still, because most of what it drives is recorded elsewhere. '
-     +'<strong>'+o[0]+'</strong> loses most: '+r1(o[1].naive_o)+' becomes '+r1(o[1].tot_o)+'. '
-     +'The last column shows why &mdash; anything with a large red number there is having its results bought by somebody else.</p>';
+    s+='<p class="note" style="margin-top:12px"><strong>Every A- figure is compared against its own like &mdash; both sides marginal.</strong> '
+     +'Inside the wide block, the greyed column is that one channel regressed against that one outcome, which is what single-channel reporting effectively does; the bold column holds every other budget, promotions and seasonality still and adds what the channel is shown to cause at <em>other</em> channels. '
+     +'Because both describe the next $1,000 a week, the change between them is attribution error and nothing else.</p>'
+     +'<p class="note"><strong>The four reported columns on the left are deliberately left out of the comparison.</strong> They describe the past year: total spend divided by every order attribution credited. That is an average, and differencing an average against a marginal rate measures the difference between those two ideas rather than anything about attribution &mdash; '
+     +'an earlier version of this page did exactly that and reported a large improvement for Meta that was mostly the confusion. They are here because they are the numbers on everyone&rsquo;s dashboards and the table is easier to read with them present.</p>'
+     +'<p class="note"><strong>'+u[0]+'</strong> gains most from the correction &mdash; '+r1(u[1].naive_o)+' orders per $1,000 alone, '+r1(u[1].tot_o)+' once everything else is held still, because most of what it drives is recorded elsewhere. '
+     +'<strong>'+o[0]+'</strong> loses most: '+r1(o[1].naive_o)+' becomes '+r1(o[1].tot_o)+'. The last column shows why &mdash; a large red number there means somebody else is buying this channel&rsquo;s results.</p>';
     (function(){
       const sh=paid.filter(([k2,v2])=>{ const w=v2.spend/52, r=(v2.naive_o>0&&v2.tot_o)?v2.tot_o/v2.naive_o:null;
         return w<25000 && r!==null && (r>4||r<0.25); }).map(x=>x[0]);
       if(!sh.length) return;
-      const many=sh.length>1;
       s+='<p class="note" style="background:#fdf6e3;border-left:3px solid #c9a227;padding:11px 14px;border-radius:6px">'
        +'<strong>Treat '+sh.join(' and ')+' with more caution than the percentage suggests.</strong> '
-       +(many?'These channels spend':'This channel spends')+' under $25,000 a week and the correction moves the estimate more than fourfold. '
-       +'A $1,000 change is a large share of a budget that size, so the coefficient rests on little variation and its magnitude is imprecise even where its direction is not. '
-       +'The ranking is worth acting on; the size is not worth planning around.</p>';
+       +(sh.length>1?'These channels spend':'This channel spends')+' under $25,000 a week and the correction moves the estimate more than fourfold. '
+       +'A $1,000 change is a large share of a budget that size, so the coefficient rests on little variation and its magnitude is imprecise even where its direction is not. The ranking is worth acting on; the size is not worth planning around.</p>';
     })();
-    s+='<p class="note">A dash means the measure needs something the channel does not have: spend of its own, enough attributed orders to divide by, or a positive measurable effect. '
-     +'Television reports nothing at all because attribution credits it with a handful of orders a year &mdash; the marginal columns are the only place it appears, and they are the reason it is on this page. '
-     +'<strong>CM per $1</strong> below $1.00 means that dollar loses money on the first order, which most channels are close to, so repeat purchase is carrying profitability. Margin uses one blended rate per new order rather than channel-specific costs.</p>';
+    s+='<p class="note">Orders, CAC and CM move together by construction &mdash; cost per order is $1,000 divided by the order figure, and margin is that figure times '+('$'+(F.cmpo||0).toFixed(2))+'. ROAS is the only marginal column carrying independent information, since it is built from revenue coefficients rather than order ones. '
+     +'A dash means the measure needs something the channel does not have: spend of its own, enough attributed orders to divide by, or a positive measurable effect. Television reports nothing on the left because attribution credits it with a handful of orders a year &mdash; the marginal block is the only place it appears, and the reason it is on this page. '
+     +'<strong>CM per $1</strong> below $1.00 means that dollar loses money on the first order, which most channels are close to, so repeat purchase is carrying profitability.</p>';
   }
   document.getElementById('cmpo').textContent='$'+(F.cmpo||0).toFixed(2);
   document.getElementById('spill').innerHTML=s;
