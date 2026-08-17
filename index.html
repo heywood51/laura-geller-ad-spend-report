@@ -646,8 +646,8 @@ function draw(){
     const row=([k,v])=>{
       const bad=v.adj_lvl<0;
       const tipO=[].concat(
-        (v.in_src||[]).map(x=>'in from '+x[0]+': '+x[1].toFixed(1)+' per $1,000/wk'),
-        (v.out_src||[]).map(x=>'out to '+x[0]+': '+x[1].toFixed(1)+' per $1,000/wk'),
+        (v.out_src||[]).map(x=>(x[1]>=0?'gains':'loses')+' the orders it drives at '+x[0]+' ('+Math.abs(x[1]).toFixed(1)+' per $1,000/wk)'),
+        (v.in_src||[]).map(x=>(x[1]>=0?'loses':'gains')+' the orders '+x[0]+' drove into it ('+Math.abs(x[1]).toFixed(1)+' per $1,000/wk)'),
         v.tot_o?['','marginal: '+r1(v.tot_o)+' orders per extra $1,000/wk',
                  'measured alone: '+r1(v.naive_o)+' per $1,000/wk']:[],
         v.acac_m?['marginal cost per order '+money(v.acac_m)]:[],
@@ -658,11 +658,16 @@ function draw(){
       +'<td style="'+B+';color:#aaa">'+num(v.attr_o)+'</td>'
       +'<td'+(tipO?' title="'+tipO+'"':'')+(bad?' class="val-bad"':'')+'>'
         +'<strong>'+num(v.adj_lvl)+'</strong>'
-        +'<div class="ledg">'
-          +((v.in_src&&v.in_src.length)?'<span class="'+(v.in_lvl>0?'out':'in')+'">'+(v.in_lvl>0?'&minus;':'+')+num(Math.abs(v.in_lvl))+' in</span>':'')
-          +(((v.in_src&&v.in_src.length)&&(v.out_src&&v.out_src.length))?' <span style="color:#ccc">&middot;</span> ':'')
-          +((v.out_src&&v.out_src.length)?'<span class="'+(v.out_lvl>=0?'in':'out')+'">'+(v.out_lvl>=0?'+':'&minus;')+num(Math.abs(v.out_lvl))+' out</span>':'')
-        +'</div></td>'
+        +(function(){
+            const gain=Math.max(0,-v.in_lvl)+Math.max(0,v.out_lvl);
+            const lose=Math.max(0,v.in_lvl)+Math.max(0,-v.out_lvl);
+            if(gain<0.5&&lose<0.5) return '';
+            return '<div class="ledg">'
+              +(gain>=0.5?'<span class="in">'+num(gain)+' in</span>':'')
+              +((gain>=0.5&&lose>=0.5)?' <span style="color:#ccc">&middot;</span> ':'')
+              +(lose>=0.5?'<span class="out">'+num(lose)+' out</span>':'')
+              +'</div>'; })()
+        +'</td>'
       +'<td>'+((v.attr_o>=200)?pct(v.adj_lvl,v.attr_o,true):'&mdash;')+'</td>'
       +tri(v.rep_aov,v.aaov,dl,true,v.aaov_m?' title="marginal basket size '+dl(v.aaov_m)+'"':'')
       +tri(v.rep_cac,v.acac,mo,false,v.acac_m?' title="marginal cost per order '+money(v.acac_m)+'"':'')
@@ -686,7 +691,7 @@ function draw(){
         const ta=Object.values(E).reduce((x,v)=>x+v.attr_o,0), tb=Object.values(E).reduce((x,v)=>x+v.adj_lvl,0);
         return '<tr style="border-top:2px solid #1a1a1a"><th class="l stick">All channels</th><th></th>'
          +'<th>'+num(ta)+'</th><th>'+num(tb)
-         +'<div class="ledg"><span class="out">&minus;'+num(si)+' in</span> <span style="color:#ccc">&middot;</span> <span class="in">+'+num(so)+' out</span></div></th>'
+         +'<div class="ledg"><span class="in">'+num(so)+' in</span> <span style="color:#ccc">&middot;</span> <span class="out">'+num(si)+' out</span></div></th>'
          +'<th>'+(Math.abs(ta-tb)<1?'<span class="dlt up" style="margin:0">balances</span>':'<span class="dlt down" style="margin:0">off by '+num(Math.abs(ta-tb))+'</span>')+'</th>'
          +'<th colspan="12"></th></tr>'; })()
      +'</table></div>'
@@ -697,7 +702,9 @@ function draw(){
     const neg=Object.entries(E).filter(([k,v])=>v.adj_lvl<0);
     s+='<p class="note" style="margin-top:12px"><strong>A-Orders is the channel&rsquo;s credited volume after moving the credit that can actually be demonstrated.</strong> '
      +'Start from what attribution gave it, subtract the orders another channel&rsquo;s spending is shown to have driven in, add the ones its own spending drove elsewhere. '
-     +'The two figures underneath are those adjustments, signed so the row adds up &mdash; Meta reads '+num(E['Meta']?E['Meta'].attr_o:0)+' &minus; '+num(E['Meta']?Math.abs(E['Meta'].in_lvl):0)+' + '+num(E['Meta']?Math.abs(E['Meta'].out_lvl):0)+' = '+num(E['Meta']?E['Meta'].adj_lvl:0)+'. '
+     +'The two figures underneath say how much it gained and how much it lost. <span class="in" style="font-weight:600">In</span> is orders being handed <em>to</em> this channel, because it drove them somewhere else and that somewhere else was credited. '
+     +'<span class="out" style="font-weight:600">Out</span> is orders being taken <em>away</em>, because another channel drove them and this one got the credit. '
+     +'Meta reads '+num(E['Meta']?E['Meta'].attr_o:0)+' + '+num(E['Meta']?Math.abs(E['Meta'].out_lvl):0)+' in &minus; '+num(E['Meta']?Math.abs(E['Meta'].in_lvl):0)+' out = '+num(E['Meta']?E['Meta'].adj_lvl:0)+'. '
      +'A-CAC, A-ROAS, A-CM and A-AOV all follow from that adjusted total, so the row is one consistent set of books.</p>'
      +'<p class="note"><strong>The size of those flows is deliberately conservative, and this is the important part.</strong> '
      +'Each coefficient says what one more $1,000 a week does. Turning that into a yearly figure means choosing how big a change to price it at, and the obvious choice &mdash; all of it, down to zero spend &mdash; is not available: '
@@ -705,8 +712,8 @@ function draw(){
      +'<p class="note">So the flows are priced at a change the data has actually seen: <strong>each channel pulling back from its average week to its quietest week</strong>. '
      +'For Meta that is '+money(E['Meta']?E['Meta'].pull:0)+' a week, for Television '+money(E['Television']?E['Television'].pull:0)+', for Google Search '+money(E['Google Search']?E['Google Search'].pull:0)+'. Hover any adjusted figure to see the pullback used and the rate behind it. '
      +'This makes every number a floor rather than a full accounting &mdash; the true reallocation is larger than shown, because more than the observed range of spend is at stake. It is the price of not inventing a number, and it is why an earlier version of this table produced negative order counts for Direct and CRM&nbsp;SMS and this one does not.</p>'
-     +'<p class="note"><strong>Credit is moved, never created, and the bottom row proves it.</strong> Every order leaving one channel has to arrive at another, so the two sides must match: '
-     +num(Object.values(E).reduce((x,v)=>x+v.in_lvl,0))+' of credit taken out, '+num(Object.values(E).reduce((x,v)=>x+v.out_lvl,0))+' put back, netting to zero. '
+     +'<p class="note"><strong>Credit is moved, never created, and the bottom row proves it.</strong> Every order leaving one channel has to arrive at another, so the two columns must match: '
+     +num(Object.values(E).reduce((x,v)=>x+v.out_lvl,0))+' in against '+num(Object.values(E).reduce((x,v)=>x+v.in_lvl,0))+' out, netting to zero. '
      +'The A-Orders column therefore totals '+num(tota)+' against '+num(tot)+' reported &mdash; the same orders, sorted differently. '
      +'That conservation is what lets the channels with no budget appear at all: they can never be <em>shown</em> to cause anything, having no spend to vary, but they can certainly lose credit for orders somebody else bought. '
      +'Direct keeps '+num(E['Direct']?E['Direct'].adj_lvl:0)+' of its '+num(E['Direct']?E['Direct'].attr_o:0)+' and CRM&nbsp;SMS '+num(E['CRM SMS']?E['CRM SMS'].adj_lvl:0)+' of '+num(E['CRM SMS']?E['CRM SMS'].attr_o:0)+'. '
