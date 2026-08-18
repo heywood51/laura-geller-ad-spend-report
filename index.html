@@ -55,6 +55,13 @@ table.s.tight th{vertical-align:bottom;line-height:1.25}
 .ledg .in{color:#1f7a3f}
 .ledg .out{color:#b3261e}
 .hscroll{overflow-x:auto;border:1px solid #eeece5;border-radius:8px}
+h3.shifth{font-size:15px;font-weight:600;margin:26px 0 2px}
+#shift svg{display:block;max-width:100%;height:auto}
+#shift .lab{font-size:11.5px;fill:#444}
+#shift .val{font-size:10.5px;font-variant-numeric:tabular-nums}
+#shift .axis{stroke:#ddd9cf;stroke-width:1}
+#shift .key{font-size:11.5px;color:#8a877e;display:flex;gap:16px;flex-wrap:wrap;margin:0 0 8px}
+#shift .key i{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:5px;vertical-align:-1px}
 .hscroll table{margin:0}
 td.stick,th.stick{position:sticky;left:0;background:#fff;z-index:2;box-shadow:1px 0 0 #eeece5}
 .hscroll tr:first-child th.stick,.hscroll tr:nth-child(2) th.stick{background:#faf9f6;z-index:3}
@@ -159,9 +166,12 @@ details.apx>summary h2{display:inline;font-size:20px}
 <div class="panel" id="panel"><h3 style="color:#888;font-weight:500">Select a cell</h3>
 <p style="color:#888">Rows are where the money goes in. Columns are where results come out. Pick any pair to see the size of the effect, how certain it is, and how it splits across two weeks, and whether it survives the backwards test.</p></div>
 
-<h2>What the next dollar actually buys</h2>
+<h2>Where the credit actually belongs</h2>
 <p class="note"><strong>All figures are our ad dollars, not what a customer pays, and all are marginal &mdash; the effect of the next $1,000 a week rather than an average across the whole budget.</strong> Every channel appears, including those with no spend of their own. Contribution margin is applied at the blended rate of <span id="cmpo"></span> per new order.</p>
 <div id="spill"></div>
+
+<h3 class="shifth">The same orders, sorted differently</h3>
+<div id="shift"></div>
 
 <h2>What the caused customers are worth</h2>
 <p class="note">Reallocating orders changes what they are worth, because orders are not interchangeable. Twelve-month gross profit per customer runs from <span id="ltvlo"></span> to <span id="ltvhi"></span> depending on where the customer came from, so a channel shown to drive orders into a better-retaining destination gains more value than the order count alone suggests &mdash; and one being credited for other people&rsquo;s orders may be losing better customers than it keeps.</p>
@@ -485,6 +495,51 @@ function renderKpi(){
     +'Spend is up '+(100*(K.now.spend/K.prev.spend-1)).toFixed(0)+'% while new customers are '
     +(K.now.orders<K.prev.orders?'down ':'up ')+Math.abs(100*(K.now.orders/K.prev.orders-1)).toFixed(0)+'% &mdash; which is the reason the question below is worth asking.';
 }
+function renderShift(){
+  const el=document.getElementById('shift'); if(!el) return;
+  const F=D[key()], E=(F&&F.econ)||{};
+  const rows=Object.entries(E).map(([k,v])=>({k,a:v.attr_o,b:v.adj_lvl}))
+    .filter(r=>isFinite(r.a)&&isFinite(r.b)).sort((x,y)=>y.b-x.b);
+  if(!rows.length){ el.innerHTML=''; return; }
+  const GREEN='#1f7a3f', RED='#b3261e', GREY='#c9c7bd', GREYS='#8a877e';
+  const W=880, L=118, R=88, rowH=30, top=6, H=top+rows.length*rowH+14;
+  const lo=Math.min(0,...rows.map(r=>Math.min(r.a,r.b))), hi=Math.max(...rows.map(r=>Math.max(r.a,r.b)));
+  const span=(hi-lo)||1, x0=L+(0-lo)/span*(W-L-R), sc=v=>L+(v-lo)/span*(W-L-R);
+  const nf=v=>Math.round(v).toLocaleString();
+  let s='<div class="key"><span><i style="background:'+GREY+';border:1px solid '+GREYS+'"></i>Credited by attribution</span>'
+   +'<span><i style="background:'+GREEN+'"></i>After reallocation &mdash; gains</span>'
+   +'<span><i style="background:'+RED+'"></i>After reallocation &mdash; loses</span></div>';
+  s+='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Bar chart comparing credited and reallocated orders for each channel">';
+  s+='<line class="axis" x1="'+x0+'" y1="'+top+'" x2="'+x0+'" y2="'+(H-14)+'"/>';
+  rows.forEach((r,i)=>{
+    const y=top+i*rowH, bh=9;
+    const same=r.a>0&&Math.abs(r.b/r.a-1)<0.01;
+    const col=same?GREYS:(r.b>r.a?GREEN:RED);
+    const bar=(v,yy,fill,stroke)=>{
+      const a=sc(Math.min(0,v)), b=sc(Math.max(0,v));
+      return '<rect x="'+a+'" y="'+yy+'" width="'+Math.max(1,b-a)+'" height="'+bh+'" rx="2" fill="'+fill+'"'
+        +(stroke?' stroke="'+stroke+'" stroke-width="1"':'')+'/>';
+    };
+    s+='<text class="lab" x="'+(L-8)+'" y="'+(y+12)+'" text-anchor="end">'+r.k+'</text>';
+    s+=bar(r.a,y,GREY,GREYS)+bar(r.b,y+bh+2,col,null);
+    const endA=sc(Math.max(0,r.a)), endB=sc(Math.max(0,r.b));
+    s+='<text class="val" x="'+(Math.max(endA,endB)+6)+'" y="'+(y+8)+'" fill="'+GREYS+'">'+nf(r.a)+'</text>';
+    s+='<text class="val" x="'+(Math.max(endA,endB)+6)+'" y="'+(y+19)+'" fill="'+col+'" font-weight="700">'+nf(r.b)+'</text>';
+  });
+  s+='</svg>';
+  const gain=rows.filter(r=>r.a>0&&r.b>r.a*1.01), lose=rows.filter(r=>r.a>0&&r.b<r.a*0.99);
+  const flat=rows.filter(r=>r.a>0&&Math.abs(r.b/r.a-1)<=0.01);
+  const paidLose=lose.filter(r=>E[r.k]&&E[r.k].paid).map(r=>r.k);
+  const freeLose=lose.filter(r=>E[r.k]&&!E[r.k].paid).map(r=>r.k);
+  const freeAll=rows.filter(r=>E[r.k]&&!E[r.k].paid).map(r=>r.k);
+  const allFreeLose=freeAll.length>0&&freeLose.length===freeAll.length;
+  s+='<p class="note" style="margin-top:8px">Every order in a grey bar is also in a coloured bar somewhere &mdash; the totals are identical, only the owner changes. '
+   +gain.length+' channels gain, '+lose.length+' lose'+(flat.length?', '+flat.length+' finish within a percent of where they started':'')+'.'
+   +(allFreeLose?' <strong>Every channel without a budget of its own loses</strong> &mdash; '+freeAll.join(', ')+' &mdash; which is the finding in one line: credit runs from the budgets that create demand to the places that collect the final click.':'')
+   +(paidLose.length?' '+(paidLose.length>1?'The paid channels that also lose are '+paidLose.slice(0,-1).join(', ')+' and '+paidLose.slice(-1)+', which are':paidLose[0]+' is the one paid channel that also loses, being')+' credited for orders other budgets bought.':'')
+   +'</p>';
+  el.innerHTML=s;
+}
 function renderLtv(){
   const F=D[key()], E=F.econ, LT=D.ltv; if(!E||!LT) return;
   const vals=Object.values(LT).map(v=>v.ltv);
@@ -790,7 +845,7 @@ function draw(){
   }
   document.getElementById('cmpo').textContent='$'+(F.cmpo||0).toFixed(2);
   document.getElementById('spill').innerHTML=s;
-  renderLtv(); renderRealloc(); renderCons(); renderTv();
+  renderShift(); renderLtv(); renderRealloc(); renderCons(); renderTv();
   detail(); soWhat();
 }
 function spark(roll,rw){
