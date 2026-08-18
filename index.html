@@ -170,13 +170,12 @@ details.apx>summary h2{display:inline;font-size:20px}
 <div style="overflow-x:auto"><div id="matrix"></div></div>
 <div class="legend">
   <span><i class="sw" style="background:#1f7a3f"></i>More credited there &mdash; survives correction</span>
-  <span><i class="sw" style="background:#b3261e"></i>Fewer credited there &mdash; survives, but excluded from the ledger</span>
   <span><i class="sw" style="background:#e8e6df"></i>Nothing detectable</span>
   <span><i class="sw" style="background:#f2f1ec"></i>Own channel &mdash; not a spillover</span>
   <span style="color:#999">Click any cell</span>
 </div>
 
-<p class="note" style="margin:10px 0 0"><strong>Cells measure orders <em>credited</em> to the column, not orders that happened.</strong> A green cell can mean the row channel created demand the column got the click for. A red cell means the opposite direction: more spend at the row goes with <em>fewer</em> orders credited to the column. That is most often the same order resolving to a different last click, not spending in one place destroying sales in another &mdash; so red cells are reported and deliberately kept out of the reallocation. <span id="negn"></span></p>
+<p class="note" style="margin:10px 0 0"><strong>Cells measure orders <em>credited</em> to the column, not orders that happened.</strong> A green cell can mean the row channel created demand the column got the click for. Only effects that survive testing <em>and</em> point upwards are shown. A pair can clear every statistical bar and still go the other way &mdash; more spend at the row against fewer orders credited to the column &mdash; and that is not credit changing hands, since nobody was paid for orders that failed to appear. Those are left out of both the grid and the totals. <span id="negn"></span></p>
 
 <div class="warn" id="warn" style="display:none"></div>
 
@@ -864,13 +863,14 @@ function shade(c,max){
   const v=verdict(c);
   if(v==='own') return '#f2f1ec';
   if(v==='none') return '#f0efea';
+  if(v==='neg') return '#f0efea';   // cleared the bar but points down: excluded, so not shown as a finding
   const a=Math.min(1,Math.abs(c.kept_b||c.b)/max)*0.78+0.22;
-  return v==='neg'?`rgba(179,38,30,${a})`:`rgba(31,122,63,${a})`;
+  return `rgba(31,122,63,${a})`;
 }
 function draw(){
   if(window.__strictLabel) window.__strictLabel();
   const F=D[key()];
-  const max=Math.max(...Object.values(F.cells).filter(c=>!c.own&&(c.keep||verdict(c)==='neg')).map(c=>Math.abs(c.kept_b||c.b*(c.weight||1))),1);
+  const max=Math.max(...Object.values(F.cells).filter(c=>!c.own&&c.keep).map(c=>Math.abs(c.kept_b||c.b)),1);
   let h='<table class="m"><tr><th></th>';
   F.dests.forEach(d=>h+='<th class="col">'+d+'</th>');
   h+='</tr>';
@@ -880,8 +880,8 @@ function draw(){
       const c=F.cells[l+'|'+d];
       if(!c){h+='<td></td>';return;}
       const v=verdict(c), col=shade(c,max);
-      const txt=c.own?'&mdash;':(c.keep?fmt(c.kept_b):(v==='neg'?fmt(c.b*(c.weight||1)):''));
-      const fg=((v==='hold'||v==='neg')&&Math.abs(c.kept_b||c.b)/max>0.45)?'#fff':'#333';
+      const txt=c.own?'&mdash;':(c.keep?fmt(c.kept_b):'');
+      const fg=(v==='hold'&&Math.abs(c.kept_b||c.b)/max>0.45)?'#fff':'#333';
       h+='<td><div class="cell'+(c.own?' own':'')+'" style="background:'+col+';color:'+fg+'" data-k="'+l+'|'+d+'">'+txt+'</div></td>';
     });
     h+='</tr>';
@@ -918,9 +918,8 @@ function draw(){
   const negc=Object.entries(F.cells).filter(([k,c])=>verdict(c)==='neg');
   const nn=document.getElementById('negn');
   if(nn) nn.innerHTML=negc.length
-    ? 'There '+(negc.length>1?'are '+negc.length+' here: ':'is one here: ')
-      +negc.map(([k])=>k.replace('|',' → ')).join(', ')+'. Click it to see what it is and is not evidence of.'
-    : 'There are none in this view — every pair that cleared the bar and earned a weight points the same way.';
+    ? (negc.length>1?negc.length+' pairs are':'One pair is')+' excluded that way in this view, listed in the notes under the table below.'
+    : 'In this view there are none to exclude — every pair that cleared the bar points the same way.';
   const setTxt=(id,val)=>{const e=document.getElementById(id); if(e) e.textContent=val;};
   setTxt('wk',F.weeks);
   // lever summary
@@ -1044,8 +1043,8 @@ function draw(){
        +(NF.length>1?NF.length+' pairs survive':'One pair survives')+' testing with a negative sign &mdash; '
        +NF.map(f=>f.src+' &rarr; '+f.dst).join(', ')+' &mdash; where more spend at the first goes with <em>fewer</em> '
        +(M==='orders'?'orders':'dollars of revenue')+' credited to the second. '
-       +(NF.length>1?'They are real observations, and they are':'It is a real observation, and it is')
-       +' shown in the matrix in red, but not as credit changing hands. '
+       +(NF.length>1?'They are real observations, but they are':'It is a real observation, but it is')
+       +' not credit changing hands, so '+(NF.length>1?'they are':'it is')+' named here rather than shown in the grid above. '
        +'A positive spillover says one channel earned orders another was paid for, so moving them corrects a misplacement. A negative one says nothing of the sort: nobody was credited for the missing orders, so there is nobody to take them from. '
        +(yt>0?'Treating them as transfers gave YouTube a balance of minus '+num(yt)+' orders against the nil it was credited with, which cannot happen &mdash; a channel cannot owe orders. ':'')
        +'Leaving '+(NF.length>1?'them':'it')+' out holds '+num(vol)+' '+(M==='orders'?'orders':'dollars')+' back from the reallocation'
