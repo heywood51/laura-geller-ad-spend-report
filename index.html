@@ -553,16 +553,18 @@ function renderShift(){
   const el=document.getElementById('shift'); if(!el) return;
   const F=D[key()], E=(F&&F.econ)||{};
   const cap=document.getElementById('shiftcap');
-  if(cap) cap.innerHTML='Order counts for <strong>'+R+'</strong>, holidays <strong>'+(H==='incl'?'included':'excluded')+'</strong>. '
-    +'Follows the region and holiday buttons above; stays on orders when Result is switched to revenue, since the reallocation is counted in orders.';
-  const rows=Object.entries(E).map(([k,v])=>({k,a:v.attr_o,b:v.adj_lvl}))
+  const rev=(M==='revenue');
+  if(cap) cap.innerHTML=(rev?'New customer revenue':'New customer order counts')+' for <strong>'+R+'</strong>, holidays <strong>'
+    +(H==='incl'?'included':'excluded')+'</strong>. Follows all three buttons above.';
+  const rows=Object.entries(E).map(([k,v])=>({k,a:(rev?v.attr_r:v.attr_o),b:(rev?v.adj_rlvl:v.adj_lvl)}))
     .filter(r=>isFinite(r.a)&&isFinite(r.b)).sort((x,y)=>y.b-x.b);
   if(!rows.length){ el.innerHTML=''; return; }
   const GREEN='#1f7a3f', RED='#b3261e', GREY='#c9c7bd', GREYS='#8a877e';
   const W=880, L=118, RPAD=88, rowH=30, top=6, HH=top+rows.length*rowH+14;
   const lo=Math.min(0,...rows.map(r=>Math.min(r.a,r.b))), hi=Math.max(...rows.map(r=>Math.max(r.a,r.b)));
   const span=(hi-lo)||1, x0=L+(0-lo)/span*(W-L-RPAD), sc=v=>L+(v-lo)/span*(W-L-RPAD);
-  const nf=v=>Math.round(v).toLocaleString();
+  const nf=v=>rev?((v<0?'−':'')+'$'+(Math.abs(v)>=1e6?(Math.abs(v)/1e6).toFixed(2)+'M':Math.round(Math.abs(v)).toLocaleString()))
+                 :Math.round(v).toLocaleString();
   let s='<div class="key"><span><i style="background:'+GREY+';border:1px solid '+GREYS+'"></i>Credited by attribution</span>'
    +'<span><i style="background:'+GREEN+'"></i>After reallocation &mdash; gains</span>'
    +'<span><i style="background:'+RED+'"></i>After reallocation &mdash; loses</span></div>';
@@ -590,7 +592,8 @@ function renderShift(){
   const freeLose=lose.filter(r=>E[r.k]&&!E[r.k].paid).map(r=>r.k);
   const freeAll=rows.filter(r=>E[r.k]&&!E[r.k].paid).map(r=>r.k);
   const allFreeLose=freeAll.length>0&&freeLose.length===freeAll.length;
-  let nt='<p class="note" style="margin-top:8px">Every order in a grey bar is also in a coloured bar somewhere &mdash; the totals are identical, only the owner changes. '
+  const unit=rev?'dollar':'order', units=rev?'dollars':'orders';
+  let nt='<p class="note" style="margin-top:8px">Every '+unit+' in a grey bar is also in a coloured bar somewhere &mdash; the totals are identical, only the owner changes. '
    +gain.length+' channels gain, '+lose.length+' lose'+(flat.length?', '+flat.length+' finish within a percent of where they started':'')+'.'
    +(allFreeLose?' <strong>Every channel without a budget of its own loses</strong> &mdash; '+freeAll.join(', ')+' &mdash; which is the finding in one line: credit runs from the budgets that create demand to the places that collect the final click.':'')
    +(paidLose.length?' '+(paidLose.length>1?'The paid channels that also lose are '+paidLose.slice(0,-1).join(', ')+' and '+paidLose.slice(-1)+', which are':paidLose[0]+' is the one paid channel that also loses, being')+' credited for orders other budgets bought.':'')
