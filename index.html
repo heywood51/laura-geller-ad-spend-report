@@ -56,6 +56,21 @@ table.s.tight th{vertical-align:bottom;line-height:1.25}
 .ledg .out{color:#b3261e}
 .hscroll{overflow-x:auto;border:1px solid #eeece5;border-radius:8px}
 h3.shifth{font-size:15px;font-weight:600;margin:26px 0 2px}
+details.notes{margin:12px 0 0;max-width:900px}
+details.notes>summary{cursor:pointer;list-style:none;font-size:12.5px;color:#6b6960;
+  display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border:1px solid #e2e0d9;
+  border-radius:20px;background:#fbfaf7;user-select:none}
+details.notes>summary:hover{background:#f4f2ec;border-color:#d5d3cc}
+details.notes>summary::-webkit-details-marker{display:none}
+details.notes>summary::before{content:"B8";font-size:9px;color:#a8a69d}
+details.notes[open]>summary::before{content:"BE"}
+details.notes[open]>summary{margin-bottom:4px}
+details.sec>summary{cursor:pointer;list-style:none;margin:34px 0 0}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary h2{display:inline;font-size:20px}
+details.sec>summary::before{content:"B8 ";color:#999}
+details.sec[open]>summary::before{content:"BE ";color:#999}
+details.sec .tease{display:block;font-size:12.5px;color:#8a877e;margin:2px 0 0}
 #shift svg{display:block;max-width:100%;height:auto}
 #shift .lab{font-size:11.5px;fill:#444}
 #shift .val{font-size:10.5px;font-variant-numeric:tabular-nums}
@@ -167,7 +182,7 @@ details.apx>summary h2{display:inline;font-size:20px}
 <p style="color:#888">Rows are where the money goes in. Columns are where results come out. Pick any pair to see the size of the effect, how certain it is, and how it splits across two weeks, and whether it survives the backwards test.</p></div>
 
 <h2>Where the credit actually belongs</h2>
-<p class="note"><strong>All figures are our ad dollars, not what a customer pays, and all are marginal &mdash; the effect of the next $1,000 a week rather than an average across the whole budget.</strong> Every channel appears, including those with no spend of their own. Contribution margin is applied at the blended rate of <span id="cmpo"></span> per new order.</p>
+<p class="note"><strong>Annual totals, with credit moved to the channel shown to have earned it.</strong> Every channel appears, including the four with no budget of their own. Cost figures are our ad dollars, not what a customer pays; contribution margin uses a blended <span id="cmpo"></span> per new order. Hover any adjusted figure for the per-$1,000 rate underneath it.</p>
 <div id="spill"></div>
 
 <h3 class="shifth">The same orders, sorted differently</h3>
@@ -188,7 +203,7 @@ details.apx>summary h2{display:inline;font-size:20px}
 <h2>What this changes</h2>
 <div class="method" id="soWhat"></div>
 
-<h2>How this was worked out</h2>
+<details class="sec"><summary><h2>How this was worked out</h2><span class="tease">Weekly changes, two-week effects, promotions, and what the method cannot do</span></summary>
 <div class="method">
 <p><strong>The problem.</strong> Every budget rises and falls together with demand, so a naive comparison of Meta spend against TikTok Shop revenue mostly measures "the business had a good week". Everything here is estimated with all ten spend channels in one model, so each effect is what remains once the others are held still. Promotional depth, gift-with-purchase, November/December and two Fourier seasonal terms are also held still.</p>
 <p><strong>Promotions never stop, which limits what can be asked.</strong> A promotion ran on <em>every single day</em> of this window &mdash; not most days, all of them. So there is no unpromoted baseline anywhere in the data, and nothing here can answer what sales would look like without discounting. What does vary is promotional <em>depth</em>, and that is what the model controls for. It matters: weekly changes in promo depth correlate with weekly changes in total ad spend at r&nbsp;=&nbsp;0.39, so a model that ignored promotions would credit ad channels for discounting.</p>
@@ -459,7 +474,7 @@ function renderCons(){
      +'<td>'+(ok&&r.direct>0?Math.round(100*r.kept/r.direct)+'%':'&mdash;')+'</td></tr>';
   });
   s+='</table></div>';
-  s+='<p class="note" style="margin-top:12px"><strong>The decomposition itself checks out.</strong> For the channels whose total effect is measurable at all, splitting it fourteen ways lands close to measuring it in one: '
+  let nt='<p class="note" style="margin-top:12px"><strong>The decomposition itself checks out.</strong> For the channels whose total effect is measurable at all, splitting it fourteen ways lands close to measuring it in one: '
    +'Television '+r1(C.rows.find(r=>r.ch==='Television').sum14)+' against '+r1(C.rows.find(r=>r.ch==='Television').direct)+', '
    +'TikTok Shop '+r1(C.rows.find(r=>r.ch==='TikTok Shop').sum14)+' against '+r1(C.rows.find(r=>r.ch==='TikTok Shop').direct)+', '
    +'Meta '+r1(C.rows.find(r=>r.ch==='Meta').sum14)+' against '+r1(C.rows.find(r=>r.ch==='Meta').direct)+'. '
@@ -478,6 +493,7 @@ function renderCons(){
    +'They dominate any naive sum across channels, which is why the row-by-row comparison matters more than the total.</p>'
    +'<p class="note"><strong>So how should the numbers be read?</strong> As conservative. A channel shown to cause something almost certainly causes at least that much; a channel shown to cause nothing may simply be doing something too small or too noisy for '+F.weeks+' weeks to prove. '
    +'What they should not be used for is dividing a fixed pot of orders across channels &mdash; the reallocation balances within the fourteen, but the fourteen are not the whole business.</p>';
+  s+=nbox(nt,'Notes on coverage and leakage');
   el.innerHTML=s;
 }
 
@@ -494,6 +510,11 @@ function renderKpi(){
   document.getElementById('kpicap').innerHTML='Trailing 12 months to '+K.through+' against the 12 months before it, all regions, holidays included. '
     +'Spend is up '+(100*(K.now.spend/K.prev.spend-1)).toFixed(0)+'% while new customers are '
     +(K.now.orders<K.prev.orders?'down ':'up ')+Math.abs(100*(K.now.orders/K.prev.orders-1)).toFixed(0)+'% &mdash; which is the reason the question below is worth asking.';
+}
+function nbox(inner,label){
+  if(!inner||!inner.trim()) return '';
+  const n=(inner.match(/<p[ >]/g)||[]).length||1;
+  return '<details class="notes"><summary>'+(label||'Notes on this')+' <span style="color:#a8a69d">'+n+'</span></summary>'+inner+'</details>';
 }
 function renderShift(){
   const el=document.getElementById('shift'); if(!el) return;
@@ -533,11 +554,12 @@ function renderShift(){
   const freeLose=lose.filter(r=>E[r.k]&&!E[r.k].paid).map(r=>r.k);
   const freeAll=rows.filter(r=>E[r.k]&&!E[r.k].paid).map(r=>r.k);
   const allFreeLose=freeAll.length>0&&freeLose.length===freeAll.length;
-  s+='<p class="note" style="margin-top:8px">Every order in a grey bar is also in a coloured bar somewhere &mdash; the totals are identical, only the owner changes. '
+  let nt='<p class="note" style="margin-top:8px">Every order in a grey bar is also in a coloured bar somewhere &mdash; the totals are identical, only the owner changes. '
    +gain.length+' channels gain, '+lose.length+' lose'+(flat.length?', '+flat.length+' finish within a percent of where they started':'')+'.'
    +(allFreeLose?' <strong>Every channel without a budget of its own loses</strong> &mdash; '+freeAll.join(', ')+' &mdash; which is the finding in one line: credit runs from the budgets that create demand to the places that collect the final click.':'')
    +(paidLose.length?' '+(paidLose.length>1?'The paid channels that also lose are '+paidLose.slice(0,-1).join(', ')+' and '+paidLose.slice(-1)+', which are':paidLose[0]+' is the one paid channel that also loses, being')+' credited for orders other budgets bought.':'')
    +'</p>';
+  s+=nbox(nt,'Notes on this chart');
   el.innerHTML=s;
 }
 function renderLtv(){
@@ -566,13 +588,13 @@ function renderLtv(){
   });
   s+='</table></div>';
   const thin=ord.filter(([k,v])=>v.val_cov<0.9&&v.aret_t!=null);
-  s+='<p class="note" style="margin-top:12px">Twelve-month gross profit per customer, matured cohort of first orders between July 2024 and June 2025, all regions. '
+  let nt='<p class="note" style="margin-top:12px">Twelve-month gross profit per customer, matured cohort of first orders between July 2024 and June 2025, all regions. '
    +'The customer-value figures do not move with the toggles above; the per-dollar returns do, because they are built from the reallocated order counts in the table at the top of this page. '
    +'Rokt, Television and YouTube never appear as a first-order last click, so they have no customer value of their own &mdash; where they are shown to drive orders elsewhere, those destination values are counted instead.'
    +(thin.length?' Coverage is incomplete for '+thin.map(([k,v])=>k+' ('+(100*v.val_cov).toFixed(0)+'%)').join(', ')+', so those adjusted figures understate.':'')+'</p>';
   const m=E['Meta'], b=E['Bing'];
   if(m&&m.blend_t&&m.ltv_gp&&m.ret_t&&m.aret_t){
-    s+='<div class="callout" style="border-left-color:#c9a227"><h4>The orders a channel causes are not worth what its own customers are worth</h4>'
+    nt+='<div class="callout" style="border-left-color:#c9a227"><h4>The orders a channel causes are not worth what its own customers are worth</h4>'
      +'<p>Meta acquires the least valuable customers of any paid channel &mdash; $'+m.ltv_gp.toFixed(2)+' of twelve-month gross profit on a '+LT['Meta'].rebuy.toFixed(1)+'% rebuy rate, both the lowest measured. '
      +'On credited volume it returns $'+m.ret_t.toFixed(2)+' of gross profit per dollar spent, which reads as a channel to cut.</p>'
      +'<p>But the orders it turns out to be driving surface through email, SMS, direct and search, all of which retain better than Meta itself. Reallocated, its customers blend to $'+m.blend_t.toFixed(2)
@@ -581,9 +603,10 @@ function renderLtv(){
       +'It is still the strongest return on the page &mdash; but by a third less than its own numbers claim, on a budget too small for that to matter much either way.</p>':'')
      +'</div>';
   }
-  s+='<p class="note"><strong>One caveat that cuts against the whole section.</strong> Customer value is measured on last-click first-order attribution, which is the same attribution this page spends its time correcting. '
+  nt+='<p class="note"><strong>One caveat that cuts against the whole section.</strong> Customer value is measured on last-click first-order attribution, which is the same attribution this page spends its time correcting. '
    +'If Meta wins a customer that email is credited for, that customer&rsquo;s twelve-month value counts towards email&rsquo;s average, not Meta&rsquo;s. '
    +'So the first column is biased against upper-funnel channels in exactly the way the order counts were &mdash; meaning Meta&rsquo;s true customer quality is probably better than $'+(m?m.ltv_gp.toFixed(2):'')+', and the adjustment here understates rather than overstates.</p>';
+  s+=nbox(nt,'Notes on customer value');
   document.getElementById('ltv').innerHTML=s;
 }
 
@@ -612,18 +635,20 @@ function renderTv(){
     +'<td>'+(c.b1!=null?c.b1.toFixed(2)+' <span style="color:#888">('+(100*c.b1/c.b).toFixed(0)+'%)</span>':'&mdash;')+'</td>'
     +'<td style="color:#888">'+(c.nb!=null?c.nb.toFixed(2):'&mdash;')+'</td></tr>'; });
   s+='<tr><th>Total</th><th>'+rate.toFixed(2)+'</th><th></th><th></th></tr></table>';
+  let nt='';
   if(V&&V.adj_lvl>1000){
-    s+='<p style="margin-top:10px">In the table at the top of this page that becomes <strong>'+num(V.adj_lvl)+' orders a year</strong> moved onto Television from the channels currently credited with them, against the '+attr+' attribution gives it'
+    nt+='<p style="margin-top:10px">In the table at the top of this page that becomes <strong>'+num(V.adj_lvl)+' orders a year</strong> moved onto Television from the channels currently credited with them, against the '+attr+' attribution gives it'
      +(V.acac!=null?', at <strong>'+money(V.acac)+'</strong> each':'')
      +(V.aroas!=null?' and <strong>'+V.aroas.toFixed(2)+'x</strong> revenue per dollar':'')
      +' &mdash; figures that cannot be computed from its own reporting at all, because there is nothing to divide by.</p>'
      +'<p><strong>That yearly number is deliberately conservative.</strong> The coefficients describe one more $1,000 a week; turning them into an annual figure means choosing how large a change to price, and pricing the whole budget &mdash; down to no television at all &mdash; would extrapolate far beyond anything observed. '
      +'This window only saw television running between '+money(T.lo)+' and '+money(T.hi)+' a week, so the flows are sized at a pullback to its quietest week'+(V.pull?', a change of '+money(V.pull)+' a week':'')+'. Switching the channel off would move considerably more than '+num(V.adj_lvl)+' orders, and this analysis cannot say how many.</p>';
   }
-  s+='<p><strong>Two things make the result more credible than it first sounds.</strong> Television spend is not a lumpy on-or-off line: it took a different value in every one of the '+T.wks+' weeks measured, which is the week-to-week movement the model needs. '
+  nt+='<p><strong>Two things make the result more credible than it first sounds.</strong> Television spend is not a lumpy on-or-off line: it took a different value in every one of the '+T.wks+' weeks measured, which is the week-to-week movement the model needs. '
    +'And the delayed shape is not what a spurious correlation produces &mdash; a channel accidentally tracking demand shows up in the same week, not consistently in the next one.</p>'
    +'<p><strong>What would still overturn it.</strong> Television is planned against the same calendar as everything else, so if the media plan concentrates weight into weeks that were already going to be strong for reasons the model has not captured, these coefficients would absorb that. '
-   +'The backwards test rules out the simplest version of that problem, not a sophisticated one. This remains the strongest candidate for a holdout on the page, and the only channel where the answer is genuinely unknown rather than merely unproven.</p></div>';
+   +'The backwards test rules out the simplest version of that problem, not a sophisticated one. This remains the strongest candidate for a holdout on the page, and the only channel where the answer is genuinely unknown rather than merely unproven.</p>';
+  s+=nbox(nt,'Notes on the Television estimate')+'</div>';
   el.innerHTML=s;
 }
 
@@ -653,13 +678,13 @@ function renderRealloc(){
       +(dO>0?'+':'')+Math.round(dO).toLocaleString()+'</span> new customer orders a year, &plusmn;'+Math.round(se).toLocaleString()+'</div>'
      +'<div><span class="rbig" style="color:'+(dR>0?'#1f7a3f':'#b3261e')+'">'+(dR>0?'+':'')+money(dR)+'</span> new customer revenue</div>'
      +(dP!==null?'<div><span class="rbig" style="color:'+(dP>0?'#1f7a3f':'#b3261e')+'">'+(dP>0?'+':'')+money(dP)+'</span> twelve-month gross profit, valuing each order where it actually lands</div>':'')
-     +'<p style="font-size:12.5px;color:#666;margin:10px 0 0;line-height:1.6">'
+     +nbox('<p style="font-size:12.5px;color:#666;margin:0;line-height:1.6">'
      +((overA||overB)?'<strong style="color:#9a6b00">Beyond the range of the data. '
         +(overB?b+' normally spends about '+money(B.wk)+' a week, so adding '+money(x)+' would be a step change no part of this history covers'
                :a+' normally spends about '+money(A.wk)+' a week, so removing '+money(x)+' would take it far below anything observed')
         +' &mdash; the estimate above should not be relied on at this size.</strong> ':'')
      +'Straight-line arithmetic on both channels&rsquo; measured effects, held at the rates estimated around current budgets. It assumes each keeps responding at the same rate over a move this size &mdash; safe for small shifts, less so as the amount grows, and the data shows no measurable curvature either way. '
-     +'The band is one standard error on the difference. It ignores the possibility that the two channels reach the same customers, and it counts only spillovers that survived correction, so like everything else here it understates.</p>';
+     +'The band is one standard error on the difference. It ignores the possibility that the two channels reach the same customers, and it counts only spillovers that survived correction, so like everything else here it understates.</p>','How this is calculated');
   };
   ['rAmt','rFrom','rTo'].forEach(i=>{const e=document.getElementById(i); e.oninput=upd; e.onchange=upd;});
   upd();
@@ -804,7 +829,8 @@ function draw(){
     const u=cmp[0], o=cmp[cmp.length-1];
     const tot=Object.values(E).reduce((x,v)=>x+v.attr_o,0), tota=Object.values(E).reduce((x,v)=>x+v.adj_lvl,0);
     const neg=Object.entries(E).filter(([k,v])=>v.adj_lvl<0);
-    s+='<p class="note" style="margin-top:12px"><strong>A-Orders is the channel&rsquo;s credited volume after moving the credit that can actually be demonstrated.</strong> '
+    let nt='';
+    nt+='<p class="note" style="margin-top:12px"><strong>A-Orders is the channel&rsquo;s credited volume after moving the credit that can actually be demonstrated.</strong> '
      +'Start from what attribution gave it, subtract the orders another channel&rsquo;s spending is shown to have driven in, add the ones its own spending drove elsewhere. '
      +'The two figures underneath say how much it gained and how much it lost. <span class="in" style="font-weight:600">In</span> is orders being handed <em>to</em> this channel, because it drove them somewhere else and that somewhere else was credited. '
      +'<span class="out" style="font-weight:600">Out</span> is orders being taken <em>away</em>, because another channel drove them and this one got the credit. '
@@ -823,25 +849,26 @@ function draw(){
      +'Direct keeps '+num(E['Direct']?E['Direct'].adj_lvl:0)+' of its '+num(E['Direct']?E['Direct'].attr_o:0)+' and CRM&nbsp;SMS '+num(E['CRM SMS']?E['CRM SMS'].adj_lvl:0)+' of '+num(E['CRM SMS']?E['CRM SMS'].attr_o:0)+'. '
      +'Cost and return stay blank for them because there is no spend to divide by.</p>';
     if(neg.length){
-      s+='<p class="note"><strong>'+neg.map(x=>x[0]).join(' and ')+' still '+(neg.length>1?'come':'comes')+' out below zero, and here that is a real result rather than a broken one.</strong> '
+      nt+='<p class="note"><strong>'+neg.map(x=>x[0]).join(' and ')+' still '+(neg.length>1?'come':'comes')+' out below zero, and here that is a real result rather than a broken one.</strong> '
        +(neg.length>1?'Their':'Its')+' only surviving effect is negative &mdash; YouTube spend goes with <em>fewer</em> Pinterest orders, not more &mdash; and with almost nothing attributed to '+(neg.length>1?'them':'it')+' to begin with, the total lands below zero. '
        +'Read it as no demonstrable contribution rather than as a quantity.</p>';
     }
-    s+='<p class="note"><strong>AOV is the measure that is not a rescaling of the others.</strong> Orders, CAC and CM all move together by construction, so their change percentages match. '
+    nt+='<p class="note"><strong>AOV is the measure that is not a rescaling of the others.</strong> Orders, CAC and CM all move together by construction, so their change percentages match. '
      +'A-AOV is the basket size of what is left after the reallocation, and it can part company with a channel&rsquo;s own average: Meta reports '+dl(E['Meta']?E['Meta'].rep_aov:null)+' and lands at '+dl(E['Meta']?E['Meta'].aaov:null)
      +', because the orders it drives surface through email, SMS and direct where baskets are larger. A channel can win on order count and lose on value, which is worth checking before moving budget on volume alone.</p>';
     (function(){
       const sh=paid.filter(([k2,v2])=>{ const w=v2.spend/52, r=(v2.naive_o>0&&v2.tot_o)?v2.tot_o/v2.naive_o:null;
         return w<25000 && r!==null && (r>4||r<0.25); }).map(x=>x[0]);
       if(!sh.length) return;
-      s+='<p class="note" style="background:#fdf6e3;border-left:3px solid #c9a227;padding:11px 14px;border-radius:6px">'
+      nt+='<p class="note" style="background:#fdf6e3;border-left:3px solid #c9a227;padding:11px 14px;border-radius:6px">'
        +'<strong>Treat '+sh.join(' and ')+' with more caution than the percentage suggests.</strong> '
        +(sh.length>1?'These channels spend':'This channel spends')+' under $25,000 a week and the correction moves the estimate more than fourfold. '
        +'A $1,000 change is a large share of a budget that size, so the coefficient rests on little variation and its magnitude is imprecise even where its direction is not. The ranking is worth acting on; the size is not worth planning around.</p>';
     })();
-    s+='<p class="note">'
+    nt+='<p class="note">'
      +'A dash means the measure needs something the channel does not have: spend of its own, enough attributed orders to divide by, or a positive measurable effect. Television has no credited column at all because attribution gives it a handful of orders a year &mdash; the marginal columns are the only place it appears, and the reason it is on this page. '
      +'<strong>CM per $1</strong> below $1.00 means that dollar loses money on the first order, which most channels are close to, so repeat purchase is carrying profitability.</p>';
+    s+=nbox(nt,'Notes on this table');
   }
   document.getElementById('cmpo').textContent='$'+(F.cmpo||0).toFixed(2);
   document.getElementById('spill').innerHTML=s;
