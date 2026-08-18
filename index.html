@@ -12,7 +12,12 @@ h1{font-size:29px;margin:0 0 6px;letter-spacing:-.4px}
 .answer .big{font-size:34px;font-weight:700;line-height:1.15;letter-spacing:-.5px}
 .answer .big em{font-style:normal;color:#888;font-weight:400;font-size:17px}
 .answer p{margin:9px 0 0;font-size:14.5px;max-width:900px}
-.controls{display:flex;gap:26px;flex-wrap:wrap;align-items:center;margin:0 0 18px}
+.controls{display:flex;gap:26px;flex-wrap:wrap;align-items:center;
+  position:sticky;top:0;z-index:50;background:#fff;
+  margin:0 -14px 18px;padding:12px 14px 11px;
+  border-bottom:1px solid #e7e5de;
+  box-shadow:0 1px 0 rgba(0,0,0,.02)}
+.controls .lbl{font-size:11px}
 .grp{display:flex;gap:0;border:1px solid #d5d3cc;border-radius:7px;overflow:hidden}
 .grp button{border:0;background:#fff;padding:7px 15px;font-size:13px;cursor:pointer;font-family:inherit;color:#444}
 .grp button+button{border-left:1px solid #e6e4dd}
@@ -147,9 +152,6 @@ details.apx>summary h2{display:inline;font-size:20px}
 
 <h1>Is spend here affecting results there?</h1>
 <p class="sub">Laura Geller &middot; weekly, Aug 2024 &ndash; Jul 2026 &middot; every channel estimated at once, so each effect is measured with the others held still</p>
-
-<div class="kpis" id="kpis"></div>
-<p class="kpicap" id="kpicap"></p>
 
 <div class="answer">
   <div class="big" id="hero">&nbsp;</div>
@@ -541,20 +543,6 @@ function renderCons(){
   el.innerHTML=s;
 }
 
-function renderKpi(){
-  const K=D.kpi; if(!K) return;
-  const rows=[['Ad spend','spend',v=>money(v),false],['New customer orders','orders',v=>Math.round(v).toLocaleString(),true],
-    ['New customer revenue','rev',v=>money(v),true],['Blended CAC','cac',v=>'$'+v.toFixed(2),false],
-    ['Blended ROAS','roas',v=>v.toFixed(2)+'x',true]];
-  document.getElementById('kpis').innerHTML=rows.map(([lab,k,f,up])=>{
-    const a=K.prev[k], b=K.now[k], c=100*(b/a-1), good=up?c>0:c<0;
-    return '<div class="kpi"><div class="kl">'+lab+'</div><div class="kv">'+f(b)+'</div>'
-      +'<div class="kd '+(Math.abs(c)<0.5?'':(good?'up':'down'))+'">'+(c>0?'+':'')+c.toFixed(1)+'% vs prior year</div></div>';
-  }).join('');
-  document.getElementById('kpicap').innerHTML='Trailing 12 months to '+K.through+' against the 12 months before it, all regions, holidays included. '
-    +'Spend is up '+(100*(K.now.spend/K.prev.spend-1)).toFixed(0)+'% while new customers are '
-    +(K.now.orders<K.prev.orders?'down ':'up ')+Math.abs(100*(K.now.orders/K.prev.orders-1)).toFixed(0)+'% &mdash; which is the reason the question below is worth asking.';
-}
 function nbox(inner,label){
   if(!inner||!inner.trim()) return '';
   const n=(inner.match(/<p[ >]/g)||[]).length||1;
@@ -1103,5 +1091,5 @@ document.querySelectorAll('#hTabs button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#hTabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');H=b.dataset.h;SEL=null;draw();});
 document.querySelectorAll('#rTabs button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#rTabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');R=b.dataset.r;SEL=null;draw();});
-renderKpi(); renderRef(); draw();
+renderRef(); draw();
 </script></body></html>
