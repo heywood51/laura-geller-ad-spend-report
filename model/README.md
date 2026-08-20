@@ -11,14 +11,17 @@ partial pooling, annual seasonality, business controls, and Gaussian Bayesian sh
 Randomized experiment results enter the posterior as noisy observations of the same
 counterfactual used by the website.
 
-## Current-data limitation
+## Current evidence status
 
-`index.html` contains 106 weekly observations for the US and UK and spend for ten paid
-channels. It does not contain DMA/daily rows, randomized assignments, delivered email,
-or delivered SMS. A model built from that payload is therefore emitted with status
-`observational_candidate`, two missing levers, and an explicit non-causal warning. It
-must not replace the production headline until experiment or suitable geo variation is
-provided.
+The warehouse build produces 573 daily observations for six countries, 12 source
+channels (including delivered email and SMS), and 14 credited destinations for both
+orders and revenue. This is a materially better modeling panel, but it is not randomized.
+
+The required circular-shift placebo test failed: impossible, time-shifted media histories
+produced a median 78% as much absolute cell-level halo as the observed histories. The
+warehouse-wide table search also found no lift, holdout, geo-test, or incrementality
+results. Outputs therefore retain status `observational_candidate`, and the replacement
+page masks all numeric cells. High predictive R-squared does not override this gate.
 
 ## Run the embedded-data preview
 
@@ -28,6 +31,29 @@ python model/halo_model.py `
   --input model/generated/weekly_panel.csv `
   --config model/config.weekly.json `
   --output model/generated/halo-preview.json
+```
+
+## Build the private daily panel
+
+The query in `build_daily_panel.sql` targets the `asbeauty-bi-dev` warehouse. Keep its
+CSV and fitted JSON outputs local because this repository is public.
+
+```powershell
+Get-Content -Raw model/build_daily_panel.sql |
+  bq query --use_legacy_sql=false --format=csv --max_rows=100000 --quiet |
+  Set-Content model/generated/daily_panel.csv
+
+python model/halo_model.py --input model/generated/daily_panel.csv `
+  --config model/config.daily.orders.json `
+  --output model/generated/halo-daily-orders.json
+
+python model/halo_model.py --input model/generated/daily_panel.csv `
+  --config model/config.daily.revenue.json `
+  --output model/generated/halo-daily-revenue.json
+
+python model/validate_placebos.py --input model/generated/daily_panel.csv `
+  --config model/config.daily.orders.json `
+  --output model/generated/placebo-validation.json --runs 8
 ```
 
 ## Production input
@@ -66,3 +92,8 @@ scenarios and presents the result as orders at risk.
 
 Each source-channel experiment can provide all destination outcomes, so one experiment
 calibrates an entire row rather than one cell.
+
+The website's publication rule is deliberate: each cell stays masked until randomized
+evidence for that source/destination pair is supplied. A source experiment should record
+all destination outcomes, which unlocks its row. Once every pair is constrained, the
+output status becomes `experiment_calibrated`.

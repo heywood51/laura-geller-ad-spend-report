@@ -1,0 +1,41 @@
+{
+  "date_column": "date",
+  "geo_column": "geo",
+  "periods_per_year": 365,
+  "measure": "revenue",
+  "expected_channels": ["Meta", "Google Search", "TikTok Shop", "Bing", "AppLovin", "Pinterest", "Rokt", "TikTok Social", "Television", "YouTube", "CRM Email", "CRM SMS"],
+  "scenario": {"name": "20% channel reduction", "relative_change": -0.20, "periods": 365},
+  "controls": ["promo_depth", "promo_gwp"],
+  "channels": {
+    "Meta": {"column": "spend_Meta", "half_life_periods": 3.0, "slope": 1.0},
+    "Google Search": {"column": "spend_GoogleSearch", "half_life_periods": 1.0, "slope": 1.0},
+    "TikTok Shop": {"column": "spend_TikTokShop", "half_life_periods": 1.0, "slope": 1.0},
+    "Bing": {"column": "spend_Bing", "half_life_periods": 1.0, "slope": 1.0},
+    "AppLovin": {"column": "spend_AppLovin", "half_life_periods": 2.0, "slope": 1.0},
+    "Pinterest": {"column": "spend_Pinterest", "half_life_periods": 3.0, "slope": 1.0},
+    "Rokt": {"column": "spend_Rokt", "half_life_periods": 1.0, "slope": 1.0},
+    "TikTok Social": {"column": "spend_TikTokSocial", "half_life_periods": 3.0, "slope": 1.0},
+    "Television": {"column": "spend_Television", "half_life_periods": 14.0, "slope": 1.0},
+    "YouTube": {"column": "spend_YouTube", "half_life_periods": 5.0, "slope": 1.0},
+    "CRM Email": {"column": "exposure_CRMEmail", "half_life_periods": 3.0, "slope": 1.0},
+    "CRM SMS": {"column": "exposure_CRMSMS", "half_life_periods": 2.0, "slope": 1.0}
+  },
+  "destinations": {
+    "Meta": "revenue_Meta",
+    "Google Search": "revenue_GoogleSearch",
+    "TikTok Shop": "revenue_TikTokShop",
+    "Bing": "revenue_Bing",
+    "AppLovin": "revenue_AppLovin",
+    "Pinterest": "revenue_Pinterest",
+    "Rokt": "revenue_Rokt",
+    "TikTok Social": "revenue_TikTokSocial",
+    "Television": "revenue_Television",
+    "YouTube": "revenue_YouTube",
+    "CRM Email": "revenue_CRMEmail",
+    "CRM SMS": "revenue_CRMSMS",
+    "Organic": "revenue_Organic",
+    "Direct": "revenue_Direct"
+  },
+  "priors": {"baseline_sd": 10.0, "control_sd": 1.5, "media_sd": 0.65, "media_geo_deviation_sd": 0.18},
+  "experiments": []
+}

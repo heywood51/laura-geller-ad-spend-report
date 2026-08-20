@@ -1,0 +1,14 @@
+{
+  "experiments": [
+    {
+      "channel": "Meta",
+      "destination": "Meta",
+      "geo": "randomized DMA holdout",
+      "start": "YYYY-MM-DD",
+      "end": "YYYY-MM-DD",
+      "relative_change": -0.20,
+      "effect": 0,
+      "standard_error": 0
+    }
+  ]
+}

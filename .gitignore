@@ -1,2 +1,8 @@
 model/__pycache__/
 *.pyc
+
+# Aggregated warehouse exports and fitted production outputs are intentionally local.
+# The repository is public; do not publish daily business data by accident.
+model/generated/daily_panel.csv
+model/generated/halo-daily-*.json
+model/generated/placebo-validation.json

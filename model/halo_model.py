@@ -356,14 +356,29 @@ def build_halo(frame: pd.DataFrame, config: dict[str, Any]) -> dict[str, Any]:
         }
         for destination, fit in fits.items()
     }
-    experiment_count = len(config.get("experiments", []))
+    experiments = config.get("experiments", [])
+    experiment_count = len(experiments)
+    calibrated_pairs = {
+        (item["channel"], item["destination"]) for item in experiments
+    }
+    required_pairs = {
+        (channel, destination)
+        for channel in config["channels"]
+        for destination in config["destinations"]
+    }
+    if not calibrated_pairs:
+        status = "observational_candidate"
+        warning = "No randomized experiment constraints were supplied. These cells are model-implied candidates, not causal estimates."
+    elif required_pairs.issubset(calibrated_pairs):
+        status = "experiment_calibrated"
+        warning = None
+    else:
+        status = "partially_calibrated"
+        warning = "Only cells backed by randomized experiment constraints are publishable. Remaining observational cells are withheld."
     return {
         "schema_version": 1,
-        "status": "experiment_calibrated" if experiment_count else "observational_candidate",
-        "warning": (
-            None if experiment_count
-            else "No randomized experiment constraints were supplied. These cells are model-implied candidates, not causal estimates."
-        ),
+        "status": status,
+        "warning": warning,
         "metadata": {
             "date_min": frame[config["date_column"]].min().date().isoformat(),
             "date_max": frame[config["date_column"]].max().date().isoformat(),
@@ -372,10 +387,14 @@ def build_halo(frame: pd.DataFrame, config: dict[str, Any]) -> dict[str, Any]:
             "scenario": config["scenario"],
             "experiment_count": experiment_count,
             "method": "hierarchical Bayesian distributed-lag halo model",
+            "measure": config.get("measure", "orders"),
         },
         "channels": list(config["channels"]),
         "destinations": list(config["destinations"]),
-        "missing_levers": ["CRM Email", "CRM SMS"],
+        "missing_levers": [
+            channel for channel in config.get("expected_channels", config["channels"])
+            if channel not in config["channels"]
+        ],
         "views": output_views,
         "diagnostics": diagnostics,
     }

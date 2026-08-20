@@ -81,7 +81,9 @@ def test_experiment_calibration_moves_posterior() -> None:
         "effect": -120.0,
         "standard_error": 8.0,
     }]
-    calibrated = build_halo(frame, calibrated_config)["views"]["Total"]["cells"]["TV|Email"]
+    calibrated_result = build_halo(frame, calibrated_config)
+    assert calibrated_result["status"] == "partially_calibrated"
+    calibrated = calibrated_result["views"]["Total"]["cells"]["TV|Email"]
     assert calibrated["calibrated"] is True
     assert calibrated["effect"] > uncalibrated["effect"]
     assert calibrated["standard_error"] < uncalibrated["standard_error"]

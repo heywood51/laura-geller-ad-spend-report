@@ -3,6 +3,8 @@
   "geo_column": "region_bucket",
   "include_geos": ["US", "UK"],
   "periods_per_year": 52,
+  "measure": "orders",
+  "expected_channels": ["Meta", "Google Search", "TikTok Shop", "Bing", "AppLovin", "Pinterest", "Rokt", "TikTok Social", "Television", "YouTube", "CRM Email", "CRM SMS"],
   "scenario": {
     "name": "20% channel reduction",
     "relative_change": -0.20,
