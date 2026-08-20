@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Halo matrix — replacement model preview</title>
+<style>
+:root{--ink:#17211b;--muted:#667169;--paper:#f6f4ed;--card:#fff;--line:#deddd5;--green:#2f7750;--red:#a84c43;--gold:#a67821}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.45 Georgia,serif}
+main{max-width:1500px;margin:auto;padding:34px 28px 70px}h1{font-size:34px;margin:0 0 6px;letter-spacing:-.02em}
+.sub{color:var(--muted);margin:0 0 22px}.notice{background:#fff7df;border:1px solid #e5cc82;border-left:5px solid var(--gold);padding:14px 16px;margin:18px 0 22px;border-radius:5px}.notice strong{display:block;margin-bottom:3px}
+.bar{display:flex;flex-wrap:wrap;gap:18px;align-items:end;margin:16px 0}.control label{display:block;text-transform:uppercase;letter-spacing:.08em;font:11px Arial,sans-serif;color:var(--muted);margin-bottom:5px}.control select{font:14px Georgia,serif;padding:7px 28px 7px 9px;border:1px solid #cbc9bf;border-radius:5px;background:#fff}.metric{margin-left:auto;text-align:right}.metric strong{font-size:24px;display:block}.metric span{color:var(--muted);font-size:12px}
+.matrix-wrap{overflow:auto;background:#fff;border:1px solid var(--line);border-radius:6px;box-shadow:0 8px 28px rgba(33,45,37,.05)}
+table{border-collapse:separate;border-spacing:0;min-width:1250px;width:100%}th,td{border-right:1px solid #ecebe5;border-bottom:1px solid #ecebe5;padding:7px 8px;text-align:right;white-space:nowrap}th{font:600 11px/1.15 Arial,sans-serif;color:#4f5952;background:#fbfaf6}.row{position:sticky;left:0;z-index:2;text-align:left;background:#fbfaf6;font-weight:600}.corner{position:sticky;left:0;top:0;z-index:4;text-align:left}.col{height:115px;vertical-align:bottom;writing-mode:vertical-rl;transform:rotate(180deg);text-align:left;position:sticky;top:0;z-index:3}.cell{cursor:pointer;font:600 12px Arial,sans-serif;min-width:67px}.cell:hover{outline:2px solid #17211b;outline-offset:-2px}.total{font-weight:700;background:#f1f0e9}.empty{color:#bbb}
+.detail{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:18px 20px;display:grid;grid-template-columns:repeat(4,minmax(130px,1fr));gap:16px}.detail h2{grid-column:1/-1;margin:0;font-size:21px}.stat span{display:block;text-transform:uppercase;letter-spacing:.07em;font:10px Arial,sans-serif;color:var(--muted)}.stat strong{display:block;font-size:19px;margin-top:3px}.detail p{grid-column:1/-1;margin:0;color:var(--muted)}
+.method{margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.method article{background:#fff;border:1px solid var(--line);padding:16px;border-radius:5px}.method h3{margin:0 0 6px;font-size:16px}.method p{margin:0;color:var(--muted);font-size:13px}
+@media(max-width:800px){main{padding:24px 14px}.metric{margin-left:0}.detail,.method{grid-template-columns:1fr 1fr}.detail p,.detail h2{grid-column:1/-1}.method article{grid-column:1/-1}}
+</style>
+</head>
+<body><main>
+<h1>Halo matrix — replacement model</h1>
+<p class="sub" id="subtitle">Loading the model output…</p>
+<div class="notice" id="notice"><strong>Model status</strong><span></span></div>
+<div class="bar">
+  <div class="control"><label for="view">View</label><select id="view"></select></div>
+  <div class="control"><label for="display">Cell display</label><select id="display"><option value="effect">Orders at risk</option><option value="probability_positive">Probability positive</option><option value="width">80% interval width</option></select></div>
+  <div class="metric"><strong id="matrixTotal">—</strong><span>sum of row effects under this scenario</span></div>
+</div>
+<div class="matrix-wrap"><table id="matrix"></table></div>
+<section class="detail" id="detail"><h2>Select a cell</h2><p>Each cell is one counterfactual: what changes at the credited destination when only the source channel is reduced.</p></section>
+<section class="method">
+  <article><h3>Carryover and saturation</h3><p>Each source uses a channel-specific geometric carryover and Hill response curve instead of a fixed two-week linear coefficient.</p></article>
+  <article><h3>Geographic partial pooling</h3><p>Common channel effects are learned across markets while market deviations are shrunk toward the shared estimate.</p></article>
+  <article><h3>Experiment calibration</h3><p>A randomized holdout enters as a noisy observation of this exact counterfactual, anchoring its entire source row.</p></article>
+</section>
+</main>
+<script>
+const nf=new Intl.NumberFormat('en-US',{maximumFractionDigits:0});
+let MODEL,VIEW='Total',DISPLAY='effect';
+const compact=n=>{const a=Math.abs(n);return (n<0?'−':'')+(a>=1e6?(a/1e6).toFixed(1)+'m':a>=1e3?(a/1e3).toFixed(a>=1e4?0:1)+'k':a.toFixed(0))};
+const pct=n=>(100*n).toFixed(n>.995?1:0)+'%';
+function color(cell){const max=Math.max(...Object.values(MODEL.views[VIEW].cells).map(c=>Math.abs(c.effect)),1);const strength=Math.min(Math.abs(cell.effect)/max,.8);if(cell.effect>=0)return `rgba(47,119,80,${.06+.72*strength})`;return `rgba(168,76,67,${.06+.72*strength})`}
+function value(cell){if(DISPLAY==='probability_positive')return pct(cell.probability_positive);if(DISPLAY==='width')return compact(cell.upper80-cell.lower80);return compact(cell.effect)}
+function draw(){const data=MODEL.views[VIEW],t=document.getElementById('matrix');let html='<thead><tr><th class="corner">Source spend ↓ / credited to →</th>';for(const d of MODEL.destinations)html+=`<th class="col">${d}</th>`;html+='<th class="col total">Row total</th></tr></thead><tbody>';for(const ch of MODEL.channels){html+=`<tr><th class="row">${ch}</th>`;for(const d of MODEL.destinations){const key=ch+'|'+d,c=data.cells[key];html+=`<td class="cell" data-key="${key}" style="background:${color(c)}" title="${ch} → ${d}">${value(c)}</td>`}html+=`<td class="total">${compact(data.row_totals[ch])}</td></tr>`}t.innerHTML=html+'</tbody>';t.querySelectorAll('.cell').forEach(td=>td.onclick=()=>show(td.dataset.key));const total=Object.values(data.row_totals).reduce((a,b)=>a+b,0);document.getElementById('matrixTotal').textContent=compact(total)+' orders';}
+function show(key){const c=MODEL.views[VIEW].cells[key],[source,destination]=key.split('|');document.getElementById('detail').innerHTML=`<h2>${source} → ${destination}${c.calibrated?' · experiment-calibrated':''}</h2><div class="stat"><span>Orders at risk</span><strong>${nf.format(Math.round(c.effect))}</strong></div><div class="stat"><span>80% interval</span><strong>${nf.format(Math.round(c.lower80))} to ${nf.format(Math.round(c.upper80))}</strong></div><div class="stat"><span>Probability positive</span><strong>${pct(c.probability_positive)}</strong></div><div class="stat"><span>Standard error</span><strong>${nf.format(Math.round(c.standard_error))}</strong></div><p>Under ${MODEL.metadata.scenario.name.toLowerCase()}, this is the posterior change in orders currently credited to ${destination} attributable to ${source}. An interval spanning zero means the current evidence does not resolve the direction.</p>`}
+fetch('model/generated/halo-preview.json').then(r=>{if(!r.ok)throw new Error('model output not found');return r.json()}).then(model=>{MODEL=model;document.getElementById('subtitle').textContent=`${model.metadata.date_min} to ${model.metadata.date_max} · ${model.metadata.scenario.name} · ${model.metadata.geographies.join(' + ')}`;const n=document.getElementById('notice');n.querySelector('strong').textContent=model.status==='experiment_calibrated'?'Experiment-calibrated model':'Observational preview — not ready for budget decisions';n.querySelector('span').textContent=model.warning||'Randomized evidence is included in this posterior.';const select=document.getElementById('view');Object.keys(model.views).forEach(v=>select.add(new Option(v,v)));select.onchange=()=>{VIEW=select.value;draw()};document.getElementById('display').onchange=e=>{DISPLAY=e.target.value;draw()};draw()}).catch(error=>{document.getElementById('notice').querySelector('span').textContent=error.message});
+</script></body></html>
