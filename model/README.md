@@ -68,7 +68,17 @@ python model/validate_placebos.py --input model/generated/daily_panel.csv `
   --output model/generated/placebo-validation-revenue.json `
   --adjusted-output model/generated/halo-daily-revenue.json `
   --runs 50 --alpha 0.05 --seed 20260821
+
+python model/build_report_summary.py `
+  --input model/generated/daily_panel.csv `
+  --orders-config model/config.daily.orders.json `
+  --revenue-config model/config.daily.revenue.json `
+  --output model/generated/report-summary.json
 ```
+
+`index.html` consumes only these corrected outputs. Its matrix, source and destination
+tables, budget guide, experiment priorities, reliability summary, and narrative callouts
+are calculated from the same JSON at page load; no legacy regression payload remains.
 
 ## Production input
 

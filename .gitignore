@@ -10,3 +10,4 @@ model/generated/placebo-validation-*.json
 !model/generated/halo-daily-orders.json
 !model/generated/halo-daily-revenue.json
 !model/generated/placebo-validation.json
+!model/generated/report-summary.json
