@@ -1,54 +1,197 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Laura Geller halo decision report</title>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Is spend here affecting results there?</title>
 <style>
-:root{--ink:#1a1a1a;--muted:#6b6961;--paper:#fff;--card:#fff;--line:#e2e0d9;--green:#1f7a3f;--red:#b3261e;--gold:#b18b31}*{box-sizing:border-box}html,body{overflow-x:hidden}body{margin:0;background:#fff;color:var(--ink);font:14.5px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}main{max-width:1180px;margin:auto;padding:34px 26px 90px}h1{font-size:29px;margin:0 0 6px;letter-spacing:-.4px}h2{font-size:19px;margin:44px 0 4px;letter-spacing:-.2px}h3{font-size:16px;margin:0 0 6px}.sub,.note{color:#666}.sub{margin:0 0 26px}.note{margin:0 0 14px;max-width:900px;font-size:13.5px}.hero{display:grid;grid-template-columns:1.35fr repeat(3,minmax(130px,.55fr));gap:0;background:#fafaf8;border:0;border-left:5px solid #1a1a1a;border-radius:0;margin:0 0 30px;padding:7px 0}.hero>div{background:transparent;padding:12px 18px}.hero>div+div{border-left:1px solid #e4e2dc}.hero .lead{background:transparent;color:#1a1a1a}.eyebrow{display:block;text-transform:uppercase;letter-spacing:.07em;font:10.5px Arial,sans-serif;color:#888;margin-bottom:3px}.hero .lead .eyebrow{color:#777}.hero strong{font-size:22px;display:block}.hero .lead strong{font-size:34px;line-height:1.15}.hero small{display:block;color:#777;margin-top:4px}.hero .lead small{color:#666}
-.notice{background:#fdf6e3;border:1px solid #e8dcb8;border-left:3px solid #c9a227;padding:11px 14px;border-radius:7px;margin:16px 0 22px;max-width:900px;font-size:13px}.notice strong{display:block}.controls{position:sticky;top:0;z-index:20;display:flex;gap:22px;align-items:end;flex-wrap:wrap;background:rgba(255,255,255,.97);padding:12px 14px 11px;margin:0 -14px 18px;border-bottom:1px solid #e7e5de;box-shadow:0 1px 0 rgba(0,0,0,.02)}label{display:block;text-transform:uppercase;letter-spacing:.06em;font:10.5px Arial,sans-serif;color:#888;margin-bottom:3px}select{font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:7px 28px 7px 9px;border:1px solid #d5d3cc;background:#fff;border-radius:7px}.controls .asof{margin-left:auto;color:#8a877e;font-size:12px;padding-bottom:7px}
-.matrix-wrap{overflow:auto;background:#fff}.table-wrap{overflow:auto;background:#fff;border:1px solid #eeece5;border-radius:8px}.matrix{border-collapse:separate;border-spacing:0;min-width:1120px;width:100%}.matrix th,.matrix td{border:1px solid #fff;padding:6px 7px;text-align:right;white-space:nowrap}.matrix th{font:600 11.5px Arial,sans-serif;color:#555;background:#fff}.matrix .row{position:sticky;left:0;z-index:2;text-align:left;background:#fff}.matrix .corner{position:sticky;left:0;top:0;z-index:4;text-align:left}.matrix .col{height:104px;vertical-align:bottom;writing-mode:vertical-rl;transform:rotate(180deg);position:sticky;top:0;z-index:3}.cell{cursor:pointer;font:600 11.5px Arial,sans-serif;min-width:62px;height:32px}.cell:hover,.cell.selected{outline:2px solid #1a1a1a;outline-offset:-2px}.zero{color:#aaa;background:#e8e6df}.total{font-weight:700;background:#f1f0e9}.legend{display:flex;gap:20px;flex-wrap:wrap;color:#666;font-size:12px;margin:14px 0}.sw{width:13px;height:13px;border-radius:2px;display:inline-block;margin-right:5px;vertical-align:-2px}
-.detail{background:#fafaf8;border:1px solid #e2e0d9;border-radius:9px;padding:18px 22px;margin:26px 0 0;display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:15px;min-height:96px}.detail h3,.detail p{grid-column:1/-1}.detail p{margin:0;color:#666}.stat strong{display:block;font-size:19px}.stat span{display:block;text-transform:uppercase;letter-spacing:.05em;font:10.5px Arial,sans-serif;color:#888}.badge{display:inline-block;border-radius:20px;padding:3px 9px;background:#fff2ce;color:#76530e;font:600 11px Arial,sans-serif;margin-left:7px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}.card{background:#fafaf8;border:1px solid #e2e0d9;border-radius:8px;padding:15px 18px}.card p{margin:5px 0;color:#666}table.report{width:100%;border-collapse:collapse;font:13px Arial,sans-serif}table.report th{text-transform:uppercase;letter-spacing:.05em;color:#555;font-size:10.5px;text-align:right;border-bottom:2px solid #1a1a1a;padding:7px 10px}table.report th:first-child,table.report td:first-child{text-align:left}table.report td{text-align:right;padding:7px 10px;border-bottom:1px solid #eeece5;font-variant-numeric:tabular-nums}table.report tr:last-child td{border-bottom:0}.positive{color:var(--green)}.negative{color:var(--red)}.decision{font-weight:600}.callouts{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.callouts article{background:#fff;border:1px solid #e2e0d9;border-left:3px solid #3a3a3a;border-radius:8px;padding:15px 18px}.callouts p{margin:4px 0 0;color:#555;font-size:13px}.method{font-size:13px;color:#555;max-width:900px}.method p{margin:0 0 11px}.downloads a{color:#1a1a1a;margin-right:16px}.foot{margin-top:38px;padding-top:16px;border-top:1px solid #eeece5;color:#999;font-size:12px}.bar-chart{max-width:980px;border:1px solid #eeece5;border-radius:8px;padding:14px 16px 12px;background:#fff;overflow-x:auto}.bar-chart svg{display:block;min-width:760px;width:100%;height:auto}.bar-chart .axis{stroke:#d9d6ce;stroke-width:1}.bar-chart .label{font:12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#444}.bar-chart .value{font:11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#444}.bar-key{display:flex;gap:18px;color:#777;font-size:12px;margin:0 0 10px}.bar-key i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:5px;vertical-align:-1px}
-@media(max-width:900px){main{padding:24px 14px}.hero{grid-template-columns:1fr 1fr}.hero .lead{grid-column:1/-1}.grid2,.callouts{grid-template-columns:1fr}.detail{grid-template-columns:1fr 1fr}.controls .asof{margin-left:0;width:100%}}
-</style></head><body><main>
-<h1>Is spend here affecting results there?</h1><p class="sub">Laura Geller media halo decision report &middot; daily distributed-lag model &middot; cell-specific placebo correction</p>
-<section class="hero" id="hero"></section>
-<div class="controls"><div><label for="measure">Result</label><select id="measure"><option value="orders">New orders</option><option value="revenue">Revenue</option></select></div><div><label for="geo">Region</label><select id="geo"></select></div><div><label for="display">Cell display</label><select id="display"><option value="effect">Adjusted impact</option><option value="probability_positive">Probability positive</option><option value="width">80% interval width</option></select></div><span class="asof" id="asof"></span></div>
-<div class="notice"><strong>Best available observational calculator</strong>Fifty fake media histories estimate and remove each cell's false signal. Results that do not clear the 95% cell threshold and matrix-wide false-discovery control are set to zero. This is decision support, not randomized causal proof.</div>
+*{box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#1a1a1a;
+     margin:0;padding:34px 26px 90px;line-height:1.6;background:#fff;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto}
+h1{font-size:29px;margin:0 0 6px;letter-spacing:-.4px}
+.sub{color:#666;font-size:15px;margin:0 0 26px}
+.answer{border-left:5px solid #1a1a1a;padding:16px 20px;margin:0 0 30px;background:#fafaf8}
+.answer .big{font-size:34px;font-weight:700;line-height:1.15;letter-spacing:-.5px}
+.answer .big em{font-style:normal;color:#888;font-weight:400;font-size:17px}
+.answer p{margin:9px 0 0;font-size:14.5px;max-width:900px}
+.asof{color:#8a877e;font-size:12.5px;letter-spacing:.02em}
+ol.sug{margin:14px 0 0;padding-left:22px;max-width:900px}
+ol.sug li{margin:0 0 13px;font-size:14.5px;line-height:1.62}
+.strict{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.strict input[type=range]{width:168px;accent-color:#1f7a3f;cursor:pointer;margin:0}
+#strictTxt{font-size:12.5px;color:#6b6961;font-variant-numeric:tabular-nums;min-width:250px}
+#strictTxt b{color:#1a1a1a;font-weight:600}
+#strictTxt .warn{color:#b3261e}
+.controls{display:flex;gap:26px;flex-wrap:wrap;align-items:center;
+  position:sticky;top:0;z-index:50;background:#fff;
+  margin:0 -14px 18px;padding:12px 14px 11px;
+  border-bottom:1px solid #e7e5de;
+  box-shadow:0 1px 0 rgba(0,0,0,.02)}
+.controls .lbl{font-size:11px}
+.grp{display:flex;gap:0;border:1px solid #d5d3cc;border-radius:7px;overflow:hidden}
+.grp button{border:0;background:#fff;padding:7px 15px;font-size:13px;cursor:pointer;font-family:inherit;color:#444}
+.grp button+button{border-left:1px solid #e6e4dd}
+.grp button.on{background:#1a1a1a;color:#fff}
+.lbl{font-size:12px;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-right:-16px}
+table.m{border-collapse:separate;border-spacing:0;font-size:12px}
+table.m th{font-weight:600;color:#555;padding:6px 7px;text-align:left;font-size:11.5px;white-space:nowrap}
+table.m th.col{writing-mode:vertical-rl;transform:rotate(180deg);height:104px;vertical-align:bottom;padding:6px 3px}
+table.m td{padding:0;border:1px solid #fff}
+.cell{width:62px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;
+      font-variant-numeric:tabular-nums;font-size:11.5px;border-radius:2px;transition:outline .08s}
+.cell:hover{outline:2px solid #1a1a1a;outline-offset:-2px}
+.cell.own{background:#f2f1ec!important;color:#bbb;cursor:default}
+.cell.own:hover{outline:none}
+.cell.sel{outline:3px solid #1a1a1a;outline-offset:-3px}
+.legend{display:flex;gap:20px;align-items:center;margin:14px 0 0;font-size:12px;color:#666;flex-wrap:wrap}
+.sw{display:inline-block;width:13px;height:13px;border-radius:2px;margin-right:5px;vertical-align:-2px}
+.panel{margin:26px 0 0;border:1px solid #e2e0d9;border-radius:9px;padding:18px 22px;background:#fafaf8;min-height:96px}
+.panel h3{margin:0 0 4px;font-size:17px}
+.panel .verdict{font-size:13px;font-weight:700;display:inline-block;padding:3px 10px;border-radius:20px;margin-bottom:10px}
+.v-hold{background:#e3f1e7;color:#14612f}.v-neg{background:#fbe9e7;color:#8c1d18;border-color:#f0c8c3}
+.v-no{background:#f0efea;color:#666}
+.stats{display:flex;gap:30px;flex-wrap:wrap;margin:10px 0 0}
+.stat .k{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em}
+.stat .v{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+.stat{max-width:172px}
+.stat .ex{font-size:11px;color:#8a877e;line-height:1.4;margin-top:4px}
+.why{font-size:12.5px;color:#666;line-height:1.5;max-width:640px;margin:0 0 4px}
+.panel p{font-size:13.5px;margin:12px 0 0;max-width:860px;color:#333}
+h2{font-size:19px;margin:44px 0 4px;letter-spacing:-.2px}
+h2+.note{color:#666;font-size:13.5px;margin:0 0 14px;max-width:900px}
+table.s{border-collapse:collapse;width:auto;max-width:100%;font-size:13px}
+table.s th{text-align:left;padding:7px 13px 7px 10px;border-bottom:2px solid #1a1a1a;font-size:11.5px;
+           text-transform:uppercase;letter-spacing:.05em;color:#555;white-space:nowrap}
+table.s th span{white-space:nowrap}
+table.s td{white-space:nowrap}
+table.s td.wrap{white-space:normal}
+table.s.tight th,table.s.tight td{padding-left:7px;padding-right:8px}
+table.s.tight th{vertical-align:bottom;line-height:1.25}
+.ledg{white-space:nowrap;font-size:10.5px;line-height:1.35;margin-top:2px;font-weight:600;font-variant-numeric:tabular-nums}
+.ledg .in{color:#1f7a3f}
+.ledg .out{color:#b3261e}
+.hscroll{overflow-x:auto;border:1px solid #eeece5;border-radius:8px}
+h3.shifth{font-size:15px;font-weight:600;margin:26px 0 2px}
+details.notes{margin:12px 0 0;max-width:900px}
+details.notes>summary{cursor:pointer;list-style:none;font-size:12.5px;color:#6b6960;
+  display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border:1px solid #e2e0d9;
+  border-radius:20px;background:#fbfaf7;user-select:none}
+details.notes>summary:hover{background:#f4f2ec;border-color:#d5d3cc}
+details.notes>summary::-webkit-details-marker{display:none}
+details.notes>summary::before{content:"B8";font-size:9px;color:#a8a69d}
+details.notes[open]>summary::before{content:"BE"}
+details.notes[open]>summary{margin-bottom:4px}
+details.sec>summary{cursor:pointer;list-style:none;margin:34px 0 0}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary h2{display:inline;font-size:20px}
+details.sec>summary::before{content:"B8 ";color:#999}
+details.sec[open]>summary::before{content:"BE ";color:#999}
+details.sec .tease{display:block;font-size:12.5px;color:#8a877e;margin:2px 0 0}
+#shift svg{display:block;max-width:100%;height:auto}
+#shift .lab{font-size:11.5px;fill:#444}
+#shift .val{font-size:10.5px;font-variant-numeric:tabular-nums}
+#shift .axis{stroke:#ddd9cf;stroke-width:1}
+#shift .key{font-size:11.5px;color:#8a877e;display:flex;gap:16px;flex-wrap:wrap;margin:0 0 8px}
+#shift .key i{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:5px;vertical-align:-1px}
+.hscroll table{margin:0}
+td.stick,th.stick{position:sticky;left:0;background:#fff;z-index:2;box-shadow:1px 0 0 #eeece5}
+.hscroll tr:first-child th.stick,.hscroll tr:nth-child(2) th.stick{background:#faf9f6;z-index:3}
+table.s td{padding:7px 13px 7px 10px;border-bottom:1px solid #eeece5;font-variant-numeric:tabular-nums}
+table.s td.l{font-variant-numeric:normal;font-weight:600}
+.method{font-size:13px;color:#555;max-width:900px}
+.method p{margin:0 0 11px}
+.method strong{color:#1a1a1a}
+.warn{background:#fdf6e3;border:1px solid #e8dcb8;border-left:3px solid #c9a227;border-radius:7px;
+ padding:11px 14px;margin:16px 0 0;font-size:13px;line-height:1.6;color:#4a3f1a;max-width:900px}
+.method h3{font-size:14.5px;margin:22px 0 8px;color:#1a1a1a}
+.method .cap{font-size:11px;color:#888;margin:4px 0 0}
+.method table.s{margin:8px 0 4px}
+.eq{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.75;background:#fbfaf7;
+ border-left:3px solid #ddd9cf;padding:9px 13px;margin:9px 0;overflow-x:auto;color:#222}
+.eq strong{font-weight:700}
+details.apx>summary{cursor:pointer;font-size:20px;font-weight:600;margin:34px 0 0;list-style:none}
+details.apx>summary::-webkit-details-marker{display:none}
+details.apx>summary::before{content:"B8 ";color:#999}
+details.apx[open]>summary::before{content:"BE ";color:#999}
+details.apx>summary h2{display:inline;font-size:20px}
+.spark{margin:14px 0 0}
+.spark svg{display:block}
+.spark .cap{font-size:11px;color:#888;margin-top:3px}
+.scat{margin:14px 0 0}
+.scat .cap{font-size:11px;color:#888;margin-top:3px;max-width:430px;line-height:1.45}
+.dlt{font-weight:600;font-variant-numeric:tabular-nums;margin-left:5px;font-size:11.5px;white-space:nowrap}
+.dlt.up{color:#1f7a3f}.dlt.down{color:#b3261e}
+.dlt.flat{color:#8a877e;font-weight:500}
+.val-bad,.val-bad strong{color:#b3261e}
+.hold input{font-family:inherit;font-size:13px;padding:4px 7px;border:1px solid #d5d3cc;border-radius:6px;width:62px}
+.hold .big{font-weight:700;font-size:15px}
+.amt{margin:14px 0 0;font-size:13px;color:#444}
+.amt input{font-family:inherit;font-size:13px;padding:5px 8px;border:1px solid #d5d3cc;border-radius:6px;width:110px;
+           font-variant-numeric:tabular-nums}
+.amt .out{font-weight:700;font-size:15px}
+.callout{background:#fff;border:1px solid #e2e0d9;border-left:3px solid #3a3a3a;border-radius:8px;padding:15px 18px;margin:16px 0 0;max-width:900px}
+.callout h4{margin:0 0 7px;font-size:15px}
+.callout p{font-size:13.5px;margin:0 0 9px;color:#333;line-height:1.6}
+.rf{margin:14px 0 0}
+.rf .ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 10px;font-size:13px}
+.rf select,.rf input[type=search]{font-family:inherit;font-size:13px;padding:5px 8px;border:1px solid #d5d3cc;border-radius:6px}
+.rf .scroll{overflow-x:auto;border:1px solid #eeece5;border-radius:7px;max-height:460px;overflow-y:auto}
+.rf table{font-size:12px;margin:0;border-collapse:collapse;width:auto;min-width:100%}
+.rf th{position:sticky;top:0;background:#faf9f6;z-index:1}
+.dl{display:inline-block;font-size:12.5px;padding:5px 11px;border:1px solid #d5d3cc;border-radius:6px;
+ background:#fff;cursor:pointer;font-family:inherit;margin:0 7px 0 0}
+.dl:hover{background:#f4f2ec}
+.foot{margin-top:38px;padding-top:16px;border-top:1px solid #eeece5;font-size:12px;color:#999}
+</style></head><body>
+<div class="wrap">
+<h1>Is spend here affecting results there?</h1>
+<p class="sub">Laura Geller &middot; daily, Jan 2025 &ndash; Jul 2026 &middot; every channel estimated at once, with empirical placebo correction<br><span class="asof">Annual impact view uses the 365 days through 2026-07-27</span></p>
 
-<h2>Adjusted halo matrix</h2><p class="note">Rows are source channels reduced by 20%; columns are where the modeled impact appears. Each source reduction is estimated separately. Row totals should not be read as one simultaneous all-channel plan.</p>
-<div class="matrix-wrap"><table class="matrix" id="matrix"></table></div><div class="legend"><span><i class="sw" style="background:#4f956b"></i>Result at risk</span><span><i class="sw" style="background:#c86d63"></i>Result may rise after reduction</span><span><i class="sw" style="background:#ecebe5"></i>Did not survive correction</span></div>
-<section class="detail" id="detail"><h3>Select a cell</h3><p>Open any pair to inspect its adjusted estimate, uncertainty, raw association, false-signal threshold, and false-discovery rate.</p></section>
+<div class="answer"><div class="big" id="hero">Loading&hellip;</div><p id="heroTxt"></p></div>
 
-<h2>The same corrected impact, as bars</h2><p class="note">Each bar is one source channel's total result at risk under its own 20% reduction. The darker portion is impact credited back to the same channel; the lighter portion is cross-channel halo. Red bars run the other way.</p><div class="bar-key"><span><i style="background:#1f7a3f"></i>Direct</span><span><i style="background:#82b394"></i>Cross-channel halo</span><span><i style="background:#b3261e"></i>Negative total</span></div><div class="bar-chart" id="bars"></div>
+<div class="controls">
+  <span class="lbl">Result</span>
+  <div class="grp" id="mTabs"><button data-m="orders" class="on">New orders</button><button data-m="revenue">Revenue</button></div>
+  <span class="lbl">Region</span>
+  <div class="grp" id="rTabs"></div>
+  <span class="asof" style="flex-basis:100%;margin-top:2px">The default is a 20% channel reduction over 365 days. Each geography is fitted separately; Total is the sum of the six geography models.</span>
+</div>
 
-<div class="grid2"><section><h2>Source-channel impact</h2><p class="note">The direct and cross-channel portions of each independently modeled 20% reduction.</p><div class="table-wrap" id="sourceTable"></div></section><section><h2>Where the impact appears</h2><p class="note">Observed annual results by credited destination and the sum of separately estimated source effects.</p><div class="table-wrap" id="destinationTable"></div></section></div>
+<div style="overflow-x:auto"><div id="matrix"></div></div>
+<div class="cap" id="matcap" style="margin-top:6px"></div>
+<div class="legend">
+  <span><i class="sw" style="background:#1f7a3f"></i>Positive adjusted effect</span>
+  <span><i class="sw" style="background:#f1d9d6"></i>Negative adjusted effect</span>
+  <span><i class="sw" style="background:#e8e6df"></i>Did not survive the placebo gate</span>
+  <span style="color:#999">Click any cell</span>
+</div>
+<p class="note" style="margin:10px 0 0"><strong>Rows are the channel changed; columns are where the measured result appears.</strong> Values are the modelled annual effect of the fixed 20% scenario, after subtracting each pair&rsquo;s median false signal and its 95% placebo threshold. Cells also have false-discovery control across the full matrix.</p>
+<div class="warn" id="warn"></div>
+<div class="panel" id="panel"><h3 style="color:#888;font-weight:500">Select a cell</h3><p style="color:#888">Pick a source and destination pair to see its raw estimate, empirical correction, interval and placebo diagnostics.</p></div>
 
-<h2>What this changes</h2><div class="callouts" id="changes"></div>
-<h2>Budget decision guide</h2><p class="note">Revenue at risk is compared with the spend saved by a 20% reduction. It is marginal revenue, not contribution margin; channels with no surviving signal are unresolved, not automatically wasteful.</p><div class="table-wrap" id="decisions"></div>
-<h2>Experiment priorities</h2><p class="note">Priorities favor large amounts of raw association removed by the falsification correction. Test one source at a time across randomized matched geographies and record every credited destination.</p><div class="table-wrap" id="experiments"></div>
-<h2>How much survived?</h2><div class="grid2"><div class="card" id="reliability"></div><div class="card" id="consistency"></div></div>
-<h2>Method and limitations</h2><div class="method"><p><strong>Model.</strong> Daily channel exposure is transformed with channel-specific geometric carryover and Hill saturation. Annual seasonality, country trends, promotional depth and gift-with-purchase are controlled. Country effects are partially pooled.</p><p><strong>Counterfactual.</strong> Every cell estimates the change at one credited destination when one source is reduced by 20% over the latest 365 days. Negative values are retained; zero means the adjusted evidence did not survive, not that the true effect is exactly zero.</p><p><strong>Falsification correction.</strong> Each source history is independently circular-shifted 50 times. The median fake-history effect is removed, the cell's empirical 95% false-signal threshold is subtracted, and Benjamini-Hochberg control is applied across all 168 cells.</p><p><strong>What this report no longer does.</strong> It does not force halo into a zero-sum credit-transfer ledger, infer lifetime value, contribution margin or optimal budgets from unavailable data, or label predictive fit as causality. Randomized holdouts remain the standard required to upgrade these estimates.</p></div>
-<p class="downloads"><a href="model/generated/halo-daily-orders.json">Orders model JSON</a><a href="model/generated/halo-daily-revenue.json">Revenue model JSON</a><a href="model/generated/placebo-validation.json">Placebo audit JSON</a></p>
-<div class="foot">Refreshed from the same corrected outputs used by every table and recommendation on this page.</div>
-</main><script>
-const PATHS={orders:'model/generated/halo-daily-orders.json',revenue:'model/generated/halo-daily-revenue.json',summary:'model/generated/report-summary.json',validation:'model/generated/placebo-validation.json'};
-let DATA={},SUMMARY,VALIDATION,state={measure:'orders',geo:'Total',display:'effect',selected:null};const nf=new Intl.NumberFormat('en-US',{maximumFractionDigits:0});
-const money=n=>'$'+nf.format(Math.round(n)),num=n=>nf.format(Math.round(n)),pct=n=>(100*n).toFixed(n>.995?1:0)+'%',compact=n=>{const a=Math.abs(n),s=n<0?'-':'';return s+(a>=1e9?(a/1e9).toFixed(1)+'b':a>=1e6?(a/1e6).toFixed(1)+'m':a>=1e3?(a/1e3).toFixed(a>=1e4?0:1)+'k':a.toFixed(0))};
-const model=()=>DATA[state.measure],view=()=>model().views[state.geo],summary=()=>SUMMARY.views[state.geo],fmt=n=>state.measure==='revenue'?money(n):num(n),short=n=>(state.measure==='revenue'?'$':'')+compact(n),cell=(s,d,m=model())=>m.views[state.geo].cells[s+'|'+d];
-function rowTotal(source,m=model()){return Object.entries(m.views[state.geo].cells).filter(([k])=>k.startsWith(source+'|')).reduce((a,[,c])=>a+c.effect,0)}
-function colTotal(dest,m=model()){return Object.entries(m.views[state.geo].cells).filter(([k])=>k.endsWith('|'+dest)).reduce((a,[,c])=>a+c.effect,0)}
-function cls(n){return n>0?'positive':n<0?'negative':''}
-function drawHero(){const cells=Object.values(view().cells),passed=cells.filter(c=>c.passes_placebo).length,total=Object.values(view().row_totals).reduce((a,b)=>a+b,0),fake=1/VALIDATION.summary.observed_to_placebo_absolute_median;document.getElementById('hero').innerHTML=`<div class="lead"><span class="eyebrow">Sum of separate 20% source tests</span><strong>${short(total)}</strong><small>${state.measure} at risk after cell-specific correction</small></div><div><span class="eyebrow">Cells surviving</span><strong>${passed} / ${cells.length}</strong><small>the rest are zero</small></div><div><span class="eyebrow">Fake-history signal</span><strong>${pct(fake)}</strong><small>removed cell by cell</small></div><div><span class="eyebrow">Evidence</span><strong>Observational</strong><small>50 placebo runs; no holdouts found</small></div>`}
-function cellColor(c){if(!c.effect)return'';const max=Math.max(...Object.values(view().cells).map(x=>Math.abs(x.effect)),1),alpha=.12+.72*Math.min(Math.abs(c.effect)/max,1);return c.effect>0?`rgba(40,113,72,${alpha})`:`rgba(168,76,67,${alpha})`}
-function cellValue(c){if(state.display==='probability_positive')return pct(c.probability_positive);if(state.display==='width')return short(c.upper80-c.lower80);return short(c.effect)}
-function drawMatrix(){const m=model(),v=view();let h='<thead><tr><th class="corner">Source reduced / credited to</th>';m.destinations.forEach(d=>h+=`<th class="col">${d}</th>`);h+='<th class="col total">Row total</th></tr></thead><tbody>';m.channels.forEach(s=>{h+=`<tr><th class="row">${s}</th>`;m.destinations.forEach(d=>{const k=s+'|'+d,c=v.cells[k];h+=`<td class="cell ${c.effect?'':'zero'} ${state.selected===k?'selected':''}" data-key="${k}" style="background:${cellColor(c)}">${cellValue(c)}</td>`});h+=`<td class="total ${cls(v.row_totals[s])}">${short(v.row_totals[s])}</td></tr>`});document.getElementById('matrix').innerHTML=h+'</tbody>';document.querySelectorAll('.cell').forEach(x=>x.onclick=()=>{state.selected=x.dataset.key;drawMatrix();drawDetail()})}
-function drawDetail(){if(!state.selected)return;const c=view().cells[state.selected],[s,d]=state.selected.split('|'),evidence=c.calibrated?'experiment-calibrated':'placebo-adjusted observational';document.getElementById('detail').innerHTML=`<h3>${s} &rarr; ${d}<span class="badge">${evidence}</span></h3><div class="stat"><span>Adjusted impact</span><strong class="${cls(c.effect)}">${fmt(c.effect)}</strong></div><div class="stat"><span>80% interval</span><strong>${fmt(c.lower80)} to ${fmt(c.upper80)}</strong></div><div class="stat"><span>Raw association</span><strong>${fmt(c.raw_effect)}</strong></div><div class="stat"><span>95% false threshold</span><strong>${fmt(c.placebo_threshold)}</strong></div><div class="stat"><span>False-discovery q</span><strong>${pct(c.placebo_q_value)}</strong></div><div class="stat"><span>Probability positive</span><strong>${pct(c.probability_positive)}</strong></div><p>${c.passes_placebo?'This cell survived both correction gates.':'This cell did not survive correction and is set to zero.'} The raw association is retained only for auditability.</p>`}
-function drawBars(){const m=model(),rows=m.channels.map(source=>{const total=rowTotal(source),direct=m.destinations.includes(source)?cell(source,source).effect:0;return{source,total,direct}}).sort((a,b)=>Math.abs(b.total)-Math.abs(a.total)),max=Math.max(...rows.map(r=>Math.abs(r.total)),1),base=470,span=350,rowH=29,height=34+rows.length*rowH;let svg=`<svg viewBox="0 0 900 ${height}" role="img" aria-label="Adjusted source-channel impact bar chart"><line class="axis" x1="${base}" x2="${base}" y1="8" y2="${height-10}"/>`;rows.forEach((r,i)=>{const y=20+i*rowH,w=Math.abs(r.total)/max*span;svg+=`<text class="label" x="0" y="${y+10}">${r.source}</text>`;if(r.total>0){const direct=Math.max(0,Math.min(r.direct,r.total))/max*span;svg+=`<rect x="${base}" y="${y}" width="${w}" height="18" rx="2" fill="#82b394"/><rect x="${base}" y="${y}" width="${direct}" height="18" rx="2" fill="#1f7a3f"/><text class="value" x="${base+w+7}" y="${y+13}">${short(r.total)}</text>`}else if(r.total<0){svg+=`<rect x="${base-w}" y="${y}" width="${w}" height="18" rx="2" fill="#b3261e"/><text class="value" text-anchor="end" x="${base-w-7}" y="${y+13}">${short(r.total)}</text>`}else{svg+=`<circle cx="${base}" cy="${y+9}" r="3" fill="#b8b6ae"/><text class="value" x="${base+7}" y="${y+13}">0</text>`}});document.getElementById('bars').innerHTML=svg+'</svg>'}
-function drawSource(){const m=model(),s=summary(),rows=m.channels.map(source=>{const total=rowTotal(source),direct=m.destinations.includes(source)?cell(source,source).effect:0,halo=total-direct,spend=s.sources[source].spend,cut=spend==null?null:Math.abs(SUMMARY.scenario_relative_change)*spend,rate=cut?total/cut*1000:null;return{source,total,direct,halo,spend,rate}}).sort((a,b)=>Math.abs(b.total)-Math.abs(a.total));let h='<table class="report"><thead><tr><th>Source</th><th>Direct</th><th>Cross-channel</th><th>Total</th><th>Annual spend</th><th>Impact / $1k saved</th></tr></thead><tbody>';rows.forEach(r=>h+=`<tr><td>${r.source}</td><td>${short(r.direct)}</td><td>${short(r.halo)}</td><td class="${cls(r.total)}">${short(r.total)}</td><td>${r.spend==null?'n/a':money(r.spend)}</td><td>${r.rate==null?'n/a':short(r.rate)}</td></tr>`);document.getElementById('sourceTable').innerHTML=h+'</tbody></table>'}
-function drawDestinations(){const m=model(),s=summary()[state.measure];let h='<table class="report"><thead><tr><th>Credited destination</th><th>Observed annual</th><th>Adjusted impact</th><th>Impact / observed</th></tr></thead><tbody>';m.destinations.map(d=>({d,observed:s[d],impact:colTotal(d)})).sort((a,b)=>Math.abs(b.impact)-Math.abs(a.impact)).forEach(r=>h+=`<tr><td>${r.d}</td><td>${fmt(r.observed)}</td><td class="${cls(r.impact)}">${fmt(r.impact)}</td><td>${r.observed?pct(r.impact/r.observed):'n/a'}</td></tr>`);document.getElementById('destinationTable').innerHTML=h+'</tbody></table>'}
-function drawChanges(){const m=model(),top=m.channels.map(s=>[s,rowTotal(s)]).sort((a,b)=>b[1]-a[1])[0],cross=[];Object.entries(view().cells).forEach(([k,c])=>{const[a,b]=k.split('|');if(a!==b)cross.push([k,c.effect])});cross.sort((a,b)=>Math.abs(b[1])-Math.abs(a[1]));const zero=Object.values(view().cells).filter(c=>!c.effect).length;document.getElementById('changes').innerHTML=`<article><h3>${top[0]} has the largest surviving source total</h3><p>A separate 20% reduction is associated with ${fmt(top[1])} fewer ${state.measure}. This is the strongest protected signal in the selected view.</p></article><article><h3>${cross[0][0].replace('|',' → ')} is the largest cross-channel cell</h3><p>The corrected impact is ${fmt(cross[0][1])}. Credit destination and causal source should not be treated as interchangeable.</p></article><article><h3>${zero} of ${m.channels.length*m.destinations.length} cells became zero</h3><p>The new report no longer lets weak correlations accumulate through downstream ledgers, rankings or recommendations.</p></article>`}
-function drawDecisions(){const rm=DATA.revenue,rv=rm.views[state.geo],s=summary();let rows=rm.channels.map(source=>{const impact=Object.entries(rv.cells).filter(([k])=>k.startsWith(source+'|')).reduce((a,[,c])=>a+c.effect,0),spend=s.sources[source].spend,cut=spend==null?null:Math.abs(SUMMARY.scenario_relative_change)*spend,ratio=cut?impact/cut:null,passes=Object.entries(rv.cells).filter(([k,c])=>k.startsWith(source+'|')&&c.passes_placebo).length;let decision=impact>0?'Revenue at risk—protect or test':impact<0?'Candidate for controlled reduction':'Unresolved—test, do not assume zero';return{source,impact,spend,cut,ratio,passes,decision}}).sort((a,b)=>b.impact-a.impact);let h='<table class="report"><thead><tr><th>Source</th><th>Revenue at risk</th><th>Spend saved</th><th>Marginal revenue / $ saved</th><th>Surviving cells</th><th>Decision</th></tr></thead><tbody>';rows.forEach(r=>h+=`<tr><td>${r.source}</td><td class="${cls(r.impact)}">${money(r.impact)}</td><td>${r.cut==null?'n/a':money(r.cut)}</td><td>${r.ratio==null?'n/a':r.ratio.toFixed(2)+'x'}</td><td>${r.passes}</td><td class="decision">${r.decision}</td></tr>`);document.getElementById('decisions').innerHTML=h+'</tbody></table>'}
-function drawExperiments(){const rm=DATA.revenue,rv=rm.views[state.geo],s=summary();let rows=rm.channels.map(source=>{const cs=Object.entries(rv.cells).filter(([k])=>k.startsWith(source+'|')).map(([,c])=>c),removed=cs.reduce((a,c)=>a+Math.abs(c.raw_effect-c.effect),0),threshold=cs.reduce((a,c)=>a+c.placebo_threshold,0),spend=s.sources[source].spend;return{source,removed,threshold,spend}}).sort((a,b)=>b.removed-a.removed).slice(0,6);let h='<table class="report"><thead><tr><th>Priority source</th><th>Raw revenue removed</th><th>Combined false threshold</th><th>Annual spend</th><th>Recommended design</th></tr></thead><tbody>';rows.forEach(r=>h+=`<tr><td>${r.source}</td><td>${money(r.removed)}</td><td>${money(r.threshold)}</td><td>${r.spend==null?'n/a':money(r.spend)}</td><td>Matched-geo 20% holdout; all 14 outcomes</td></tr>`);document.getElementById('experiments').innerHTML=h+'</tbody></table>'}
-function drawReliability(){const cells=Object.values(view().cells),pass=cells.filter(c=>c.passes_placebo).length,positive=cells.filter(c=>c.effect>0).length,negative=cells.filter(c=>c.effect<0).length;document.getElementById('reliability').innerHTML=`<h3>Publication gate</h3><p><strong>${pass}</strong> cells survive; ${positive} positive and ${negative} negative. <strong>${cells.length-pass}</strong> are set to zero. Every displayed nonzero value cleared its own 95% false-signal threshold and the matrix-wide false-discovery gate.</p>`;const order=DATA.orders.views[state.geo],revenue=DATA.revenue.views[state.geo],same=Object.keys(order.cells).filter(k=>Math.sign(order.cells[k].effect)===Math.sign(revenue.cells[k].effect)&&order.cells[k].effect!==0).length,either=Object.keys(order.cells).filter(k=>order.cells[k].effect!==0||revenue.cells[k].effect!==0).length;document.getElementById('consistency').innerHTML=`<h3>Orders / revenue agreement</h3><p><strong>${same} of ${either}</strong> cells with a surviving signal agree in direction across the two outcomes. Differences remain visible instead of being forced into a common ledger.</p>`}
-function draw(){drawHero();drawMatrix();drawDetail();drawBars();drawSource();drawDestinations();drawChanges();drawDecisions();drawExperiments();drawReliability()}
-Promise.all(Object.entries(PATHS).map(async([k,p])=>{const r=await fetch(p);if(!r.ok)throw Error('Could not load '+p);return[k,await r.json()]})).then(items=>{const o=Object.fromEntries(items);DATA.orders=o.orders;DATA.revenue=o.revenue;SUMMARY=o.summary;VALIDATION=o.validation;const geo=document.getElementById('geo');Object.keys(DATA.orders.views).forEach(g=>geo.add(new Option(g,g)));document.getElementById('asof').textContent=`Annual view ${SUMMARY.date_min} to ${SUMMARY.date_max}`;document.getElementById('measure').onchange=e=>{state.measure=e.target.value;state.selected=null;draw()};geo.onchange=e=>{state.geo=e.target.value;state.selected=null;draw()};document.getElementById('display').onchange=e=>{state.display=e.target.value;drawMatrix()};draw()}).catch(e=>document.querySelector('.notice').innerHTML='<strong>Report could not load</strong>'+e.message);
-</script></body></html>
+<h2>Where the measured impact appears</h2>
+<p class="note"><strong>Annual scenario totals from the corrected model.</strong> Direct is the source channel&rsquo;s own destination cell; cross-channel is the sum of every other destination. Spend and efficiency use the same trailing 365-day window.</p>
+<div id="spill"></div>
+
+<h3 class="shifth">Direct effect versus total measured effect</h3>
+<p class="cap" id="shiftcap"></p>
+<div id="shift"></div>
+
+<h2>What this changes</h2><div class="method" id="soWhat"></div>
+<h2>How much of each effect is real?</h2><div id="rely"></div>
+<h3 style="margin-top:30px">What did the false-history tests find?</h3><div id="sens"></div>
+<h3 style="margin-top:30px">How stable is the pattern across markets?</h3><div id="stab"></div>
+<h2>Does it add up?</h2><div id="cons"></div>
+<h2>Suggestions</h2><p class="note">Everything above this line is what the observational model estimates. Everything below is a decision aid, not causal proof.</p><div id="suggest"></div>
+<h3 style="margin-top:30px">The experiments worth running</h3><div id="hold"></div>
+
+<details class="sec"><summary><h2>How this was worked out</h2><span class="tease">Daily distributed lags, hierarchical pooling, placebo debiasing and what the method cannot prove</span></summary>
+<div class="method">
+  <p><strong>The model.</strong> The calculator uses daily data from 2025-01-01 through 2026-07-27. All twelve paid and CRM levers are estimated together against every attributed destination, using a hierarchical Bayesian distributed-lag model. Geography-specific estimates borrow strength without pretending spend in one market caused orders in another.</p>
+  <p><strong>The scenario.</strong> Every displayed effect prices the same practical change: a 20% reduction in one channel, held for 365 days. This avoids extrapolating a local response all the way to zero spend.</p>
+  <p><strong>The 78% problem.</strong> The earlier model&rsquo;s apparent signal was mostly reproducible in fake histories. This version circularly shifts each source in time, refits the model 50 times per measure, subtracts the pair-specific median placebo bias and then subtracts the 95th-percentile false-signal threshold. Only cells that also survive matrix-wide false-discovery control are published.</p>
+  <p><strong>Interpretation.</strong> A source-to-destination cell can reflect incremental demand, attribution displacement, or both. The method controls observed co-movement and tests temporal placebos, but it remains observational. A randomized geo or audience holdout is still required to establish causality.</p>
+</div></details>
+
+<details class="apx"><summary><h2>Appendix &mdash; diagnostics in this build</h2></summary><div class="method" id="appendix"></div></details>
+<div class="foot">Daily hierarchical distributed-lag model. Cell-specific time-shift placebo debiasing, 95% empirical false-signal threshold, and false-discovery control. Scenario period: 365 days through 27 July 2026.</div>
+</div>
+<script src="app.js"></script></body></html>
