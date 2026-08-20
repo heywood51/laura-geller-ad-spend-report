@@ -1,8 +1,12 @@
 model/__pycache__/
 *.pyc
 
-# Aggregated warehouse exports and fitted production outputs are intentionally local.
-# The repository is public; do not publish daily business data by accident.
+# Aggregated warehouse exports and intermediate fitted outputs are intentionally local.
+# Only the derived, placebo-adjusted calculator outputs are published below.
 model/generated/daily_panel.csv
 model/generated/halo-daily-*.json
 model/generated/placebo-validation.json
+model/generated/placebo-validation-*.json
+!model/generated/halo-daily-orders.json
+!model/generated/halo-daily-revenue.json
+!model/generated/placebo-validation.json

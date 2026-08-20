@@ -18,10 +18,16 @@ channels (including delivered email and SMS), and 14 credited destinations for b
 orders and revenue. This is a materially better modeling panel, but it is not randomized.
 
 The required circular-shift placebo test failed: impossible, time-shifted media histories
-produced a median 78% as much absolute cell-level halo as the observed histories. The
-warehouse-wide table search also found no lift, holdout, geo-test, or incrementality
-results. Outputs therefore retain status `observational_candidate`, and the replacement
-page masks all numeric cells. High predictive R-squared does not override this gate.
+produced a median 74% as much absolute cell-level halo as the observed histories over 50
+independent runs. The warehouse-wide table search also found no lift, holdout, geo-test,
+or incrementality results. The best-available calculator therefore uses a cell-specific
+empirical-null correction rather than treating predictive fit as causality.
+
+For every cell, the production pass subtracts the median placebo bias, requires the
+debiased signal to exceed that cell's 95th-percentile false-signal threshold, and applies
+Benjamini-Hochberg false-discovery control across all 168 comparisons. Cells that fail
+become zero. Passing values are labeled `placebo_adjusted_observational`, never
+experiment-calibrated.
 
 ## Run the embedded-data preview
 
@@ -53,7 +59,15 @@ python model/halo_model.py --input model/generated/daily_panel.csv `
 
 python model/validate_placebos.py --input model/generated/daily_panel.csv `
   --config model/config.daily.orders.json `
-  --output model/generated/placebo-validation.json --runs 8
+  --output model/generated/placebo-validation.json `
+  --adjusted-output model/generated/halo-daily-orders.json `
+  --runs 50 --alpha 0.05
+
+python model/validate_placebos.py --input model/generated/daily_panel.csv `
+  --config model/config.daily.revenue.json `
+  --output model/generated/placebo-validation-revenue.json `
+  --adjusted-output model/generated/halo-daily-revenue.json `
+  --runs 50 --alpha 0.05 --seed 20260821
 ```
 
 ## Production input
