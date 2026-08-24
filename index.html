@@ -76,14 +76,14 @@ details.notes>summary{cursor:pointer;list-style:none;font-size:12.5px;color:#6b6
   border-radius:20px;background:#fbfaf7;user-select:none}
 details.notes>summary:hover{background:#f4f2ec;border-color:#d5d3cc}
 details.notes>summary::-webkit-details-marker{display:none}
-details.notes>summary::before{content:"B8";font-size:9px;color:#a8a69d}
-details.notes[open]>summary::before{content:"BE"}
+details.notes>summary::before{content:"\25B8";font-size:9px;color:#a8a69d}
+details.notes[open]>summary::before{content:"\25BE"}
 details.notes[open]>summary{margin-bottom:4px}
 details.sec>summary{cursor:pointer;list-style:none;margin:34px 0 0}
 details.sec>summary::-webkit-details-marker{display:none}
 details.sec>summary h2{display:inline;font-size:20px}
-details.sec>summary::before{content:"B8 ";color:#999}
-details.sec[open]>summary::before{content:"BE ";color:#999}
+details.sec>summary::before{content:"\25B8 ";color:#999}
+details.sec[open]>summary::before{content:"\25BE ";color:#999}
 details.sec .tease{display:block;font-size:12.5px;color:#8a877e;margin:2px 0 0}
 #shift svg{display:block;max-width:100%;height:auto}
 #shift .lab{font-size:11.5px;fill:#444}
@@ -109,8 +109,8 @@ table.s td.l{font-variant-numeric:normal;font-weight:600}
 .eq strong{font-weight:700}
 details.apx>summary{cursor:pointer;font-size:20px;font-weight:600;margin:34px 0 0;list-style:none}
 details.apx>summary::-webkit-details-marker{display:none}
-details.apx>summary::before{content:"B8 ";color:#999}
-details.apx[open]>summary::before{content:"BE ";color:#999}
+details.apx>summary::before{content:"\25B8 ";color:#999}
+details.apx[open]>summary::before{content:"\25BE ";color:#999}
 details.apx>summary h2{display:inline;font-size:20px}
 .spark{margin:14px 0 0}
 .spark svg{display:block}
@@ -143,7 +143,7 @@ details.apx>summary h2{display:inline;font-size:20px}
 </style></head><body>
 <div class="wrap">
 <h1>Is spend here affecting results there?</h1>
-<p class="sub">Laura Geller &middot; daily, Jan 2025 &ndash; Jul 2026 &middot; every channel estimated at once, with empirical placebo correction<br><span class="asof">Annual impact view uses the 365 days through 2026-07-27</span></p>
+<p class="sub">Laura Geller &middot; daily, Jan 2025 &ndash; Jul 2026 &middot; total-business incrementality first, attribution routing second<br><span class="asof">Annual impact view uses the 365 days through 2026-07-27</span></p>
 
 <div class="answer"><div class="big" id="hero">Loading&hellip;</div><p id="heroTxt"></p></div>
 
@@ -152,23 +152,22 @@ details.apx>summary h2{display:inline;font-size:20px}
   <div class="grp" id="mTabs"><button data-m="orders" class="on">New orders</button><button data-m="revenue">Revenue</button></div>
   <span class="lbl">Region</span>
   <div class="grp" id="rTabs"></div>
-  <span class="asof" style="flex-basis:100%;margin-top:2px">The default is a 20% channel reduction over 365 days. Each geography is fitted separately; Total is the sum of the six geography models.</span>
+  <span class="asof" style="flex-basis:100%;margin-top:2px">The default is a 20% channel reduction over 365 days. Each geography and the pooled Total view are fitted separately.</span>
 </div>
 
 <div style="overflow-x:auto"><div id="matrix"></div></div>
 <div class="cap" id="matcap" style="margin-top:6px"></div>
 <div class="legend">
-  <span><i class="sw" style="background:#1f7a3f"></i>Result protected by current spend</span>
-  <span><i class="sw" style="background:#f1d9d6"></i>Destination credit may rise after a cut</span>
-  <span><i class="sw" style="background:#e8e6df"></i>Did not survive the placebo gate</span>
+  <span><i class="sw" style="background:#1f7a3f"></i>Incremental result created and routed here</span>
+  <span><i class="sw" style="background:#e8e6df"></i>Total incrementality or routing unresolved</span>
   <span style="color:#999">Click any cell</span>
 </div>
-<p class="note" style="margin:10px 0 0"><strong>Destination cells describe attribution paths; the final Total business cell describes the company-wide result.</strong> Values are current results minus the modelled result after a 20% cut. Positive means the current spend protects that result. A negative destination can be credit moving to another path. A negative Total business association is shown as <strong>TEST</strong>, never as orders created or a cut recommendation.</p>
+<p class="note" style="margin:10px 0 0"><strong>A destination cell prints only after two independent questions clear their gates.</strong> First, the row source must show positive total-business incrementality under a 99% placebo/FDR rule and a positive conservative interval. Second, the destination must show positive corrected routing evidence. Printed cells divide the supported source total across those destinations and therefore add exactly to Total business.</p>
 <div class="warn" id="warn"></div>
 <div class="panel" id="panel"><h3 style="color:#888;font-weight:500">Select a cell</h3><p style="color:#888">Pick a source and destination pair to see its raw estimate, empirical correction, interval and placebo diagnostics.</p></div>
 
 <h2>Budget decision guide</h2>
-<p class="note"><strong>Orders, revenue and spend are joined at the source-row level.</strong> The economic comparison uses the spend saved by the modelled 20% reduction—not full annual spend. Intervals are diagnostic 80% row intervals; decisions remain observational until a holdout confirms them.</p>
+<p class="note"><strong>Orders, revenue and spend are joined at the source-row level.</strong> Only total-business rows passing the strict final gate enter economics. The comparison uses the spend saved by the modelled 20% reduction—not full annual spend. Destination routing never creates extra volume.</p>
 <div id="spill"></div>
 
 <h3 class="shifth">Direct credited effect versus total business effect</h3>
@@ -183,18 +182,18 @@ details.apx>summary h2{display:inline;font-size:20px}
   <h3>What did the false-history tests find?</h3><div id="sens"></div>
   <h3>Does the pattern repeat across markets?</h3><div id="stab"></div>
   <h3>Does the report reconcile?</h3><div id="cons"></div>
-  <h3>Downloads</h3><p><a class="dl" href="model/generated/halo-daily-orders.json" download>Corrected orders JSON</a><a class="dl" href="model/generated/halo-daily-revenue.json" download>Corrected revenue JSON</a><a class="dl" href="model/generated/placebo-validation.json" download>Orders placebo audit</a><a class="dl" href="model/generated/report-summary.json" download>Annual source summary</a></p>
+  <h3>Downloads</h3><p><a class="dl" href="model/generated/halo-created-orders.json" download>Created orders matrix</a><a class="dl" href="model/generated/halo-created-revenue.json" download>Created revenue matrix</a><a class="dl" href="model/generated/halo-incrementality-orders.json" download>Total orders model</a><a class="dl" href="model/generated/halo-incrementality-revenue.json" download>Total revenue model</a><a class="dl" href="model/generated/placebo-incrementality-orders.json" download>Orders held-out audit</a><a class="dl" href="model/generated/placebo-incrementality-revenue.json" download>Revenue held-out audit</a></p>
 </div></details>
 
 <details class="sec"><summary><h2>How this was worked out</h2><span class="tease">Daily distributed lags, hierarchical pooling, placebo debiasing and what the method cannot prove</span></summary>
 <div class="method">
-  <p><strong>The model.</strong> The calculator uses daily data from 2025-01-01 through 2026-07-27. All twelve paid and CRM levers are estimated together against every attributed destination, using a hierarchical Bayesian distributed-lag model. Geography-specific estimates borrow strength without pretending spend in one market caused orders in another.</p>
-  <p><strong>The scenario and sign.</strong> Every displayed value is the modelled current result minus the result after a 20% channel reduction held for 365 days. Positive is therefore the amount at risk after the cut. Destination-level negatives can be attribution routing. A negative cross-destination row sum is an observational cannibalization candidate, but the calculator classifies it as TEST / unresolved until a randomized holdout confirms it.</p>
-  <p><strong>The 78% problem.</strong> The earlier model&rsquo;s apparent signal was mostly reproducible in fake histories. This version circularly shifts each source in time, refits the model 50 times per measure, subtracts the pair-specific median placebo bias and then subtracts the 95th-percentile false-signal threshold. Only cells that also survive matrix-wide false-discovery control are published.</p>
-  <p><strong>Interpretation.</strong> A source-to-destination cell can reflect incremental demand, attribution displacement, or both. The method controls observed co-movement and tests temporal placebos, but it remains observational. A randomized geo or audience holdout is still required to establish causality.</p>
+  <p><strong>Layer one: total-business incrementality.</strong> The calculator uses daily data from 2025-01-01 through 2026-07-27. All twelve paid and CRM levers are estimated together against total new-customer orders or total new-customer revenue. A row is accepted only if it survives a 99% time-shift placebo threshold, false-discovery control, and a positive conservative interval.</p>
+  <p><strong>Layer two: attribution routing.</strong> The accepted source total is allocated only across destinations with positive corrected routing evidence. Routing weights sum to one, so destination cells cannot manufacture more orders or revenue than the source-level total.</p>
+  <p><strong>The raw-confounding problem.</strong> Fake histories still reproduce much of the uncorrected association. That is why the raw model is never the answer. In held-out validation, the complete final gate—not merely the regression—must publish no fake rows before the model is released.</p>
+  <p><strong>Interpretation.</strong> The page now answers: “Does this source have supported total-business incrementality, and where does corrected attribution evidence place it?” It remains observational until a randomized geo or audience holdout calibrates the source row.</p>
 </div></details>
 
 <details class="apx"><summary><h2>Appendix &mdash; build status</h2></summary><div class="method" id="appendix"></div></details>
-<div class="foot">Daily hierarchical distributed-lag model. Cell-specific time-shift placebo debiasing, 95% empirical false-signal threshold, and false-discovery control. Scenario period: 365 days through 27 July 2026.</div>
+<div class="foot">Daily hierarchical distributed-lag model. Source-to-total-business empirical-null correction, 99% source gate, positive 80% interval, and conditional destination routing. Scenario period: 365 days through 27 July 2026.</div>
 </div>
 <script src="app.js"></script></body></html>
