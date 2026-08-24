@@ -55,6 +55,9 @@ def test_published_balanced_outputs_reconcile() -> None:
                     view["cells"][f"{source}|{destination}"]["effect"] >= 0
                     for source in model["channels"]
                 )
+            tv_cell = view["cells"]["Television|Television"]
+            assert tv_cell["effect"] == 0
+            assert tv_cell["kind"] == "structural_zero_non_addressable"
 
 
 if __name__ == "__main__":

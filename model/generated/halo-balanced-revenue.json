@@ -23,7 +23,10 @@
     "measure": "revenue",
     "placebo_runs": 50,
     "placebo_alpha": 0.05,
-    "scenario_share": 0.2
+    "scenario_share": 0.2,
+    "non_addressable_sources": [
+      "Television"
+    ]
   },
   "channels": [
     "Meta",
@@ -1723,10 +1726,10 @@
           }
         },
         "Television|Television": {
-          "effect": 92.94400000000002,
-          "kind": "retained_self_attribution",
-          "publishable": true,
-          "passes_placebo": true,
+          "effect": 0.0,
+          "kind": "structural_zero_non_addressable",
+          "publishable": false,
+          "passes_placebo": false,
           "routing_effect": 0.0,
           "routing_passes": false,
           "source_evidence": {
@@ -2756,7 +2759,7 @@
         "Pinterest": 50003.2554,
         "Rokt": 252334.57541644492,
         "TikTok Social": 44020.614033741294,
-        "Television": 92.94400000000002,
+        "Television": 0.0,
         "YouTube": 18244.743000000002,
         "CRM Email": 2922985.3369512726,
         "CRM SMS": 1185317.6407788168
@@ -2813,8 +2816,8 @@
         "Television": {
           "benchmark": 92.94400000000002,
           "cross_source_halo": 0.0,
-          "retained_self_attribution": 92.94400000000002,
-          "unassigned_original_attribution": 0.0
+          "retained_self_attribution": 0.0,
+          "unassigned_original_attribution": 92.94400000000002
         },
         "YouTube": {
           "benchmark": 18244.743000000002,
@@ -2847,7 +2850,7 @@
           "unassigned_original_attribution": 1566132.3370730153
         }
       },
-      "unassigned_total": 2630943.2216596063,
+      "unassigned_total": 2631036.1656596065,
       "source_evidence": {
         "Meta": {
           "adjusted_total_effect": 446642.85946470825,
@@ -4615,7 +4618,7 @@
         },
         "Television|Television": {
           "effect": 0.0,
-          "kind": "retained_self_attribution",
+          "kind": "structural_zero_non_addressable",
           "publishable": false,
           "passes_placebo": false,
           "routing_effect": 0.0,
@@ -7506,7 +7509,7 @@
         },
         "Television|Television": {
           "effect": 0.0,
-          "kind": "retained_self_attribution",
+          "kind": "structural_zero_non_addressable",
           "publishable": false,
           "passes_placebo": false,
           "routing_effect": 0.0,
@@ -10397,7 +10400,7 @@
         },
         "Television|Television": {
           "effect": 0.0,
-          "kind": "retained_self_attribution",
+          "kind": "structural_zero_non_addressable",
           "publishable": false,
           "passes_placebo": false,
           "routing_effect": 0.0,
@@ -13288,7 +13291,7 @@
         },
         "Television|Television": {
           "effect": 0.0,
-          "kind": "retained_self_attribution",
+          "kind": "structural_zero_non_addressable",
           "publishable": false,
           "passes_placebo": false,
           "routing_effect": 0.0,
@@ -16179,7 +16182,7 @@
         },
         "Television|Television": {
           "effect": 0.0,
-          "kind": "retained_self_attribution",
+          "kind": "structural_zero_non_addressable",
           "publishable": false,
           "passes_placebo": false,
           "routing_effect": 0.0,
@@ -19069,10 +19072,10 @@
           }
         },
         "Television|Television": {
-          "effect": 92.94400000000002,
-          "kind": "retained_self_attribution",
-          "publishable": true,
-          "passes_placebo": true,
+          "effect": 0.0,
+          "kind": "structural_zero_non_addressable",
+          "publishable": false,
+          "passes_placebo": false,
           "routing_effect": 0.0,
           "routing_passes": false,
           "source_evidence": {
@@ -20102,7 +20105,7 @@
         "Pinterest": 46159.58302346445,
         "Rokt": 245810.2661807265,
         "TikTok Social": 32980.394,
-        "Television": 92.94400000000002,
+        "Television": 0.0,
         "YouTube": 18032.010000000002,
         "CRM Email": 2103130.253113703,
         "CRM SMS": 1100976.6011899475
@@ -20159,8 +20162,8 @@
         "Television": {
           "benchmark": 92.94400000000002,
           "cross_source_halo": 0.0,
-          "retained_self_attribution": 92.94400000000002,
-          "unassigned_original_attribution": 0.0
+          "retained_self_attribution": 0.0,
+          "unassigned_original_attribution": 92.94400000000002
         },
         "YouTube": {
           "benchmark": 18032.010000000002,
@@ -20193,7 +20196,7 @@
           "unassigned_original_attribution": 1241181.4168818137
         }
       },
-      "unassigned_total": 2072585.0800326187,
+      "unassigned_total": 2072678.0240326186,
       "source_evidence": {
         "Meta": {
           "adjusted_total_effect": 0.0,

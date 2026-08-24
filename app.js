@@ -75,18 +75,18 @@ function renderMatrixV2(){
   for(const s of src){
     h+=`<tr><th>${esc(s)}</th>`;
     for(const d of dst){
-      const c=balancedCell(s,d),v=c?.effect||0,ok=v>0,self=s===d;
+      const c=balancedCell(s,d),v=c?.effect||0,ok=v>0,self=s===d,structural=c?.kind==='structural_zero_non_addressable';
       const a=ok?.15+.75*Math.sqrt(v/max):0,bg=ok?(self?`rgba(70,105,130,${a})`:`rgba(31,122,63,${a})`):'#e8e6df',fg=ok&&a>.52?'#fff':'#333';
       const sel=SELECTED&&SELECTED[0]===s&&SELECTED[1]===d?' sel':'';
-      const title=ok?(self?`${signed(v)} same-source attribution check`:`${signed(v)} cross-source halo ${M} created by ${esc(s)} and credited to ${esc(d)}`):'No created result published: total incrementality, routing, or both are unresolved';
-      h+=`<td><div class="cell${sel}" data-s="${esc(s)}" data-d="${esc(d)}" style="background:${bg};color:${fg}" title="${title}">${ok&&v>=1?signed(v):'—'}</div></td>`;
+      const title=structural?`${s} cannot receive direct attribution; any supported effect must route off-diagonal`:ok?(self?`${signed(v)} original attribution retained on diagonal`:`${signed(v)} cross-source halo ${M} assigned from ${esc(d)} to ${esc(s)}`):'No stable halo allocated';
+      h+=`<td><div class="cell${sel}" data-s="${esc(s)}" data-d="${esc(d)}" style="background:${bg};color:${fg}" title="${title}">${structural?'0':ok&&v>=1?signed(v):'—'}</div></td>`;
     }
     const total=balancedRowTotal(s),ok=total>0,a=ok?.18+.72*Math.sqrt(total/rowMax):0,bg=ok?`rgba(31,122,63,${a})`:'#e8e6df',fg=ok&&a>.52?'#fff':'#222';
     h+=`<td style="border-left:3px solid #1a1a1a"><div class="cell" style="background:${bg};color:${fg};font-weight:800;cursor:default" title="${num(total)} diagonally balanced attribution assigned to ${esc(s)}">${ok?num(total):'—'}</div></td></tr>`;
   }
   const parts=dst.map(d=>{const x=balancedData().column_reconciliation[d];return {self:x.retained_self_attribution,halo:x.cross_source_halo,gap:x.unassigned_original_attribution,benchmark:x.benchmark}}),sum=k=>parts.reduce((a,p)=>a+p[k],0);
   const reconRow=(label,key)=>`<tr><th>${label}</th>${parts.map(p=>`<td><div class="cell" style="cursor:default">${Math.abs(p[key])>=1?num(p[key]):'—'}</div></td>`).join('')}<td style="border-left:3px solid #1a1a1a"><div class="cell" style="cursor:default;font-weight:800">${num(sum(key))}</div></td></tr>`;
-  h+='</tbody><tfoot>'+reconRow('Retained original attribution','self')+reconRow('Cross-source halo','halo')+reconRow('Unassigned (no diagonal)','gap')+reconRow('20% attribution benchmark','benchmark')+'</tfoot></table>';
+  h+='</tbody><tfoot>'+reconRow('Retained original attribution','self')+reconRow('Cross-source halo','halo')+reconRow('Unassigned / non-addressable','gap')+reconRow('20% attribution benchmark','benchmark')+'</tfoot></table>';
   const el=document.getElementById('matrix');el.innerHTML=h;
   el.querySelectorAll('.cell[data-d]').forEach(x=>x.onclick=()=>{SELECTED=[x.dataset.s,x.dataset.d];renderMatrixV2();renderPanelV3()});
   document.getElementById('matcap').textContent=`Every destination column reconciles exactly: retained original attribution + uncertainty-weighted cross-source halo + any no-diagonal remainder = the 20% attribution benchmark for ${R}.`;
@@ -114,11 +114,11 @@ function renderPanelV2(){
 function renderPanelV3(){
   if(!SELECTED){document.getElementById('panel').innerHTML='<h3 style="color:#888;font-weight:500">Select a cell</h3><p style="color:#888">Blue diagonal cells retain original attribution. Green off-diagonal cells are uncertainty-weighted halo estimates.</p>';return}
   const [s,d]=SELECTED,c=balancedCell(s,d);if(!c)return;
-  const self=s===d,rec=balancedData().column_reconciliation[d],ev=c.source_evidence||balancedData().source_evidence[s];
-  const verdict=self?'Retained original attribution':c.effect>0?'Cross-source halo estimate':'No stable halo allocated';
-  const why=self?`${num(c.effect)} remains on ${d}'s original-attribution diagonal after supported inbound halo is removed. This is the consistency anchor, not a claim that ${d} spend caused every retained order.`:c.effect>0?`${num(c.effect)} is reassigned from ${d}'s original attribution to ${s}. The source estimate is discounted by ${(100*ev.reliability_weight).toFixed(0)}% for uncertainty before routing.`:`The available data does not provide stable enough source and routing evidence to reassign ${d} attribution to ${s}.`;
+  const self=s===d,structural=c.kind==='structural_zero_non_addressable',rec=balancedData().column_reconciliation[d],ev=c.source_evidence||balancedData().source_evidence[s];
+  const verdict=structural?'Structural zero: non-addressable':self?'Retained original attribution':c.effect>0?'Cross-source halo estimate':'No stable halo allocated';
+  const why=structural?`${s} orders cannot normally be attributed back to ${s}, so this diagonal is forced to zero. Any supported ${s} effect must appear in other destination columns.`:self?`${num(c.effect)} remains on ${d}'s original-attribution diagonal after supported inbound halo is removed. This is the consistency anchor, not a claim that ${d} spend caused every retained order.`:c.effect>0?`${num(c.effect)} is reassigned from ${d}'s original attribution to ${s}. The source estimate is discounted by ${(100*ev.reliability_weight).toFixed(0)}% for uncertainty before routing.`:`The available data does not provide stable enough source and routing evidence to reassign ${d} attribution to ${s}.`;
   document.getElementById('panel').innerHTML=`<h3>${esc(s)} &rarr; ${esc(d)}</h3><span class="verdict ${c.effect>0?'v-hold':'v-no'}">${verdict}</span><p class="why">${esc(why)}</p><div class="stats">
-    <div class="stat"><div class="k">${self?'Retained on diagonal':'Reassigned halo'}</div><div class="v">${c.effect>0?num(c.effect):'—'}</div></div>
+    <div class="stat"><div class="k">${structural?'Required diagonal':self?'Retained on diagonal':'Reassigned halo'}</div><div class="v">${structural?'0':c.effect>0?num(c.effect):'—'}</div></div>
     <div class="stat"><div class="k">Destination benchmark</div><div class="v">${num(rec.benchmark)}</div></div>
     <div class="stat"><div class="k">All inbound halo</div><div class="v">${num(rec.cross_source_halo)}</div></div>
     <div class="stat"><div class="k">Retained self-attribution</div><div class="v">${num(rec.retained_self_attribution)}</div></div>
@@ -127,7 +127,7 @@ function renderPanelV3(){
     <div class="stat"><div class="k">Source adjusted effect</div><div class="v">${signed(ev.adjusted_total_effect)}</div></div>
     <div class="stat"><div class="k">Source 80% interval</div><div class="v">${signed(ev.lower80)} to ${signed(ev.upper80)}</div></div>
     <div class="stat"><div class="k">Routing evidence</div><div class="v">${c.routing_passes?'Pass':'Unresolved'}</div></div>
-    <div class="stat"><div class="k">Cell role</div><div class="v">${self?'Consistency check':'Halo'}</div></div></div>`;
+    <div class="stat"><div class="k">Cell role</div><div class="v">${structural?'Non-addressable structural zero':self?'Consistency check':'Halo'}</div></div></div>`;
 }
 
 function renderMatrix(){

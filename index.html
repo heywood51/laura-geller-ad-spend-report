@@ -166,7 +166,7 @@ details.apx>summary h2{display:inline;font-size:20px}
   <span><i class="sw" style="background:#e8e6df"></i>Total incrementality or routing unresolved</span>
   <span style="color:#999">Click any cell</span>
 </div>
-<p class="note" style="margin:10px 0 0"><strong>The diagonal is the consistency anchor; only off-diagonal cells are halo.</strong> The calculator starts with 20% of original attribution, moves only uncertainty-weighted supported halo to other source rows, and leaves the remainder on the original destination diagonal. Columns therefore add back exactly without allowing one correlated channel to absorb shared demand.</p>
+<p class="note" style="margin:10px 0 0"><strong>The diagonal is the consistency anchor; only off-diagonal cells are halo.</strong> The calculator starts with 20% of original attribution, moves only uncertainty-weighted supported halo to other source rows, and leaves the remainder on the original destination diagonal. <strong>Television is the exception:</strong> its diagonal is structurally zero because orders cannot normally be attributed to TV; any supported TV effect must route elsewhere.</p>
 <div class="warn" id="warn"></div>
 <div class="panel" id="panel"><h3 style="color:#888;font-weight:500">Select a cell</h3><p style="color:#888">Pick a source and destination pair to see its raw estimate, empirical correction, interval and placebo diagnostics.</p></div>
 
@@ -200,4 +200,4 @@ details.apx>summary h2{display:inline;font-size:20px}
 <details class="apx"><summary><h2>Appendix &mdash; build status</h2></summary><div class="method" id="appendix"></div></details>
 <div class="foot">Daily hierarchical distributed-lag model. Source-to-total-business empirical-null correction, 99% source gate, positive 80% interval, and conditional destination routing. Scenario period: 365 days through 27 July 2026.</div>
 </div>
-<script src="app.js?v=4"></script></body></html>
+<script src="app.js?v=5"></script></body></html>

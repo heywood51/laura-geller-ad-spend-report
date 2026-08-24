@@ -15,6 +15,7 @@ from pathlib import Path
 
 
 INTERVAL_MULTIPLIER = 1.2815515655
+NON_ADDRESSABLE_SOURCES = {"Television"}
 
 
 def evidence_weight(cell: dict) -> float:
@@ -26,7 +27,13 @@ def evidence_weight(cell: dict) -> float:
     return effect / (effect + margin) if effect + margin else 0.0
 
 
-def build_balanced_matrix(total_model: dict, routing_model: dict, summary: dict) -> dict:
+def build_balanced_matrix(
+    total_model: dict,
+    routing_model: dict,
+    summary: dict,
+    non_addressable_sources: set[str] | None = None,
+) -> dict:
+    non_addressable_sources = non_addressable_sources or NON_ADDRESSABLE_SOURCES
     measure = total_model["metadata"]["measure"]
     scenario_share = abs(float(summary["scenario_relative_change"]))
     result = {
@@ -37,6 +44,7 @@ def build_balanced_matrix(total_model: dict, routing_model: dict, summary: dict)
             "method": "continuous source reliability, corrected positive routing, diagonal residual balancing",
             "measure": measure,
             "scenario_share": scenario_share,
+            "non_addressable_sources": sorted(non_addressable_sources),
         },
         "channels": list(routing_model["channels"]),
         "destinations": list(routing_model["destinations"]),
@@ -88,7 +96,10 @@ def build_balanced_matrix(total_model: dict, routing_model: dict, summary: dict)
         for destination in result["destinations"]:
             halo = sum(candidates[source, destination] for source in result["channels"])
             retained = max(0.0, benchmark[destination] - halo)
-            has_diagonal = destination in result["channels"]
+            has_diagonal = (
+                destination in result["channels"]
+                and destination not in non_addressable_sources
+            )
             column_reconciliation[destination] = {
                 "benchmark": benchmark[destination],
                 "cross_source_halo": halo,
@@ -98,10 +109,17 @@ def build_balanced_matrix(total_model: dict, routing_model: dict, summary: dict)
             for source in result["channels"]:
                 route = route_view["cells"][f"{source}|{destination}"]
                 is_diagonal = source == destination
-                effect = retained if is_diagonal else candidates[source, destination]
+                structural_zero = is_diagonal and source in non_addressable_sources
+                effect = retained if is_diagonal and has_diagonal else candidates[source, destination]
                 cells[f"{source}|{destination}"] = {
                     "effect": effect,
-                    "kind": "retained_self_attribution" if is_diagonal else "cross_source_halo",
+                    "kind": (
+                        "structural_zero_non_addressable"
+                        if structural_zero
+                        else "retained_self_attribution"
+                        if is_diagonal
+                        else "cross_source_halo"
+                    ),
                     "publishable": bool(effect > 0),
                     "passes_placebo": bool(effect > 0),
                     "routing_effect": float(route["effect"]),

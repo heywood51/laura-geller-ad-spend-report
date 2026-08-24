@@ -23,7 +23,10 @@
     "measure": "orders",
     "placebo_runs": 50,
     "placebo_alpha": 0.05,
-    "scenario_share": 0.2
+    "scenario_share": 0.2,
+    "non_addressable_sources": [
+      "Television"
+    ]
   },
   "channels": [
     "Meta",
@@ -1723,10 +1726,10 @@
           }
         },
         "Television|Television": {
-          "effect": 1.8,
-          "kind": "retained_self_attribution",
-          "publishable": true,
-          "passes_placebo": true,
+          "effect": 0.0,
+          "kind": "structural_zero_non_addressable",
+          "publishable": false,
+          "passes_placebo": false,
           "routing_effect": 0.0,
           "routing_passes": false,
           "source_evidence": {
@@ -2756,7 +2759,7 @@
         "Pinterest": 990.2,
         "Rokt": 3643.795110299074,
         "TikTok Social": 948.2,
-        "Television": 1.8,
+        "Television": 0.0,
         "YouTube": 378.20000000000005,
         "CRM Email": 42729.525826448626,
         "CRM SMS": 17970.9710046976
@@ -2813,8 +2816,8 @@
         "Television": {
           "benchmark": 1.8,
           "cross_source_halo": 0.0,
-          "retained_self_attribution": 1.8,
-          "unassigned_original_attribution": 0.0
+          "retained_self_attribution": 0.0,
+          "unassigned_original_attribution": 1.8
         },
         "YouTube": {
           "benchmark": 378.20000000000005,
@@ -2847,7 +2850,7 @@
           "unassigned_original_attribution": 24489.16068564309
         }
       },
-      "unassigned_total": 38086.52965354518,
+      "unassigned_total": 38088.32965354518,
       "source_evidence": {
         "Meta": {
           "adjusted_total_effect": 30356.45124517852,
@@ -4615,7 +4618,7 @@
         },
         "Television|Television": {
           "effect": 0.0,
-          "kind": "retained_self_attribution",
+          "kind": "structural_zero_non_addressable",
           "publishable": false,
           "passes_placebo": false,
           "routing_effect": 0.0,
@@ -7506,7 +7509,7 @@
         },
         "Television|Television": {
           "effect": 0.0,
-          "kind": "retained_self_attribution",
+          "kind": "structural_zero_non_addressable",
           "publishable": false,
           "passes_placebo": false,
           "routing_effect": 0.0,
@@ -10397,7 +10400,7 @@
         },
         "Television|Television": {
           "effect": 0.0,
-          "kind": "retained_self_attribution",
+          "kind": "structural_zero_non_addressable",
           "publishable": false,
           "passes_placebo": false,
           "routing_effect": 0.0,
@@ -13288,7 +13291,7 @@
         },
         "Television|Television": {
           "effect": 0.0,
-          "kind": "retained_self_attribution",
+          "kind": "structural_zero_non_addressable",
           "publishable": false,
           "passes_placebo": false,
           "routing_effect": 0.0,
@@ -16179,7 +16182,7 @@
         },
         "Television|Television": {
           "effect": 0.0,
-          "kind": "retained_self_attribution",
+          "kind": "structural_zero_non_addressable",
           "publishable": false,
           "passes_placebo": false,
           "routing_effect": 0.0,
@@ -19069,10 +19072,10 @@
           }
         },
         "Television|Television": {
-          "effect": 1.8,
-          "kind": "retained_self_attribution",
-          "publishable": true,
-          "passes_placebo": true,
+          "effect": 0.0,
+          "kind": "structural_zero_non_addressable",
+          "publishable": false,
+          "passes_placebo": false,
           "routing_effect": 0.0,
           "routing_passes": false,
           "source_evidence": {
@@ -20102,7 +20105,7 @@
         "Pinterest": 904.0,
         "Rokt": 3459.2893522951626,
         "TikTok Social": 687.0,
-        "Television": 1.8,
+        "Television": 0.0,
         "YouTube": 373.8,
         "CRM Email": 29323.88899274903,
         "CRM SMS": 16263.78274854932
@@ -20159,8 +20162,8 @@
         "Television": {
           "benchmark": 1.8,
           "cross_source_halo": 0.0,
-          "retained_self_attribution": 1.8,
-          "unassigned_original_attribution": 0.0
+          "retained_self_attribution": 0.0,
+          "unassigned_original_attribution": 1.8
         },
         "YouTube": {
           "benchmark": 373.8,
@@ -20193,7 +20196,7 @@
           "unassigned_original_attribution": 17081.280555801684
         }
       },
-      "unassigned_total": 29479.932768674727,
+      "unassigned_total": 29481.73276867473,
       "source_evidence": {
         "Meta": {
           "adjusted_total_effect": 0.0,
