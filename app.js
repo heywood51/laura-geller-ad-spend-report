@@ -32,6 +32,14 @@ function rowTotalFor(m,g,s){return MODEL[m].views[g]?.row_totals?.[s]??MODEL[m].
 function rowTotal(s){return rowTotalFor(M,R,s)}
 function direct(s){return cell(s,s)?.effect||0}
 function routeCount(m,g,s){return MODEL[m].destinations.filter(d=>cellFor(m,g,s,d)?.passes_placebo).length}
+function haloRouteCount(m,g,s){return MODEL[m].destinations.filter(d=>d!==s&&cellFor(m,g,s,d)?.passes_placebo).length}
+function attributionBenchmark(m,g,d){return (SUMMARY.views[g]?.[m]?.[d]||0)*Math.abs(SUMMARY.scenario_relative_change)}
+function columnParts(m,g,d){
+  const self=MODEL[m].channels.includes(d)?(cellFor(m,g,d,d)?.effect||0):0;
+  const halo=MODEL[m].channels.reduce((a,s)=>a+(s===d?0:(cellFor(m,g,s,d)?.effect||0)),0);
+  const benchmark=attributionBenchmark(m,g,d),supported=self+halo;
+  return {self,halo,supported,benchmark,gap:benchmark-supported,overage:Math.max(0,supported-benchmark)};
+}
 function rowIntervalFor(m,g,s){const c=totalCellFor(m,g,s);return {total:c?.effect||0,low:c?.lower80||0,high:c?.upper80||0,se:c?.standard_error||0,passes:!!c?.passes_placebo,accepted:accepted(c),q:c?.placebo_q_value}}
 function sourceStatus(s,g=R){
   const o=rowIntervalFor('orders',g,s),r=rowIntervalFor('revenue',g,s);
@@ -44,13 +52,57 @@ function sourceStatus(s,g=R){
 function buildTabs(){const geos=['Total',...MODEL.orders.metadata.geographies];document.getElementById('rTabs').innerHTML=geos.map(g=>`<button data-r="${esc(g)}" class="${g==='Total'?'on':''}">${g==='United Kingdom'?'UK':g==='United States'?'US':esc(g)}</button>`).join('')}
 function bind(){document.getElementById('mTabs').onclick=e=>{if(!e.target.dataset.m)return;M=e.target.dataset.m;SELECTED=null;setOn('mTabs','m',M);render()};document.getElementById('rTabs').onclick=e=>{if(!e.target.dataset.r)return;R=e.target.dataset.r;SELECTED=null;setOn('rTabs','r',R);render()}}
 function setOn(id,k,v){document.querySelectorAll('#'+id+' button').forEach(b=>b.classList.toggle('on',b.dataset[k]===v))}
-function render(){renderHero();renderMatrix();renderPanel();renderSpill();renderShift();renderText()}
+function render(){renderHero();renderMatrixV2();renderPanelV2();renderSpill();renderShift();renderText()}
 
 function renderHero(){
-  const supported=MODEL[M].channels.filter(s=>rowIntervalFor(M,R,s).accepted),routes=supported.reduce((a,s)=>a+routeCount(M,R,s),0),v=IVALID[M].summary;
+  const supported=MODEL[M].channels.filter(s=>rowIntervalFor(M,R,s).accepted),haloRoutes=supported.reduce((a,s)=>a+haloRouteCount(M,R,s),0),selfChecks=supported.reduce((a,s)=>a+(cellFor(M,R,s,s)?.passes_placebo?1:0),0),v=IVALID[M].summary;
   document.getElementById('hero').innerHTML=`${supported.length} / ${MODEL[M].channels.length} <em>source rows clear the final total-business gate</em>`;
-  document.getElementById('heroTxt').innerHTML=`In <strong>${esc(R)}</strong>, the calculator supports total-business ${M} creation for <strong>${supported.length?supported.map(esc).join(', '):'none'}</strong>. Its ${routes} printed destination cells divide those supported totals; they are not separate claims that can be added again.`;
+  document.getElementById('heroTxt').innerHTML=`In <strong>${esc(R)}</strong>, the calculator supports total-business ${M} creation for <strong>${supported.length?supported.map(esc).join(', '):'none'}</strong>. It finds ${haloRoutes} supported cross-source halo paths and ${selfChecks} same-source checks. Every destination column is reconciled separately below.`;
   document.getElementById('warn').innerHTML=`<strong>Raw association is not the answer.</strong> Fake histories reproduced ${Math.round(100*v.fake_to_observed_absolute_median)}% of the raw headline magnitude, so the calculator rejects that raw model. After calibration, the separate held-out gate published <strong>0 false source rows in both the median and worst of ${v.heldout_placebo_runs} fake histories</strong>. This is strong falsification performance, but only a randomized holdout can establish causality.`;
+}
+
+function renderMatrixV2(){
+  const src=MODEL[M].channels,dst=MODEL[M].destinations;
+  const max=Math.max(...src.flatMap(s=>dst.map(d=>Math.abs(cell(s,d)?.effect||0))),1);
+  const rowMax=Math.max(...src.map(rowTotal),1);
+  let h='<table class="m"><thead><tr><th></th>'+dst.map(d=>`<th class="col">${esc(d)}</th>`).join('')+'<th class="col" style="font-weight:800;color:#1a1a1a">Total business</th></tr></thead><tbody>';
+  for(const s of src){
+    h+=`<tr><th>${esc(s)}</th>`;
+    for(const d of dst){
+      const c=cell(s,d),v=c?.effect||0,ok=!!c?.passes_placebo,self=s===d;
+      const a=ok?.15+.75*Math.sqrt(v/max):0,bg=ok?(self?`rgba(70,105,130,${a})`:`rgba(31,122,63,${a})`):'#e8e6df',fg=ok&&a>.52?'#fff':'#333';
+      const sel=SELECTED&&SELECTED[0]===s&&SELECTED[1]===d?' sel':'';
+      const title=ok?(self?`${signed(v)} same-source attribution check`:`${signed(v)} cross-source halo ${M} created by ${esc(s)} and credited to ${esc(d)}`):'No created result published: total incrementality, routing, or both are unresolved';
+      h+=`<td><div class="cell${sel}" data-s="${esc(s)}" data-d="${esc(d)}" style="background:${bg};color:${fg}" title="${title}">${ok&&v>=1?signed(v):'—'}</div></td>`;
+    }
+    const total=rowTotal(s),ok=accepted(totalCellFor(M,R,s)),a=ok?.18+.72*Math.sqrt(total/rowMax):0,bg=ok?`rgba(31,122,63,${a})`:'#e8e6df',fg=ok&&a>.52?'#fff':'#222';
+    h+=`<td style="border-left:3px solid #1a1a1a"><div class="cell" style="background:${bg};color:${fg};font-weight:800;cursor:default" title="${ok?`${signed(total)} supported total-business ${M} created by ${esc(s)}`:'No supported total-business creation result'}">${ok?signed(total):'—'}</div></td></tr>`;
+  }
+  const parts=dst.map(d=>columnParts(M,R,d)),sum=k=>parts.reduce((a,p)=>a+p[k],0);
+  const reconRow=(label,key)=>`<tr><th>${label}</th>${parts.map(p=>`<td><div class="cell" style="cursor:default">${Math.abs(p[key])>=1?num(p[key]):'—'}</div></td>`).join('')}<td style="border-left:3px solid #1a1a1a"><div class="cell" style="cursor:default;font-weight:800">${num(sum(key))}</div></td></tr>`;
+  h+='</tbody><tfoot>'+reconRow('Same-source check','self')+reconRow('Cross-source halo','halo')+reconRow('Unresolved / overage gap','gap')+reconRow('20% attribution benchmark','benchmark')+'</tfoot></table>';
+  const el=document.getElementById('matrix');el.innerHTML=h;
+  el.querySelectorAll('.cell[data-d]').forEach(x=>x.onclick=()=>{SELECTED=[x.dataset.s,x.dataset.d];renderMatrixV2();renderPanelV2()});
+  document.getElementById('matcap').textContent=`Rows reconcile to supported total-business ${M}. Columns reconcile as same-source check + cross-source halo + reconciliation gap = 20% original-attribution benchmark for ${R}. A negative gap flags modelled creation above that benchmark.`;
+}
+
+function renderPanelV2(){
+  if(!SELECTED){document.getElementById('panel').innerHTML='<h3 style="color:#888;font-weight:500">Select a cell</h3><p style="color:#888">Pick a cell to see whether it is a same-source check or genuine cross-source halo, plus its destination-column reconciliation.</p>';return}
+  const [s,d]=SELECTED,c=cell(s,d);if(!c)return;
+  const tc=totalCellFor(M,R,s),ok=!!c.passes_placebo,totalOK=accepted(tc),pct=100*(c.routing_weight||0),self=s===d,parts=columnParts(M,R,d);
+  const verdict=ok?(self?'Self-attribution check':'Halo result published'):'No created result published',cls=ok?'v-hold':'v-no';
+  const why=ok?(self?`${num(c.effect)} is the supported same-source portion of the ${num(parts.benchmark)} 20% original-attribution benchmark for ${d}. It is a reconciliation check, not halo.`:`The model supports ${num(tc.effect)} total-business ${M} created by ${s}; ${pct.toFixed(1)}% is credited to ${d} as cross-source halo.`):`The calculator does not claim that ${s} created ${M} credited to ${d}, because total incrementality, destination routing, or both did not clear the gate.`;
+  document.getElementById('panel').innerHTML=`<h3>${esc(s)} &rarr; ${esc(d)}</h3><span class="verdict ${cls}">${verdict}</span><p class="why">${esc(why)}</p><div class="stats">
+    <div class="stat"><div class="k">${self?'Same-source check':'Cross-source halo'}</div><div class="v">${ok?signed(c.effect):'—'}</div><div class="ex">supported total × routing share</div></div>
+    <div class="stat"><div class="k">Share of supported source total</div><div class="v">${ok?pct.toFixed(1)+'%':'—'}</div></div>
+    <div class="stat"><div class="k">Supported source total</div><div class="v">${totalOK?signed(tc.effect):'—'}</div></div>
+    <div class="stat"><div class="k">Total 80% interval</div><div class="v">${tc?signed(tc.lower80)+' to '+signed(tc.upper80):'—'}</div></div>
+    <div class="stat"><div class="k">20% column benchmark</div><div class="v">${num(parts.benchmark)}</div><div class="ex">same measurement basis</div></div>
+    <div class="stat"><div class="k">Same-source supported</div><div class="v">${num(parts.self)}</div></div>
+    <div class="stat"><div class="k">Other-source halo</div><div class="v">${num(parts.halo)}</div></div>
+    <div class="stat"><div class="k">${parts.gap>=0?'Unresolved remainder':'Over benchmark'}</div><div class="v">${num(Math.abs(parts.gap))}</div></div>
+    <div class="stat"><div class="k">Routing gate</div><div class="v">${c.routing_passes?'Pass':'Unresolved'}</div></div>
+    <div class="stat"><div class="k">Row status</div><div class="v">${esc((c.row_status||'unresolved').replaceAll('_',' '))}</div></div></div>`;
 }
 
 function renderMatrix(){
@@ -86,7 +138,8 @@ function renderText(){
   document.getElementById('sens').innerHTML=`<p><strong>Layer one asks whether spend here predicts incremental total-business ${M}.</strong> It models each source against the sum of every credited destination, removes its empirical fake-history behavior, applies a 99% source gate, and requires a positive 80% interval. <strong>Layer two asks where the supported total is credited.</strong> Only positive destination routes that pass their own diagnostics receive a share.</p><div class="eq">created at destination = supported total-business incrementality × accepted routing share<br>sum of printed destinations = supported total-business incrementality</div>`;
   const geos=MODEL[M].metadata.geographies,stability=MODEL[M].channels.map(s=>{const total=rowIntervalFor(M,R,s),vals=geos.map(g=>rowIntervalFor(M,g,s)),pos=vals.filter(x=>x.accepted).length,unresolved=vals.filter(x=>x.passes&&!x.accepted).length,none=vals.filter(x=>!x.passes).length,o=rowIntervalFor('orders',R,s),r=rowIntervalFor('revenue',R,s),agree=o.accepted&&r.accepted?'Both pass':o.accepted||r.accepted?'One passes':'Neither passes';return{s,total,pos,unresolved,none,agree}}).sort((a,b)=>(b.total.accepted?b.total.total:0)-(a.total.accepted?a.total.total:0));
   document.getElementById('stab').innerHTML='<div class="hscroll"><table class="s"><tr><th class="stick">Source</th><th>Supported markets</th><th>Unresolved markets</th><th>No evidence</th><th>Orders / revenue</th><th>Total-business result</th></tr>'+stability.map(x=>`<tr><td class="l stick">${esc(x.s)}</td><td>${x.pos} / ${geos.length}</td><td>${x.unresolved} / ${geos.length}</td><td>${x.none} / ${geos.length}</td><td>${x.agree}</td><td>${x.total.accepted?signed(x.total.total):'—'}</td></tr>`).join('')+'</table></div>';
-  document.getElementById('cons').innerHTML='<div class="method"><p><strong>All views use the same two-layer output.</strong> The Total business value comes from the source-level incrementality model. The matrix and gray/green bar chart divide that exact accepted total using destination routing weights. Unresolved sources publish no created destinations, so attribution movement can never be mistaken for orders created.</p></div>';
+  const overages=MODEL[M].destinations.filter(d=>columnParts(M,R,d).overage>0);
+  document.getElementById('cons').innerHTML=`<div class="method"><p><strong>The matrix reconciles in both directions.</strong> Every source row sums to its accepted total-business incrementality estimate. Every destination column shows the identity: same-source check + cross-source halo + reconciliation gap = 20% original-attribution benchmark. A positive gap remains unresolved instead of being assigned to a channel without evidence; a negative gap flags an overage.</p><p><strong>Column check:</strong> ${overages.length?'Supported creation exceeds the benchmark for '+overages.map(esc).join(', ')+'; investigate scale or model fit.':'All destination columns reconcile without supported creation exceeding their benchmark.'}</p></div>`;
   const groups={protect:[],partial:[],unresolved:[],test:[],none:[]};MODEL.orders.channels.forEach(s=>groups[sourceStatus(s).key].push(s));
   document.getElementById('suggest').innerHTML=`<div class="callout"><h4>Supported on both outcomes</h4><p>${groups.protect.length?groups.protect.map(esc).join(', '):'None in this view.'} Protect while confirming with a randomized holdout.</p></div><div class="callout"><h4>Partial evidence</h4><p>${groups.partial.length?groups.partial.map(esc).join(', '):'None in this view.'} One outcome clears the gate and the other does not.</p></div><div class="callout"><h4>Unresolved</h4><p>${[...groups.unresolved,...groups.test].length?[...groups.unresolved,...groups.test].map(esc).join(', '):'None in this view.'} Do not infer a cut or an increase from these observational estimates.</p></div><div class="callout"><h4>No incrementality evidence</h4><p>${groups.none.length?groups.none.map(esc).join(', '):'None in this view.'} This means the calculator cannot make a claim, not that effectiveness is zero.</p></div>`;
   const rank={protect:3,partial:2,unresolved:1},paid=MODEL.orders.channels.filter(s=>SUMMARY.views[R]?.sources?.[s]?.spend!=null),priorities=paid.filter(s=>rank[sourceStatus(s).key]).sort((a,b)=>rank[sourceStatus(b).key]-rank[sourceStatus(a).key]).slice(0,3),days=56;

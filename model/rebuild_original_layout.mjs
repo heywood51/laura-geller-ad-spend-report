@@ -22,11 +22,12 @@ const body = `
 <div style="overflow-x:auto"><div id="matrix"></div></div>
 <div class="cap" id="matcap" style="margin-top:6px"></div>
 <div class="legend">
-  <span><i class="sw" style="background:#1f7a3f"></i>Incremental result created and routed here</span>
+  <span><i class="sw" style="background:#466982"></i>Same-source attribution check</span>
+  <span><i class="sw" style="background:#1f7a3f"></i>Cross-source halo result</span>
   <span><i class="sw" style="background:#e8e6df"></i>Total incrementality or routing unresolved</span>
   <span style="color:#999">Click any cell</span>
 </div>
-<p class="note" style="margin:10px 0 0"><strong>A destination cell prints only after two independent questions clear their gates.</strong> First, the row source must show positive total-business incrementality under a 99% placebo/FDR rule and a positive conservative interval. Second, the destination must show positive corrected routing evidence. Printed cells divide the supported source total across those destinations and therefore add exactly to Total business.</p>
+<p class="note" style="margin:10px 0 0"><strong>Diagonal cells are validation checks; off-diagonal cells are halo.</strong> Rows add to the supported total created by each source. The four footer rows reconcile every destination to a same-basis benchmark: same-source supported + cross-source halo + reconciliation gap = 20% of original attribution. A negative gap flags an overage; unresolved volume is never invented as halo.</p>
 <div class="warn" id="warn"></div>
 <div class="panel" id="panel"><h3 style="color:#888;font-weight:500">Select a cell</h3><p style="color:#888">Pick a source and destination pair to see its raw estimate, empirical correction, interval and placebo diagnostics.</p></div>
 
@@ -60,7 +61,7 @@ const body = `
 <details class="apx"><summary><h2>Appendix &mdash; build status</h2></summary><div class="method" id="appendix"></div></details>
 <div class="foot">Daily hierarchical distributed-lag model. Source-to-total-business empirical-null correction, 99% source gate, positive 80% interval, and conditional destination routing. Scenario period: 365 days through 27 July 2026.</div>
 </div>
-<script src="app.js?v=2"></script>`;
+<script src="app.js?v=3"></script>`;
 
 const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">

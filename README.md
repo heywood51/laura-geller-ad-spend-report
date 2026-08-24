@@ -5,6 +5,8 @@ This report answers two different questions in sequence:
 1. **Does spend in this source appear to create incremental total-business orders or revenue?** A daily distributed-lag model fits each source against the sum of all credited destinations. Time-shift fake histories estimate the empirical null. A result must pass the 99% source gate and have a positive 80% interval.
 2. **Where are those supported orders or revenue credited?** Positive destination routes divide the accepted source total into shares. Routing never creates or changes the total.
 
+The display also performs destination-column reconciliation on the same 20% scenario basis. Diagonal cells are same-source attribution checks and off-diagonal cells are halo. For every destination, same-source supported creation + cross-source halo + the displayed reconciliation gap equals 20% of original attribution. A positive gap remains unresolved; it is not assigned to a channel without evidence.
+
 The production gate is evaluated on 25 held-out fake histories that were not used to set it. In the current orders and revenue builds, the median and worst held-out history both publish zero false source rows. This is strong falsification performance, but the report remains observational until channel holdouts or geo experiments calibrate it.
 
 ## Rebuild
