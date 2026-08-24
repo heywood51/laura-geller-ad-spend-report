@@ -9,18 +9,20 @@ const num=(v,m=M)=>m==='revenue'?fmtM(v):fmtN.format(v);
 const signed=(v,m=M)=>(v>0?'+':'')+num(v,m);
 const short=(v,m)=>{const a=Math.abs(v),p=v<0?'-':v>0?'+':'';const n=a>=1e6?(a/1e6).toFixed(1)+'m':a>=1e3?(a/1e3).toFixed(0)+'k':fmtN.format(a);return p+(m==='revenue'?'$':'')+n};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const DATA_VERSION='12';
+const modelFile=name=>`model/generated/${name}?v=${DATA_VERSION}`;
 
 Promise.all([
-  fetch('model/generated/halo-created-orders.json').then(r=>r.json()),
-  fetch('model/generated/halo-created-revenue.json').then(r=>r.json()),
-  fetch('model/generated/halo-balanced-orders.json?v=2').then(r=>r.json()),
-  fetch('model/generated/halo-balanced-revenue.json?v=2').then(r=>r.json()),
-  fetch('model/generated/halo-incrementality-orders.json').then(r=>r.json()),
-  fetch('model/generated/halo-incrementality-revenue.json').then(r=>r.json()),
-  fetch('model/generated/report-summary.json').then(r=>r.json()),
-  fetch('model/generated/placebo-incrementality-orders.json').then(r=>r.json()),
-  fetch('model/generated/placebo-incrementality-revenue.json').then(r=>r.json()),
-  fetch('model/generated/tv-halo-diagnostic.json?v=1').then(r=>r.json())
+  fetch(modelFile('halo-created-orders.json')).then(r=>r.json()),
+  fetch(modelFile('halo-created-revenue.json')).then(r=>r.json()),
+  fetch(modelFile('halo-balanced-orders.json')).then(r=>r.json()),
+  fetch(modelFile('halo-balanced-revenue.json')).then(r=>r.json()),
+  fetch(modelFile('halo-incrementality-orders.json')).then(r=>r.json()),
+  fetch(modelFile('halo-incrementality-revenue.json')).then(r=>r.json()),
+  fetch(modelFile('report-summary.json')).then(r=>r.json()),
+  fetch(modelFile('placebo-incrementality-orders.json')).then(r=>r.json()),
+  fetch(modelFile('placebo-incrementality-revenue.json')).then(r=>r.json()),
+  fetch(modelFile('tv-halo-diagnostic.json')).then(r=>r.json())
 ]).then(([createdOrders,createdRevenue,balancedOrders,balancedRevenue,totalOrders,totalRevenue,summary,valOrders,valRevenue,tvdiag])=>{
   MODEL={orders:createdOrders,revenue:createdRevenue}; TOTAL={orders:totalOrders,revenue:totalRevenue};
   BALANCED={orders:balancedOrders,revenue:balancedRevenue};
