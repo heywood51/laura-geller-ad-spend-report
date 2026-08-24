@@ -45,6 +45,11 @@ def test_published_balanced_outputs_reconcile() -> None:
             (GENERATED / f"halo-balanced-{measure}.json").read_text(encoding="utf8")
         )
         for view in model["views"].values():
+            benchmark_total = sum(
+                rec["benchmark"] for rec in view["column_reconciliation"].values()
+            )
+            balanced_total = sum(view["row_totals"].values()) + view["unassigned_total"]
+            assert abs(balanced_total - benchmark_total) < 1e-6
             for destination, rec in view["column_reconciliation"].items():
                 assigned = sum(
                     view["cells"][f"{source}|{destination}"]["effect"]

@@ -153,10 +153,15 @@ function renderSpill(){
 }
 
 function renderShift(){
-  const el=document.getElementById('shift');if(!el)return;const cap=document.getElementById('shiftcap');if(cap)cap.innerHTML=(M==='revenue'?'Revenue':'Orders')+' assigned to likely driver for <strong>'+esc(R)+'</strong>. Gray is the original attribution benchmark; the balanced total is green for a net gain and red for a net loss.';
-  const rows=MODEL[M].channels.map(k=>({k,a:balancedData().column_reconciliation[k]?.benchmark||0,b:balancedRowTotal(k)})).sort((x,y)=>y.b-x.b),W=880,L=118,RPAD=155,rowH=30,top=6,HH=top+rows.length*rowH+24,hi=Math.max(1,...rows.flatMap(x=>[x.a,x.b])),plotW=W-L-RPAD,x=v=>L+v/hi*plotW;
+  const el=document.getElementById('shift');if(!el)return;const cap=document.getElementById('shiftcap'),view=balancedData();
+  const driverRows=MODEL[M].channels.map(k=>({k,a:view.column_reconciliation[k]?.benchmark||0,b:view.row_totals[k]||0}));
+  const attributionOnly=MODEL[M].destinations.filter(k=>!MODEL[M].channels.includes(k)).map(k=>({k:k+' attribution',a:view.column_reconciliation[k].benchmark,b:view.column_reconciliation[k].unassigned_original_attribution}));
+  const nonAddressableRemainder=MODEL[M].channels.reduce((a,k)=>a+(view.column_reconciliation[k]?.unassigned_original_attribution||0),0);
+  const rows=[...driverRows,...attributionOnly,{k:'Unassigned non-addressable',a:0,b:nonAddressableRemainder}].sort((x,y)=>Math.max(y.a,y.b)-Math.max(x.a,x.b));
+  const totalNetRaw=rows.reduce((a,r)=>a+r.b-r.a,0),totalNet=Math.abs(totalNetRaw)<1e-6?0:totalNetRaw;if(cap)cap.innerHTML=(M==='revenue'?'Revenue':'Orders')+' assigned to likely driver for <strong>'+esc(R)+'</strong>. Gray is original attribution; green/red is the balanced total. <strong>Zero-sum check: '+num(totalNet)+'</strong>.';
+  const W=880,L=135,RPAD=155,rowH=30,top=6,HH=top+rows.length*rowH+24,hi=Math.max(1,...rows.flatMap(x=>[x.a,x.b])),plotW=W-L-RPAD,x=v=>L+v/hi*plotW;
   let svg=`<div class="key"><span><i style="background:${GREY}"></i>Original attribution benchmark</span><span><i style="background:${GREEN}"></i>Balanced total · net gain</span><span><i style="background:${RED}"></i>Balanced total · net loss</span></div><svg viewBox="0 0 ${W} ${HH}" role="img" aria-label="Original attribution compared with balanced driver total and net gain or loss by channel"><line class="axis" x1="${L}" x2="${L}" y1="0" y2="${HH-19}"/>`;
-  rows.forEach((r,i)=>{const y=top+i*rowH,net=r.b-r.a,color=net>=0?GREEN:RED,bar=(v,yy,c)=>`<rect x="${L}" y="${yy}" width="${Math.max(v?1:0,x(v)-L)}" height="8" rx="1" fill="${c}"/>`,label=`${num(r.b)} (${net>0?'+':''}${num(net)} net)`;svg+=`<text class="lab" x="${L-7}" y="${y+14}" text-anchor="end">${esc(r.k)}</text>${bar(r.a,y+3,GREY)}${bar(r.b,y+13,color)}<text class="val" x="${x(r.b)+5}" y="${y+21}" text-anchor="start" fill="${color}">${label}</text>`});svg+='</svg>';el.innerHTML=svg;
+  rows.forEach((r,i)=>{const y=top+i*rowH,net=r.b-r.a,color=net>0?GREEN:net<0?RED:GREY,bar=(v,yy,c)=>`<rect x="${L}" y="${yy}" width="${Math.max(v?1:0,x(v)-L)}" height="8" rx="1" fill="${c}"/>`,label=`${num(r.b)} (${net>0?'+':''}${num(net)} net)`;svg+=`<text class="lab" x="${L-7}" y="${y+14}" text-anchor="end">${esc(r.k)}</text>${bar(r.a,y+3,GREY)}${bar(r.b,y+13,color)}<text class="val" x="${x(r.b)+5}" y="${y+21}" text-anchor="start" fill="${color}">${label}</text>`});svg+='</svg>';el.innerHTML=svg;
 }
 
 function renderText(){
