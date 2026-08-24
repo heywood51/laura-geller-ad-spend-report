@@ -18,18 +18,24 @@ INTERVAL_MULTIPLIER = 1.2815515655
 NON_ADDRESSABLE_SOURCES = {"Television"}
 
 
-def evidence_weight(cell: dict) -> float:
-    """Combine interval precision and timing separation continuously."""
+def interval_weight(cell: dict) -> float:
     effect = max(0.0, float(cell["effect"]))
     if not cell["passes_placebo"] or effect == 0:
         return 0.0
     margin = INTERVAL_MULTIPLIER * max(0.0, float(cell["standard_error"]))
-    interval_weight = effect / (effect + margin) if effect + margin else 0.0
+    return effect / (effect + margin) if effect + margin else 0.0
+
+
+def evidence_weight(cell: dict) -> float:
+    """Combine interval precision and timing separation continuously."""
+    precision = interval_weight(cell)
+    if precision == 0:
+        return 0.0
     if not cell.get("passes_lead_falsification", True):
         return 0.0
     timing_ratio = max(0.0, float(cell.get("lead_to_reference_ratio", 0.0)))
-    timing_weight = max(0.0, min(1.0, 1.0 - timing_ratio))
-    return interval_weight * timing_weight
+    timing = max(0.0, min(1.0, 1.0 - timing_ratio))
+    return precision * timing
 
 
 def timing_weight(cell: dict) -> float:
@@ -69,6 +75,7 @@ def build_balanced_matrix(
             for d in result["destinations"]
         }
         candidates: dict[tuple[str, str], float] = {}
+        candidate_central: dict[tuple[str, str], float] = {}
         candidate_low: dict[tuple[str, str], float] = {}
         candidate_high: dict[tuple[str, str], float] = {}
         source_evidence = {}
@@ -76,6 +83,7 @@ def build_balanced_matrix(
             total_cell = total_view["cells"][f"{source}|Total Business"]
             reliability = evidence_weight(total_cell)
             evidence_budget = max(0.0, float(total_cell["effect"])) * reliability
+            central_budget = max(0.0, float(total_cell["effect"])) * interval_weight(total_cell)
             low_budget = max(0.0, float(total_cell["lower80"])) * timing_weight(total_cell)
             high_budget = (
                 max(0.0, float(total_cell["upper80"]))
@@ -96,6 +104,7 @@ def build_balanced_matrix(
                 point_share = weighted_value / route_sum if route_sum else 0.0
                 range_share = raw_value / raw_route_sum if raw_route_sum else 0.0
                 candidates[source, destination] = evidence_budget * point_share
+                candidate_central[source, destination] = central_budget * range_share
                 candidate_low[source, destination] = low_budget * point_share
                 candidate_high[source, destination] = high_budget * range_share
             source_evidence[source] = {
@@ -113,6 +122,7 @@ def build_balanced_matrix(
                 ),
                 "timing_reliability_weight": timing_weight(total_cell),
                 "halo_budget": evidence_budget,
+                "central_halo_budget": central_budget,
                 "halo_budget_low": low_budget,
                 "halo_budget_high": high_budget,
             }
@@ -124,26 +134,33 @@ def build_balanced_matrix(
             scale = min(1.0, benchmark[destination] / incoming) if incoming else 1.0
             incoming_low = sum(candidate_low.get((s, destination), 0.0) for s in result["channels"])
             low_scale = min(1.0, benchmark[destination] / incoming_low) if incoming_low else 1.0
+            incoming_central = sum(candidate_central.get((s, destination), 0.0) for s in result["channels"])
+            central_scale = min(1.0, benchmark[destination] / incoming_central) if incoming_central else 1.0
             incoming_high = sum(candidate_high.get((s, destination), 0.0) for s in result["channels"])
             high_scale = min(1.0, benchmark[destination] / incoming_high) if incoming_high else 1.0
             for source in result["channels"]:
                 candidates[source, destination] = candidates.get((source, destination), 0.0) * scale
+                candidate_central[source, destination] = candidate_central.get((source, destination), 0.0) * central_scale
                 candidate_low[source, destination] = candidate_low.get((source, destination), 0.0) * low_scale
                 candidate_high[source, destination] = candidate_high.get((source, destination), 0.0) * high_scale
                 candidate_low[source, destination] = min(
                     candidate_low[source, destination], candidates[source, destination]
                 )
                 candidate_high[source, destination] = max(
-                    candidate_high[source, destination], candidates[source, destination]
+                    candidate_high[source, destination], candidates[source, destination],
+                    candidate_central[source, destination]
                 )
 
         cells = {}
         column_reconciliation = {}
         for destination in result["destinations"]:
             halo = sum(candidates[source, destination] for source in result["channels"])
+            halo_central = sum(candidate_central[source, destination] for source in result["channels"])
             halo_low = sum(candidate_low[source, destination] for source in result["channels"])
             halo_high = sum(candidate_high[source, destination] for source in result["channels"])
             retained = max(0.0, benchmark[destination] - halo)
+            retained_central = max(0.0, benchmark[destination] - halo_central)
+            retained_high_scenario = max(0.0, benchmark[destination] - halo_high)
             has_diagonal = (
                 destination in result["channels"]
                 and destination not in non_addressable_sources
@@ -151,9 +168,27 @@ def build_balanced_matrix(
             column_reconciliation[destination] = {
                 "benchmark": benchmark[destination],
                 "cross_source_halo": halo,
+                "cross_source_halo_central": halo_central,
                 "cross_source_halo_low": halo_low,
                 "cross_source_halo_high": halo_high,
                 "retained_self_attribution": retained if has_diagonal else 0.0,
+                "scenarios": {
+                    "conservative": {
+                        "cross_source_halo": halo,
+                        "retained_self_attribution": retained if has_diagonal else 0.0,
+                        "unassigned_original_attribution": retained if not has_diagonal else 0.0,
+                    },
+                    "central": {
+                        "cross_source_halo": halo_central,
+                        "retained_self_attribution": retained_central if has_diagonal else 0.0,
+                        "unassigned_original_attribution": retained_central if not has_diagonal else 0.0,
+                    },
+                    "upper": {
+                        "cross_source_halo": halo_high,
+                        "retained_self_attribution": retained_high_scenario if has_diagonal else 0.0,
+                        "unassigned_original_attribution": retained_high_scenario if not has_diagonal else 0.0,
+                    },
+                },
                 "unassigned_original_attribution": retained if not has_diagonal else 0.0,
             }
             for source in result["channels"]:
@@ -162,6 +197,16 @@ def build_balanced_matrix(
                 is_diagonal = source == destination
                 structural_zero = is_diagonal and source in non_addressable_sources
                 effect = retained if is_diagonal and has_diagonal else candidates[source, destination]
+                central_effect = (
+                    retained_central if is_diagonal and has_diagonal
+                    else candidate_central[source, destination]
+                )
+                upper_effect = (
+                    retained_high_scenario if is_diagonal and has_diagonal
+                    else candidate_high[source, destination]
+                )
+                if structural_zero:
+                    central_effect = upper_effect = 0.0
                 if is_diagonal and has_diagonal:
                     range_low = max(0.0, benchmark[destination] - halo_high)
                     range_high = max(0.0, benchmark[destination] - halo_low)
@@ -181,6 +226,11 @@ def build_balanced_matrix(
                     )
                 cells[f"{source}|{destination}"] = {
                     "effect": effect,
+                    "scenario_effects": {
+                        "conservative": effect,
+                        "central": central_effect,
+                        "upper": upper_effect,
+                    },
                     "range_low": range_low,
                     "range_high": range_high,
                     "evidence_status": evidence_status,
@@ -205,11 +255,30 @@ def build_balanced_matrix(
             source: sum(cells[f"{source}|{d}"]["effect"] for d in result["destinations"])
             for source in result["channels"]
         }
+        scenario_row_totals = {
+            scenario: {
+                source: sum(
+                    cells[f"{source}|{d}"]["scenario_effects"][scenario]
+                    for d in result["destinations"]
+                )
+                for source in result["channels"]
+            }
+            for scenario in ("conservative", "central", "upper")
+        }
+        scenario_unassigned_totals = {
+            scenario: sum(
+                rec["scenarios"][scenario]["unassigned_original_attribution"]
+                for rec in column_reconciliation.values()
+            )
+            for scenario in ("conservative", "central", "upper")
+        }
         result["views"][view_name] = {
             "cells": cells,
             "row_totals": row_totals,
+            "scenario_row_totals": scenario_row_totals,
             "column_reconciliation": column_reconciliation,
             "unassigned_total": sum(x["unassigned_original_attribution"] for x in column_reconciliation.values()),
+            "scenario_unassigned_totals": scenario_unassigned_totals,
             "source_evidence": source_evidence,
         }
     return result

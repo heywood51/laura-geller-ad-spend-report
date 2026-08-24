@@ -61,12 +61,25 @@ def test_published_balanced_outputs_reconcile() -> None:
             )
             balanced_total = sum(view["row_totals"].values()) + view["unassigned_total"]
             assert abs(balanced_total - benchmark_total) < 1e-6
+            for scenario in ("conservative", "central", "upper"):
+                scenario_total = (
+                    sum(view["scenario_row_totals"][scenario].values())
+                    + view["scenario_unassigned_totals"][scenario]
+                )
+                assert abs(scenario_total - benchmark_total) < 1e-6
             for destination, rec in view["column_reconciliation"].items():
                 assigned = sum(
                     view["cells"][f"{source}|{destination}"]["effect"]
                     for source in model["channels"]
                 )
                 assert abs(assigned + rec["unassigned_original_attribution"] - rec["benchmark"]) < 1e-6
+                for scenario in ("conservative", "central", "upper"):
+                    scenario_assigned = sum(
+                        view["cells"][f"{source}|{destination}"]["scenario_effects"][scenario]
+                        for source in model["channels"]
+                    )
+                    scenario_gap = rec["scenarios"][scenario]["unassigned_original_attribution"]
+                    assert abs(scenario_assigned + scenario_gap - rec["benchmark"]) < 1e-6
                 assert all(
                     view["cells"][f"{source}|{destination}"]["effect"] >= 0
                     for source in model["channels"]

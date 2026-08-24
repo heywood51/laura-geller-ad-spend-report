@@ -1,6 +1,6 @@
 'use strict';
 
-let M='orders', R='Total', SELECTED=null;
+let M='orders', R='Total', S='central', SELECTED=null;
 let MODEL={}, TOTAL={}, BALANCED={}, SUMMARY={}, IVALID={}, TVDIAG={};
 const GREEN='#1f7a3f', AMBER='#b7791f', RED='#b3261e', GREY='#c9c7bd';
 const fmtN=new Intl.NumberFormat('en-US',{maximumFractionDigits:0});
@@ -9,7 +9,7 @@ const num=(v,m=M)=>m==='revenue'?fmtM(v):fmtN.format(v);
 const signed=(v,m=M)=>(v>0?'+':'')+num(v,m);
 const short=(v,m)=>{const a=Math.abs(v),p=v<0?'-':v>0?'+':'';const n=a>=1e6?(a/1e6).toFixed(1)+'m':a>=1e3?(a/1e3).toFixed(0)+'k':fmtN.format(a);return p+(m==='revenue'?'$':'')+n};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const DATA_VERSION='13';
+const DATA_VERSION='14';
 const modelFile=name=>`model/generated/${name}?v=${DATA_VERSION}`;
 
 Promise.all([
@@ -33,7 +33,9 @@ function data(){return MODEL[M].views[R]||MODEL[M].views.Total}
 function cell(s,d){return data().cells[s+'|'+d]||null}
 function balancedData(){return BALANCED[M].views[R]||BALANCED[M].views.Total}
 function balancedCell(s,d){return balancedData().cells[s+'|'+d]||null}
-function balancedRowTotal(s){return balancedData().row_totals[s]||0}
+function balancedEffect(c){return c?.scenario_effects?.[S]??c?.effect??0}
+function balancedRowTotal(s){return balancedData().scenario_row_totals?.[S]?.[s]??balancedData().row_totals[s]??0}
+function balancedRec(d){const r=balancedData().column_reconciliation[d],x=r.scenarios?.[S]||r;return {...r,...x}}
 function cellFor(m,g,s,d){return MODEL[m].views[g]?.cells[s+'|'+d]||null}
 function totalCellFor(m,g,s){return TOTAL[m].views[g]?.cells[s+'|Total Business']||null}
 function accepted(c){return !!(c?.passes_placebo&&c.effect>0&&c.lower80>0)}
@@ -59,26 +61,26 @@ function sourceStatus(s,g=R){
   return {key:'none',label:'No incrementality evidence',action:'No budget claim; create better variation'};
 }
 function buildTabs(){const geos=['Total',...MODEL.orders.metadata.geographies];document.getElementById('rTabs').innerHTML=geos.map(g=>`<button data-r="${esc(g)}" class="${g==='Total'?'on':''}">${g==='United Kingdom'?'UK':g==='United States'?'US':esc(g)}</button>`).join('')}
-function bind(){document.getElementById('mTabs').onclick=e=>{if(!e.target.dataset.m)return;M=e.target.dataset.m;SELECTED=null;setOn('mTabs','m',M);render()};document.getElementById('rTabs').onclick=e=>{if(!e.target.dataset.r)return;R=e.target.dataset.r;SELECTED=null;setOn('rTabs','r',R);render()}}
+function bind(){document.getElementById('mTabs').onclick=e=>{if(!e.target.dataset.m)return;M=e.target.dataset.m;SELECTED=null;setOn('mTabs','m',M);render()};document.getElementById('rTabs').onclick=e=>{if(!e.target.dataset.r)return;R=e.target.dataset.r;SELECTED=null;setOn('rTabs','r',R);render()};document.getElementById('sTabs').onclick=e=>{if(!e.target.dataset.s)return;S=e.target.dataset.s;SELECTED=null;setOn('sTabs','s',S);render()}}
 function setOn(id,k,v){document.querySelectorAll('#'+id+' button').forEach(b=>b.classList.toggle('on',b.dataset[k]===v))}
 function render(){renderHero();renderMatrixV2();renderPanelV3();renderSpill();renderShift();renderText()}
 
 function renderHero(){
-  const view=balancedData(),rec=Object.values(view.column_reconciliation),halo=rec.reduce((a,x)=>a+x.cross_source_halo,0),low=rec.reduce((a,x)=>a+(x.cross_source_halo_low||0),0),high=rec.reduce((a,x)=>a+(x.cross_source_halo_high||0),0),benchmark=rec.reduce((a,x)=>a+x.benchmark,0),paths=MODEL[M].channels.flatMap(s=>MODEL[M].destinations.map(d=>s!==d&&balancedCell(s,d)?.effect>0)).filter(Boolean).length,v=IVALID[M].summary;
-  document.getElementById('hero').innerHTML=`${short(halo,M)} <em>possible halo scenario · plausible range ${short(low,M)} to ${short(high,M)}</em>`;
-  document.getElementById('heroTxt').innerHTML=`In <strong>${esc(R)}</strong>, ${paths} off-diagonal paths remain possible after empirical-null and future-spend checks. The point scenario is ${(100*halo/Math.max(benchmark,1)).toFixed(1)}% of the attribution benchmark; it is not a causal estimate.`;
+  const view=balancedData(),rec=MODEL[M].destinations.map(balancedRec),halo=rec.reduce((a,x)=>a+x.cross_source_halo,0),low=Object.values(view.column_reconciliation).reduce((a,x)=>a+(x.cross_source_halo_low||0),0),high=Object.values(view.column_reconciliation).reduce((a,x)=>a+(x.cross_source_halo_high||0),0),benchmark=rec.reduce((a,x)=>a+x.benchmark,0),paths=MODEL[M].channels.flatMap(s=>MODEL[M].destinations.map(d=>s!==d&&balancedEffect(balancedCell(s,d))>0)).filter(Boolean).length,v=IVALID[M].summary,label={conservative:'Conservative',central:'Central observational',upper:'Upper plausible'}[S];
+  document.getElementById('hero').innerHTML=`${short(halo,M)} <em>${label} halo scenario · full plausible range ${short(low,M)} to ${short(high,M)}</em>`;
+  document.getElementById('heroTxt').innerHTML=`In <strong>${esc(R)}</strong>, ${paths} off-diagonal paths move under the ${label.toLowerCase()} scenario. That is ${(100*halo/Math.max(benchmark,1)).toFixed(1)}% of the attribution benchmark. Switch scenarios to see sensitivity; none is a causal estimate.`;
   document.getElementById('warn').innerHTML=`<strong>Raw association is not the answer.</strong> Fake histories reproduced ${Math.round(100*v.fake_to_observed_absolute_median)}% of the raw headline magnitude, so the calculator rejects that raw model. The final gate also rejects a result when spend 1, 2, 3, 7, or 14 days in the future predicts the outcome at least as strongly as correctly timed spend. Passing this test reduces reverse-causality risk, but only a randomized holdout can establish causality.`;
 }
 
 function renderMatrixV2(){
   const src=MODEL[M].channels,dst=MODEL[M].destinations;
-  const max=Math.max(...src.flatMap(s=>dst.map(d=>Math.abs(balancedCell(s,d)?.effect||0))),1);
+  const max=Math.max(...src.flatMap(s=>dst.map(d=>Math.abs(balancedEffect(balancedCell(s,d))))),1);
   const rowMax=Math.max(...src.map(balancedRowTotal),1);
   let h='<table class="m"><thead><tr><th></th>'+dst.map(d=>`<th class="col">${esc(d)}</th>`).join('')+'<th class="col" style="font-weight:800;color:#1a1a1a">Total business</th></tr></thead><tbody>';
   for(const s of src){
     h+=`<tr><th>${esc(s)}</th>`;
     for(const d of dst){
-      const c=balancedCell(s,d),v=c?.effect||0,ok=v>0,self=s===d,structural=c?.kind==='structural_zero_non_addressable';
+      const c=balancedCell(s,d),v=balancedEffect(c),ok=v>0,self=s===d,structural=c?.kind==='structural_zero_non_addressable';
       const supported=c?.evidence_status==='supported',a=ok?.15+.75*Math.sqrt(v/max):0,bg=ok?(self?`rgba(70,105,130,${a})`:supported?`rgba(31,122,63,${a})`:`rgba(183,121,31,${a})`):'#e8e6df',fg=ok&&a>.52?'#fff':'#333';
       const sel=SELECTED&&SELECTED[0]===s&&SELECTED[1]===d?' sel':'';
       const title=structural?`${s} cannot receive direct attribution; any supported effect must route off-diagonal`:ok?(self?`${signed(v)} original attribution retained on diagonal`:`${signed(v)} possible cross-source halo; range ${num(c.range_low)} to ${num(c.range_high)}`):'No stable halo allocated';
@@ -87,13 +89,13 @@ function renderMatrixV2(){
     const total=balancedRowTotal(s),ok=total>0,a=ok?.18+.72*Math.sqrt(total/rowMax):0,bg=ok?`rgba(31,122,63,${a})`:'#e8e6df',fg=ok&&a>.52?'#fff':'#222';
     h+=`<td style="border-left:3px solid #1a1a1a"><div class="cell" style="background:${bg};color:${fg};font-weight:800;cursor:default" title="${num(total)} diagonally balanced attribution assigned to ${esc(s)}">${ok?num(total):'—'}</div></td></tr>`;
   }
-  const parts=dst.map(d=>{const x=balancedData().column_reconciliation[d];return {self:x.retained_self_attribution,halo:x.cross_source_halo,haloLow:x.cross_source_halo_low||0,haloHigh:x.cross_source_halo_high||0,gap:x.unassigned_original_attribution,benchmark:x.benchmark}}),sum=k=>parts.reduce((a,p)=>a+p[k],0);
+  const parts=dst.map(d=>{const base=balancedData().column_reconciliation[d],x=balancedRec(d);return {self:x.retained_self_attribution,halo:x.cross_source_halo,haloLow:base.cross_source_halo_low||0,haloHigh:base.cross_source_halo_high||0,gap:x.unassigned_original_attribution,benchmark:x.benchmark}}),sum=k=>parts.reduce((a,p)=>a+p[k],0);
   const reconRow=(label,key)=>`<tr><th>${label}</th>${parts.map(p=>`<td><div class="cell" style="cursor:default">${Math.abs(p[key])>=1?num(p[key]):'—'}</div></td>`).join('')}<td style="border-left:3px solid #1a1a1a"><div class="cell" style="cursor:default;font-weight:800">${num(sum(key))}</div></td></tr>`;
   const rangeRow=`<tr><th>Plausible halo range</th>${parts.map(p=>`<td><div class="cell" style="cursor:default;font-size:10px">${num(p.haloLow)}–${num(p.haloHigh)}</div></td>`).join('')}<td style="border-left:3px solid #1a1a1a"><div class="cell" style="cursor:default;font-size:10px;font-weight:800">${num(sum('haloLow'))}–${num(sum('haloHigh'))}</div></td></tr>`;
-  h+='</tbody><tfoot>'+reconRow('Retained original attribution','self')+reconRow('Possible halo scenario','halo')+rangeRow+reconRow('Unassigned / non-addressable','gap')+reconRow('20% attribution benchmark','benchmark')+'</tfoot></table>';
+  h+='</tbody><tfoot>'+reconRow('Retained original attribution','self')+reconRow({conservative:'Conservative halo',central:'Central observational halo',upper:'Upper plausible halo'}[S],'halo')+rangeRow+reconRow('Unassigned / non-addressable','gap')+reconRow('20% attribution benchmark','benchmark')+'</tfoot></table>';
   const el=document.getElementById('matrix');el.innerHTML=h;
   el.querySelectorAll('.cell[data-d]').forEach(x=>x.onclick=()=>{SELECTED=[x.dataset.s,x.dataset.d];renderMatrixV2();renderPanelV3()});
-  document.getElementById('matcap').textContent=`The point scenario reconciles exactly. Amber cells are possible, not proven; their ranges show how little precision the observational data provides.`;
+  document.getElementById('matcap').textContent=`The selected ${S} scenario reconciles exactly. Amber cells are possible, not proven; the full range shows how little precision the observational data provides.`;
 }
 
 function renderPanelV2(){
@@ -118,12 +120,13 @@ function renderPanelV2(){
 function renderPanelV3(){
   if(!SELECTED){document.getElementById('panel').innerHTML='<h3 style="color:#888;font-weight:500">Select a cell</h3><p style="color:#888">Blue diagonal cells retain original attribution. Green off-diagonal cells are uncertainty-weighted halo estimates.</p>';return}
   const [s,d]=SELECTED,c=balancedCell(s,d);if(!c)return;
-  const self=s===d,structural=c.kind==='structural_zero_non_addressable',rec=balancedData().column_reconciliation[d],ev=c.source_evidence||balancedData().source_evidence[s];
-  const verdict=structural?'Structural zero: non-addressable':self?'Retained original attribution':c.evidence_status==='supported'?'Supported halo':c.effect>0?'Possible halo · not decision-grade':'Unresolved';
-  const why=structural?`${s} results cannot normally be attributed back to ${s}, so this diagonal is forced to zero. Any supported ${s} effect must appear in other destination columns.`:self?`${num(c.effect)} remains on ${d}'s original-attribution diagonal in the point scenario. This is an accounting anchor, not a causal estimate.`:c.effect>0?`The point scenario moves ${num(c.effect)} from ${d} to ${s}, but the plausible range is ${num(c.range_low)} to ${num(c.range_high)}. Use it for sensitivity, not a budget claim.`:`The available data does not provide stable enough source and routing evidence to reassign ${d} attribution to ${s}.`;
+  const self=s===d,structural=c.kind==='structural_zero_non_addressable',rec=balancedRec(d),ev=c.source_evidence||balancedData().source_evidence[s],v=balancedEffect(c);
+  const verdict=structural?'Structural zero: non-addressable':self?'Retained original attribution':c.evidence_status==='supported'?'Supported halo':v>0?'Possible halo · not decision-grade':'Unresolved';
+  const why=structural?`${s} results cannot normally be attributed back to ${s}, so this diagonal is forced to zero. Any supported ${s} effect must appear in other destination columns.`:self?`${num(v)} remains on ${d}'s original-attribution diagonal in the selected scenario. This is an accounting anchor, not a causal estimate.`:v>0?`The selected scenario moves ${num(v)} from ${d} to ${s}; Conservative is ${num(c.scenario_effects.conservative)}, Central is ${num(c.scenario_effects.central)}, and Upper is ${num(c.scenario_effects.upper)}.`:`The available data does not provide stable enough source and routing evidence to reassign ${d} attribution to ${s}.`;
   const tv=TVDIAG[M],tvStats=structural?`<div class="stat"><div class="k">TV-specific candidate</div><div class="v">${signed(tv.candidate_effect)}</div><div class="ex">not published</div></div><div class="stat"><div class="k">TV candidate 80%</div><div class="v">${signed(tv.lower80)} to ${signed(tv.upper80)}</div></div><div class="stat"><div class="k">TV time-placebo p</div><div class="v">${(100*tv.time_placebo_empirical_p).toFixed(1)}%</div></div><div class="stat"><div class="k">TV failed checks</div><div class="v">${esc(tv.failed_gates.join(', ').replaceAll('_',' '))}</div></div>`:'';
-  document.getElementById('panel').innerHTML=`<h3>${esc(s)} &rarr; ${esc(d)}</h3><span class="verdict ${c.evidence_status==='supported'?'v-hold':c.effect>0?'v-possible':'v-no'}">${verdict}</span><p class="why">${esc(why)}</p><div class="stats">
-    <div class="stat"><div class="k">${structural?'Required diagonal':self?'Retained on diagonal':'Reassigned halo'}</div><div class="v">${structural?'0':c.effect>0?num(c.effect):'—'}</div></div>
+  document.getElementById('panel').innerHTML=`<h3>${esc(s)} &rarr; ${esc(d)}</h3><span class="verdict ${c.evidence_status==='supported'?'v-hold':v>0?'v-possible':'v-no'}">${verdict}</span><p class="why">${esc(why)}</p><div class="stats">
+    <div class="stat"><div class="k">Selected scenario</div><div class="v">${structural?'0':v>0?num(v):'—'}</div></div>
+    <div class="stat"><div class="k">Conservative / Central / Upper</div><div class="v">${num(c.scenario_effects.conservative)} / ${num(c.scenario_effects.central)} / ${num(c.scenario_effects.upper)}</div></div>
     <div class="stat"><div class="k">Plausible range</div><div class="v">${num(c.range_low)} to ${num(c.range_high)}</div></div>
     <div class="stat"><div class="k">Destination benchmark</div><div class="v">${num(rec.benchmark)}</div></div>
     <div class="stat"><div class="k">All inbound halo</div><div class="v">${num(rec.cross_source_halo)}</div></div>
@@ -161,9 +164,9 @@ function renderSpill(){
 
 function renderShift(){
   const el=document.getElementById('shift');if(!el)return;const cap=document.getElementById('shiftcap'),view=balancedData();
-  const driverRows=MODEL[M].channels.map(k=>({k,a:view.column_reconciliation[k]?.benchmark||0,b:view.row_totals[k]||0}));
-  const attributionOnly=MODEL[M].destinations.filter(k=>!MODEL[M].channels.includes(k)).map(k=>({k:k+' attribution',a:view.column_reconciliation[k].benchmark,b:view.column_reconciliation[k].unassigned_original_attribution}));
-  const nonAddressableRemainder=MODEL[M].channels.reduce((a,k)=>a+(view.column_reconciliation[k]?.unassigned_original_attribution||0),0);
+  const driverRows=MODEL[M].channels.map(k=>({k,a:view.column_reconciliation[k]?.benchmark||0,b:balancedRowTotal(k)}));
+  const attributionOnly=MODEL[M].destinations.filter(k=>!MODEL[M].channels.includes(k)).map(k=>({k:k+' attribution',a:view.column_reconciliation[k].benchmark,b:balancedRec(k).unassigned_original_attribution}));
+  const nonAddressableRemainder=MODEL[M].channels.reduce((a,k)=>a+(balancedRec(k)?.unassigned_original_attribution||0),0);
   const rows=[...driverRows,...attributionOnly,{k:'Unassigned non-addressable',a:0,b:nonAddressableRemainder}].sort((x,y)=>Math.max(y.a,y.b)-Math.max(x.a,x.b));
   const totalNetRaw=rows.reduce((a,r)=>a+r.b-r.a,0),totalNet=Math.abs(totalNetRaw)<1e-6?0:totalNetRaw;if(cap)cap.innerHTML=(M==='revenue'?'Revenue':'Orders')+' assigned to likely driver for <strong>'+esc(R)+'</strong>. Gray is original attribution; green/red is the balanced total. <strong>Zero-sum check: '+num(totalNet)+'</strong>.';
   const W=880,L=135,RPAD=155,rowH=30,top=6,HH=top+rows.length*rowH+24,hi=Math.max(1,...rows.flatMap(x=>[x.a,x.b])),plotW=W-L-RPAD,x=v=>L+v/hi*plotW;
