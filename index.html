@@ -151,13 +151,15 @@ details.apx>summary h2{display:inline;font-size:20px}
 #nc-calc-root *{box-sizing:border-box}
 #nc-calc-root h1{font-size:29px;margin:0 0 6px;letter-spacing:-.4px}
 #nc-calc-root .sub{color:#666;font-size:15px;margin:0 0 26px;max-width:900px}
-#nc-calc-root .answer{border-left:5px solid #1a1a1a;padding:16px 20px;margin:0 0 26px;background:#fafaf8}
+#nc-calc-root .answer{border-left:5px solid #1a1a1a;padding:16px 20px;margin:0 0 30px;background:#fafaf8}
 #nc-calc-root .answer .big{font-size:34px;font-weight:700;line-height:1.15;letter-spacing:-.5px}
 #nc-calc-root .answer .big em{font-style:normal;color:#888;font-weight:400;font-size:17px}
-#nc-calc-root .answer p{margin:9px 0 0;font-size:14.5px;max-width:900px;color:#444}
+#nc-calc-root .answer p{margin:9px 0 0;font-size:14.5px;max-width:900px}
 #nc-calc-root .controls{display:flex;gap:26px;flex-wrap:wrap;align-items:center;
     position:sticky;top:0;z-index:50;background:#fff;
-    margin:0 0 18px;padding:12px 0 11px;border-bottom:1px solid #e7e5de}
+    margin:0 0 18px;padding:12px 0 11px;
+    border-bottom:1px solid #e7e5de;
+    box-shadow:0 1px 0 rgba(0,0,0,.02)}
 #nc-calc-root .lbl{font-size:12px;color:#888;text-transform:uppercase;letter-spacing:.06em}
 #nc-calc-root .grp{display:flex;gap:0;border:1px solid #d5d3cc;border-radius:7px;overflow:hidden}
 #nc-calc-root .grp button{border:0;background:#fff;padding:7px 15px;font-size:13px;cursor:pointer;font-family:inherit;color:#444}
@@ -174,18 +176,14 @@ details.apx>summary h2{display:inline;font-size:20px}
 #nc-calc-root .rowbadge.none{color:#999}
 #nc-calc-root .rowbadge.bad{color:#b3261e}
 #nc-calc-root .cell{width:62px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;
-    font-variant-numeric:tabular-nums;font-size:11.5px;border-radius:2px;transition:outline .08s}
+        font-variant-numeric:tabular-nums;font-size:11.5px;border-radius:2px;transition:outline .08s}
 #nc-calc-root .cell:hover{outline:2px solid #1a1a1a;outline-offset:-2px}
 #nc-calc-root .cell.own{background:#f2f1ec!important;color:#bbb;cursor:default}
 #nc-calc-root .cell.own:hover{outline:none}
-#nc-calc-root .cell.none{background:#f0efea;color:#ccc;cursor:default}
-#nc-calc-root .cell.none:hover{outline:none}
-#nc-calc-root .cell.bad{background:#fbeceb;color:#d8a39c;cursor:default}
-#nc-calc-root .cell.bad:hover{outline:none}
 #nc-calc-root .cell.sel{outline:3px solid #1a1a1a;outline-offset:-3px}
-#nc-calc-root .legend{display:flex;gap:20px;align-items:center;margin:14px 0 26px;font-size:12px;color:#666;flex-wrap:wrap}
+#nc-calc-root .legend{display:flex;gap:20px;align-items:center;margin:14px 0 0;font-size:12px;color:#666;flex-wrap:wrap}
 #nc-calc-root .sw{display:inline-block;width:13px;height:13px;border-radius:2px;margin-right:5px;vertical-align:-2px}
-#nc-calc-root .cap{font-size:11px;color:#888;margin:4px 0 0;max-width:900px;line-height:1.5}
+#nc-calc-root .cap{font-size:11px;color:#888;margin:6px 0 0;max-width:900px;line-height:1.5}
 #nc-calc-root .panel{margin:26px 0 0;border:1px solid #e2e0d9;border-radius:9px;padding:18px 22px;background:#fafaf8;min-height:96px}
 #nc-calc-root .panel h3{margin:0 0 4px;font-size:17px}
 #nc-calc-root .panel table{margin:10px 0 0;font-size:12.5px;border-collapse:collapse;width:auto;min-width:100%}
@@ -195,6 +193,8 @@ details.apx>summary h2{display:inline;font-size:20px}
 #nc-calc-root .zero-sum{font-size:12.5px;color:#666;border-top:1px dashed #e2e0d9;margin-top:14px;padding-top:10px;max-width:900px}
 #nc-calc-root footer{margin-top:40px;font-size:13px;color:#888;max-width:900px}
 </style>
+<div class="wrap" style="max-width:1180px;margin:0 auto;padding:34px 26px 90px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1a1a1a;line-height:1.6;background:#fff">
+
 <h1>Cross-Channel Spend Calculator — Laura Geller (US)</h1>
 <p class="sub">If spend on one channel changed, which other channel's credited orders or
 revenue would actually move — and by how much? Every row is a spending channel; every
@@ -217,10 +217,9 @@ column is where credit could land.</p>
 <div class="cap" id="nc-matcap"></div>
 <div class="legend">
   <span><i class="sw" style="background:#1f7a3f"></i>Validated — number reflects a real, checked reallocation</span>
-  <span><i class="sw" style="background:#f0efea"></i>Not enough evidence, or no positive routing to this destination</span>
-  <span><i class="sw" style="background:#fbeceb"></i>Evidence against — actively fails a check</span>
+  <span><i class="sw" style="background:#f0efea"></i>Not counted — no evidence clears the bar, or fails a check. Click to see why.</span>
   <span><i class="sw" style="background:#f2f1ec"></i>Own channel — not a spillover</span>
-  <span style="color:#999">Click any green cell</span>
+  <span style="color:#999">Click any cell</span>
 </div>
 
 <div class="panel" id="detail"><h3 style="color:#888;font-weight:500">Select a cell to see its full breakdown.</h3></div>
@@ -242,6 +241,8 @@ column is where credit could land.</p>
   forward-vs-reverse falsification check" are the two bars a channel has to clear before any
   number is shown for it — only Meta and AppLovin clear both today.</p>
 </footer>
+
+</div>
 
 
 <script id="calc-data" type="application/json">{
@@ -917,6 +918,17 @@ function inlineBadge(status){
   return `<span class="rowbadge ${statusClass(status)}" style="display:inline-block">${statusLabel(status)}</span>`;
 }
 
+function statusExplain(entry){
+  if(entry.status==='evidence_against'){
+    return `This channel actively fails a validation check (${entry.gauntlet_verdict||'evidence against'}), `
+      + `so no cross-channel number is shown for any of its destinations — showing one here would imply a `
+      + `certainty the data doesn't support.`;
+  }
+  const q = entry.q_value!=null ? entry.q_value.toFixed(2) : 'n/a';
+  return `This channel doesn't clear the bar to show a cross-channel number (q=${q}) — its effect on other `
+    + `channels isn't statistically distinguishable from noise, so nothing is shown here rather than guessed.`;
+}
+
 // overall max allocated value across ALL validated rows, for consistent shading
 function maxAcrossMatrix(){
   let max = 1e-9;
@@ -929,8 +941,9 @@ function maxAcrossMatrix(){
 }
 
 function shade(v, max){
+  // matches the original site's exact shading formula and color (rgba(31,122,63,·))
   const a = Math.min(1, v/max) * 0.80 + 0.06;
-  return `rgba(26,92,56,${a})`;   // var(--accent) as rgba
+  return `rgba(31,122,63,${a})`;
 }
 
 function renderMatrix(){
@@ -946,26 +959,19 @@ function renderMatrix(){
     DESTS.forEach(dest=>{
       const key = lever+'|'+dest;
       if(dest===lever){
-        h += `<td><div class="cell own" data-k="${key}">—</div></td>`;
+        h += `<td><div class="cell own" data-k="${key}">&mdash;</div></td>`;
         return;
       }
-      if(entry.status==='evidence_against'){
-        h += `<td><div class="cell bad" data-k="${key}" title="this row actively fails a validation check"></div></td>`;
-        return;
-      }
-      if(entry.status!=='validated_forward_causal'){
-        h += `<td><div class="cell none" data-k="${key}" title="not statistically supported"></div></td>`;
-        return;
-      }
-      const a = entry[metric].allocations[dest];
-      if(!a){
-        h += `<td><div class="cell none" data-k="${key}" title="no positive routing evidence toward this destination"></div></td>`;
-        return;
-      }
-      const bg = shade(a.capped_allocated, max);
-      const wasCapped = a.raw_allocated > a.benchmark_cap + 1e-9;
       const isRev = metric==='revenue';
-      h += `<td><div class="cell${SEL===key?' sel':''}" data-k="${key}" style="background:${bg};color:#fff">${fmt(a.capped_allocated,isRev)}${wasCapped?'*':''}</div></td>`;
+      const a = entry.status==='validated_forward_causal' ? entry[metric].allocations[dest] : null;
+      const shown = a && a.capped_allocated > 0;
+      const bg = shown ? shade(a.capped_allocated, max) : '#f0efea';
+      const fg = shown ? '#fff' : '#333';
+      const wasCapped = shown && a.raw_allocated > a.benchmark_cap + 1e-9;
+      const txt = shown ? fmt(a.capped_allocated, isRev) + (wasCapped ? '*' : '') : '';
+      // every non-own cell is clickable, whether or not it carries a number -- clicking a
+      // blank cell explains why nothing is shown there, same as the original page's matrix.
+      h += `<td><div class="cell${SEL===key?' sel':''}" data-k="${key}" style="background:${bg};color:${fg}">${txt}</div></td>`;
     });
     h += '</tr>';
   });
@@ -973,7 +979,7 @@ function renderMatrix(){
   box.innerHTML = h;
 
   document.querySelectorAll('#nc-matrix .cell').forEach(el=>{
-    if(el.classList.contains('own') || el.classList.contains('none') || el.classList.contains('bad')) return;
+    if(el.classList.contains('own')) return;
     el.onclick = ()=>{ SEL = el.dataset.k; renderMatrix(); renderCaption(); renderDetail(); };
   });
 }
@@ -1000,13 +1006,31 @@ function renderCaption(){
 
 function renderDetail(){
   const out = document.getElementById('detail');
-  if(!SEL){ out.innerHTML = ''; return; }
+  if(!SEL){
+    out.innerHTML = '<h3 style="color:#888;font-weight:500">Select a cell to see its full breakdown.</h3>';
+    return;
+  }
   const [lever, dest] = SEL.split('|');
   const entry = DATA.levers[lever];
   const isRev = metric==='revenue';
+
+  if(entry.status!=='validated_forward_causal'){
+    out.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+      <b>${lever} &rarr; ${dest}</b> ${inlineBadge(entry.status)}
+    </div>
+    <p style="color:#555;font-size:13.5px;margin:10px 0 0">${statusExplain(entry)}</p>`;
+    return;
+  }
+
   const m = entry[metric];
   const a = m.allocations[dest];
-  if(!a){ out.innerHTML=''; return; }
+  if(!a){
+    out.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+      <b>${lever} &rarr; ${dest}</b> ${inlineBadge(entry.status)}
+    </div>
+    <p style="color:#555;font-size:13.5px;margin:10px 0 0">${lever} is validated, but there's no positive routing evidence toward ${dest} — nothing is allocated to this pair.</p>`;
+    return;
+  }
 
   const wasCapped = a.raw_allocated > a.benchmark_cap + 1e-9;
   const allocatedSum = Object.values(m.allocations).reduce((s,x)=>s+x.capped_allocated,0);
@@ -1055,9 +1079,6 @@ renderDetail();
 })();
 </script>
 </div>
-
-</div>
-
 
 <div style="display:none" aria-hidden="true">
 <div class="answer">
