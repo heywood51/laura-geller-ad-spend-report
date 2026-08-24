@@ -145,6 +145,578 @@ details.apx>summary h2{display:inline;font-size:20px}
 <h1>Is spend here affecting results there?</h1>
 <p class="sub">Laura Geller &middot; weekly, Aug 2024 &ndash; Aug 2026 &middot; every channel estimated at once, so each effect is measured with the others held still<br><span class="asof">Data through 2026-08-10</span></p>
 
+<div id="nc-calc-root">
+<style>
+#nc-calc-root{all:initial; display:block; font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif; color:#1a1a1a;}
+#nc-calc-root{
+    --bg:#fafafa; --card:#fff; --ink:#1a1a1a; --sub:#5c5c5c; --line:#e3e3e3;
+    --accent:#1a5c38; --accent-bg:#e8f5ec; --warn:#8a5a00; --warn-bg:#fff6e0;
+    --bad:#8a1f11; --bad-bg:#fdecea; --grey-bg:#f0f0f0;
+  }
+#nc-calc-root *{box-sizing:border-box}
+#nc-calc-root h1{font-size:1.65rem;margin:0 0 4px}
+#nc-calc-root .sub{color:var(--sub);margin-top:0;font-size:.98rem;max-width:680px}
+#nc-calc-root .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:24px 28px;margin:22px 0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+#nc-calc-root .controls{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end}
+#nc-calc-root label{display:block;font-size:.82rem;color:var(--sub);margin-bottom:6px;font-weight:600;
+    text-transform:uppercase;letter-spacing:.02em}
+#nc-calc-root select{font-size:1rem;padding:9px 12px;border-radius:8px;border:1px solid #ccc;
+    background:#fff;min-width:220px}
+#nc-calc-root .toggle{display:flex;border:1px solid #ccc;border-radius:8px;overflow:hidden}
+#nc-calc-root .toggle button{border:none;background:#fff;padding:9px 18px;font-size:.95rem;cursor:pointer;
+    color:var(--sub)}
+#nc-calc-root .toggle button.active{background:var(--ink);color:#fff}
+#nc-calc-root .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.76rem;
+    font-weight:700;letter-spacing:.01em;white-space:nowrap}
+#nc-calc-root .badge-real{background:var(--accent-bg);color:var(--accent)}
+#nc-calc-root .badge-none{background:var(--grey-bg);color:#555}
+#nc-calc-root .badge-bad{background:var(--bad-bg);color:var(--bad)}
+#nc-calc-root .headline{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:6px 0 4px}
+#nc-calc-root .headline .num{font-size:2.1rem;font-weight:700}
+#nc-calc-root .headline .unit{color:var(--sub);font-size:1rem}
+#nc-calc-root table{border-collapse:collapse;width:100%;margin:18px 0 6px;font-size:.92rem}
+#nc-calc-root th,#nc-calc-root td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:right}
+#nc-calc-root th:first-child,#nc-calc-root td:first-child{text-align:left}
+#nc-calc-root th{background:#f6f6f6;font-weight:600;color:var(--sub);font-size:.82rem;
+    text-transform:uppercase;letter-spacing:.02em}
+#nc-calc-root tr.capped td{color:var(--warn)}
+#nc-calc-root tr.retained{font-weight:600;background:#fbfbfb}
+#nc-calc-root .barwrap{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+#nc-calc-root .bar{height:8px;border-radius:4px;background:var(--accent);min-width:2px}
+#nc-calc-root .note{font-size:.88rem;color:var(--sub);margin-top:14px}
+#nc-calc-root .callout{border-radius:10px;padding:16px 20px;margin:18px 0;font-size:.94rem}
+#nc-calc-root .callout.none{background:var(--grey-bg)}
+#nc-calc-root .callout.bad{background:var(--bad-bg);color:var(--bad)}
+#nc-calc-root .zero-sum{font-size:.85rem;color:var(--sub);border-top:1px dashed var(--line);
+    margin-top:14px;padding-top:10px}
+#nc-calc-root .legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;
+    margin-top:10px}
+#nc-calc-root .legend .item{font-size:.87rem}
+#nc-calc-root .legend .item b{display:block;margin-bottom:2px}
+#nc-calc-root code{background:#f2f2f2;padding:1px 5px;border-radius:3px;font-size:.9em}
+#nc-calc-root a{color:var(--accent)}
+#nc-calc-root footer{margin-top:40px;font-size:.85rem;color:var(--sub)}
+</style>
+
+
+<h2 style="font-size:1.4rem;margin:0 0 4px">The working calculator</h2>
+<p class="sub">If spend on one channel changed, which other channel's credited orders or
+revenue would actually move — and by how much? This calculator only makes a claim where
+the data can support one; every other channel is labeled with exactly why it can't yet.</p>
+
+<div class="card">
+  <div class="controls">
+    <div>
+      <label for="lever">If spend changes on</label>
+      <select id="lever"></select>
+    </div>
+    <div>
+      <label>Metric</label>
+      <div class="toggle" id="metricToggle">
+        <button data-metric="orders" class="active">Orders</button>
+        <button data-metric="revenue">Revenue</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="result"></div>
+
+<div class="card">
+  <b>How to read a status badge</b>
+  <div class="legend">
+    <div class="item"><b><span class="badge badge-real">VALIDATED</span></b>
+      Named by permutation/FDR testing (q≤0.10) <i>and</i> passes a stricter check for
+      whether the effect actually runs forward in time rather than reflecting a channel
+      and its destinations moving together for an unrelated reason. Only Meta and AppLovin
+      clear both bars today.</div>
+    <div class="item"><b><span class="badge badge-none">NOT SUPPORTED</span></b>
+      Doesn't clear the significance bar. Not evidence of "no effect" — just not enough
+      signal in the data available today.</div>
+    <div class="item"><b><span class="badge badge-bad">EVIDENCE AGAINST</span></b>
+      Actively fails a check (a confound-like symmetric forward/reverse signature, or —
+      for CRM Email specifically — an exposure metric that's negatively correlated with
+      real send volume on top of no forward signal).</div>
+  </div>
+</div>
+
+<footer>
+  <p><b>Method, in one paragraph:</b> for a validated channel, its total incremental effect
+  (from a channel-level regression, refit on total new orders/revenue rather than
+  last-click credit) is discounted by how confidently that estimate is held, then split
+  across destinations in proportion to each destination's own routing evidence — capped at
+  20% of that destination's existing order/revenue volume, so no single reallocation can
+  claim more than a plausible share of a destination's own business. Whatever isn't
+  allocated stays credited to the source channel. Every allocation is checked to sum back
+  to exactly the total effect before it's shown here — nothing is created or lost in the
+  split.</p>
+  <p>Per-pair splits are <i>allocated</i>, not independently proven — there isn't enough
+  data to test each individual channel pair on its own (that's a real statistical limit,
+  not an implementation gap). The total, channel-level effect for Meta and AppLovin is what
+  the data actually supports directly.</p>
+</footer>
+
+
+<script id="calc-data" type="application/json">{
+  "method": "total_effect_first_allocate_second",
+  "scenario_share_cap": 0.2,
+  "validated_channels": [
+    "Meta",
+    "AppLovin"
+  ],
+  "levers": {
+    "Meta": {
+      "status": "validated_forward_causal",
+      "q_value": 0.01996007984031936,
+      "gauntlet_verdict": "passes (forward-dominant)",
+      "orders": {
+        "evidence_budget": 14.692401068421688,
+        "allocations": {
+          "Google Search": {
+            "routing_share": 0.23980576601323025,
+            "raw_allocated": 3.5233224927864657,
+            "destination_benchmark": 466290.0,
+            "benchmark_cap": 93258.0,
+            "capped_allocated": 3.5233224927864657
+          },
+          "Bing": {
+            "routing_share": 0.05785614262017745,
+            "raw_allocated": 0.8500456516474527,
+            "destination_benchmark": 135397.0,
+            "benchmark_cap": 27079.4,
+            "capped_allocated": 0.8500456516474527
+          },
+          "AppLovin": {
+            "routing_share": 0.022160076802657632,
+            "raw_allocated": 0.32558473609167365,
+            "destination_benchmark": 260631.0,
+            "benchmark_cap": 52126.200000000004,
+            "capped_allocated": 0.32558473609167365
+          },
+          "Pinterest": {
+            "routing_share": 0.005293839163696947,
+            "raw_allocated": 0.0777792081847536,
+            "destination_benchmark": 26904.0,
+            "benchmark_cap": 5380.8,
+            "capped_allocated": 0.0777792081847536
+          },
+          "Rokt": {
+            "routing_share": 0.004650674978671776,
+            "raw_allocated": 0.06832958202551921,
+            "destination_benchmark": 23041.0,
+            "benchmark_cap": 4608.2,
+            "capped_allocated": 0.06832958202551921
+          },
+          "TikTok Social": {
+            "routing_share": 0.00047456318548751435,
+            "raw_allocated": 0.006972472653490356,
+            "destination_benchmark": 30008.0,
+            "benchmark_cap": 6001.6,
+            "capped_allocated": 0.006972472653490356
+          },
+          "Television": {
+            "routing_share": 4.352270947653737e-06,
+            "raw_allocated": 6.394531032136844e-05,
+            "destination_benchmark": 15.0,
+            "benchmark_cap": 3.0,
+            "capped_allocated": 6.394531032136844e-05
+          },
+          "CRM Email": {
+            "routing_share": 0.2482733462281145,
+            "raw_allocated": 3.647731577382577,
+            "destination_benchmark": 760259.0,
+            "benchmark_cap": 152051.80000000002,
+            "capped_allocated": 3.647731577382577
+          },
+          "CRM SMS": {
+            "routing_share": 0.1281297232967161,
+            "raw_allocated": 1.882533283461247,
+            "destination_benchmark": 302729.0,
+            "benchmark_cap": 60545.8,
+            "capped_allocated": 1.882533283461247
+          },
+          "Organic": {
+            "routing_share": 0.12284832178121795,
+            "raw_allocated": 1.804936814192178,
+            "destination_benchmark": 305686.0,
+            "benchmark_cap": 61137.200000000004,
+            "capped_allocated": 1.804936814192178
+          },
+          "Direct": {
+            "routing_share": 0.17050319365908237,
+            "raw_allocated": 2.5051013046860118,
+            "destination_benchmark": 430111.0,
+            "benchmark_cap": 86022.20000000001,
+            "capped_allocated": 2.5051013046860118
+          }
+        },
+        "retained_self_attribution": -4.884981308350689e-15
+      },
+      "revenue": {
+        "evidence_budget": 994.3198274461614,
+        "allocations": {
+          "Google Search": {
+            "routing_share": 0.22841056029412443,
+            "raw_allocated": 227.11314889853486,
+            "destination_benchmark": 26251679.45,
+            "benchmark_cap": 5250335.890000001,
+            "capped_allocated": 227.11314889853486
+          },
+          "Bing": {
+            "routing_share": 0.061192720248539126,
+            "raw_allocated": 60.84513503848865,
+            "destination_benchmark": 7388236.210000001,
+            "benchmark_cap": 1477647.2420000003,
+            "capped_allocated": 60.84513503848865
+          },
+          "AppLovin": {
+            "routing_share": 0.038484436832656246,
+            "raw_allocated": 38.26583859080946,
+            "destination_benchmark": 13454814.02,
+            "benchmark_cap": 2690962.804,
+            "capped_allocated": 38.26583859080946
+          },
+          "Pinterest": {
+            "routing_share": 0.0054621082721326335,
+            "raw_allocated": 5.431082554639171,
+            "destination_benchmark": 1354660.2999999998,
+            "benchmark_cap": 270932.06,
+            "capped_allocated": 5.431082554639171
+          },
+          "Rokt": {
+            "routing_share": 0.005089491686361322,
+            "raw_allocated": 5.060582495371462,
+            "destination_benchmark": 1439998.75,
+            "benchmark_cap": 287999.75,
+            "capped_allocated": 5.060582495371462
+          },
+          "CRM Email": {
+            "routing_share": 0.21916797908089156,
+            "raw_allocated": 217.923067141436,
+            "destination_benchmark": 40031948.65,
+            "benchmark_cap": 8006389.73,
+            "capped_allocated": 217.923067141436
+          },
+          "CRM SMS": {
+            "routing_share": 0.13810243588355844,
+            "raw_allocated": 137.3179902176344,
+            "destination_benchmark": 17418621.43,
+            "benchmark_cap": 3483724.2860000003,
+            "capped_allocated": 137.3179902176344
+          },
+          "Organic": {
+            "routing_share": 0.12813944963980545,
+            "raw_allocated": 127.41159545489744,
+            "destination_benchmark": 16859412.599999998,
+            "benchmark_cap": 3371882.5199999996,
+            "capped_allocated": 127.41159545489744
+          },
+          "Direct": {
+            "routing_share": 0.17595081806193086,
+            "raw_allocated": 174.95138705435002,
+            "destination_benchmark": 24127059.99,
+            "benchmark_cap": 4825411.998,
+            "capped_allocated": 174.95138705435002
+          }
+        },
+        "retained_self_attribution": -1.4210854715202004e-13
+      }
+    },
+    "Google Search": {
+      "status": "not_statistically_supported",
+      "q_value": 0.2395209580838324,
+      "gauntlet_verdict": "passes (forward-dominant)"
+    },
+    "TikTok Shop": {
+      "status": "not_statistically_supported",
+      "q_value": 0.3273453093812375,
+      "gauntlet_verdict": "passes (forward-dominant)"
+    },
+    "Bing": {
+      "status": "evidence_against",
+      "q_value": 0.6620093147039255,
+      "gauntlet_verdict": "FAILS (symmetric -- confound-like)"
+    },
+    "AppLovin": {
+      "status": "validated_forward_causal",
+      "q_value": 0.06986027944111776,
+      "gauntlet_verdict": "passes (forward-dominant)",
+      "orders": {
+        "evidence_budget": 14.34211614049434,
+        "allocations": {
+          "Google Search": {
+            "routing_share": 0.012232985498961273,
+            "raw_allocated": 0.17544689877108569,
+            "destination_benchmark": 466290.0,
+            "benchmark_cap": 93258.0,
+            "capped_allocated": 0.17544689877108569
+          },
+          "TikTok Shop": {
+            "routing_share": 0.03472586732514601,
+            "raw_allocated": 0.4980424222566416,
+            "destination_benchmark": 490961.0,
+            "benchmark_cap": 98192.20000000001,
+            "capped_allocated": 0.4980424222566416
+          },
+          "Bing": {
+            "routing_share": 0.04979354695773679,
+            "raw_allocated": 0.7141448335150197,
+            "destination_benchmark": 135397.0,
+            "benchmark_cap": 27079.4,
+            "capped_allocated": 0.7141448335150197
+          },
+          "Pinterest": {
+            "routing_share": 0.011194076542999204,
+            "raw_allocated": 0.16054674586527798,
+            "destination_benchmark": 26904.0,
+            "benchmark_cap": 5380.8,
+            "capped_allocated": 0.16054674586527798
+          },
+          "TikTok Social": {
+            "routing_share": 0.00032640334377459116,
+            "raw_allocated": 0.004681314665060887,
+            "destination_benchmark": 30008.0,
+            "benchmark_cap": 6001.6,
+            "capped_allocated": 0.004681314665060887
+          },
+          "Television": {
+            "routing_share": 4.285941616731958e-05,
+            "raw_allocated": 0.0006146947243854782,
+            "destination_benchmark": 15.0,
+            "benchmark_cap": 3.0,
+            "capped_allocated": 0.0006146947243854782
+          },
+          "CRM Email": {
+            "routing_share": 0.4437635484647865,
+            "raw_allocated": 6.364508350999857,
+            "destination_benchmark": 760259.0,
+            "benchmark_cap": 152051.80000000002,
+            "capped_allocated": 6.364508350999857
+          },
+          "CRM SMS": {
+            "routing_share": 0.36010152988769295,
+            "raw_allocated": 5.164617964018986,
+            "destination_benchmark": 302729.0,
+            "benchmark_cap": 60545.8,
+            "capped_allocated": 5.164617964018986
+          },
+          "Organic": {
+            "routing_share": 0.08257840089733089,
+            "raw_allocated": 1.1843490163658217,
+            "destination_benchmark": 305686.0,
+            "benchmark_cap": 61137.200000000004,
+            "capped_allocated": 1.1843490163658217
+          },
+          "Direct": {
+            "routing_share": 0.005240781665404522,
+            "raw_allocated": 0.075163899312205,
+            "destination_benchmark": 430111.0,
+            "benchmark_cap": 86022.20000000001,
+            "capped_allocated": 0.075163899312205
+          }
+        },
+        "retained_self_attribution": 1.3877787807814457e-17
+      },
+      "revenue": {
+        "evidence_budget": 734.4707936891418,
+        "allocations": {
+          "TikTok Shop": {
+            "routing_share": 0.00746771013885576,
+            "raw_allocated": 5.484814992725841,
+            "destination_benchmark": 19910181.09,
+            "benchmark_cap": 3982036.2180000003,
+            "capped_allocated": 5.484814992725841
+          },
+          "Bing": {
+            "routing_share": 0.055991494964495875,
+            "raw_allocated": 41.124117746414875,
+            "destination_benchmark": 7388236.210000001,
+            "benchmark_cap": 1477647.2420000003,
+            "capped_allocated": 41.124117746414875
+          },
+          "Pinterest": {
+            "routing_share": 0.010187885417624064,
+            "raw_allocated": 7.482704288696381,
+            "destination_benchmark": 1354660.2999999998,
+            "benchmark_cap": 270932.06,
+            "capped_allocated": 7.482704288696381
+          },
+          "Television": {
+            "routing_share": 2.5147713809358574e-05,
+            "raw_allocated": 0.018470261321026984,
+            "destination_benchmark": 786.0,
+            "benchmark_cap": 157.20000000000002,
+            "capped_allocated": 0.018470261321026984
+          },
+          "CRM Email": {
+            "routing_share": 0.44079153761902723,
+            "raw_allocated": 323.74851048650413,
+            "destination_benchmark": 40031948.65,
+            "benchmark_cap": 8006389.73,
+            "capped_allocated": 323.74851048650413
+          },
+          "CRM SMS": {
+            "routing_share": 0.4044604917448491,
+            "raw_allocated": 297.0644183877399,
+            "destination_benchmark": 17418621.43,
+            "benchmark_cap": 3483724.2860000003,
+            "capped_allocated": 297.0644183877399
+          },
+          "Organic": {
+            "routing_share": 0.08107573240133858,
+            "raw_allocated": 59.54775752573963,
+            "destination_benchmark": 16859412.599999998,
+            "benchmark_cap": 3371882.5199999996,
+            "capped_allocated": 59.54775752573963
+          }
+        },
+        "retained_self_attribution": 2.842170943040401e-14
+      }
+    },
+    "Pinterest": {
+      "status": "not_statistically_supported",
+      "q_value": 0.5132591958939264,
+      "gauntlet_verdict": "passes (forward-dominant)"
+    },
+    "Rokt": {
+      "status": "not_statistically_supported",
+      "q_value": 0.6620093147039255,
+      "gauntlet_verdict": "passes (forward-dominant)"
+    },
+    "TikTok Social": {
+      "status": "not_statistically_supported",
+      "q_value": 0.6620093147039255,
+      "gauntlet_verdict": "passes (forward-dominant)"
+    },
+    "Television": {
+      "status": "not_statistically_supported",
+      "q_value": 0.6620093147039255,
+      "gauntlet_verdict": "passes (forward-dominant)"
+    },
+    "YouTube": {
+      "status": "not_statistically_supported",
+      "q_value": 0.6620093147039255,
+      "gauntlet_verdict": null
+    },
+    "CRM Email": {
+      "status": "evidence_against",
+      "q_value": 0.5132591958939264,
+      "gauntlet_verdict": "no forward signal to begin with"
+    },
+    "CRM SMS": {
+      "status": "not_statistically_supported",
+      "q_value": 0.2395209580838324,
+      "gauntlet_verdict": "passes (forward-dominant)"
+    }
+  }
+}</script>
+<script>
+(function(){
+
+const DATA = JSON.parse(document.getElementById('calc-data').textContent);
+const LEVERS = Object.keys(DATA.levers);
+const sel = document.getElementById('lever');
+LEVERS.forEach(l=>{
+  const opt = document.createElement('option');
+  opt.value = l;
+  const st = DATA.levers[l].status;
+  const tag = st==='validated_forward_causal' ? ' ✓' : (st==='evidence_against' ? ' ✗' : '');
+  opt.textContent = l + tag;
+  sel.appendChild(opt);
+});
+let metric = 'orders';
+document.getElementById('metricToggle').addEventListener('click', e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  metric = e.target.dataset.metric;
+  document.querySelectorAll('#metricToggle button').forEach(b=>b.classList.toggle('active', b===e.target));
+  render();
+});
+sel.addEventListener('change', render);
+
+function fmt(n, isRev){
+  if(n===undefined||n===null) return '—';
+  const abs = Math.abs(n);
+  if(isRev) return (n<0?'-$':'$') + abs.toLocaleString('en-US', {maximumFractionDigits: abs<1000?2:0});
+  return n.toLocaleString('en-US', {maximumFractionDigits: abs<10?2:0});
+}
+
+function badge(status){
+  if(status==='validated_forward_causal') return '<span class="badge badge-real">VALIDATED</span>';
+  if(status==='evidence_against') return '<span class="badge badge-bad">EVIDENCE AGAINST</span>';
+  return '<span class="badge badge-none">NOT SUPPORTED</span>';
+}
+
+function render(){
+  const lever = sel.value;
+  const entry = DATA.levers[lever];
+  const out = document.getElementById('result');
+  const isRev = metric==='revenue';
+
+  if(entry.status !== 'validated_forward_causal'){
+    const cls = entry.status==='evidence_against' ? 'bad' : 'none';
+    let reason;
+    if(entry.status==='evidence_against'){
+      if(lever==='CRM Email'){
+        reason = "CRM Email shows no forward signal in the falsification test, and separately its exposure is measured by campaign count, which is negatively correlated (r=-0.32) with actual delivered email volume — the proxy may be pointing the wrong way. Not enough to name a number here.";
+      } else {
+        reason = "This channel's forward effect and its reverse effect (does the destination's own past activity predict this channel's future spend?) are similarly strong — the signature of a shared confound, not a one-directional cause.";
+      }
+    } else {
+      reason = `q=${entry.q_value!==null&&entry.q_value!==undefined ? entry.q_value.toFixed(3) : 'n/a'} against a 0.10 bar for "named." Not enough signal yet to claim a cross-channel effect exists, in either direction.`;
+    }
+    out.innerHTML = `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <b>${lever}</b> ${badge(entry.status)}
+      </div>
+      <div class="callout ${cls}">${reason}</div>
+    </div>`;
+    return;
+  }
+
+  const m = entry[metric];
+  const allocations = Object.entries(m.allocations).sort((a,b)=>b[1].capped_allocated - a[1].capped_allocated);
+  const maxAlloc = Math.max(...allocations.map(a=>a[1].capped_allocated), 1e-9);
+  const allocatedSum = allocations.reduce((s,[,a])=>s+a.capped_allocated,0);
+
+  let rows = allocations.map(([dest,a])=>{
+    const wasCapped = a.raw_allocated > a.benchmark_cap + 1e-9;
+    const barW = Math.max(2, 100*a.capped_allocated/maxAlloc);
+    return `<tr class="${wasCapped?'capped':''}">
+      <td>${dest}</td>
+      <td>${(a.routing_share*100).toFixed(1)}%</td>
+      <td><div class="barwrap"><div class="bar" style="width:${barW}px"></div>${fmt(a.capped_allocated,isRev)}</div></td>
+      <td>${wasCapped ? 'capped at 20% of '+fmt(a.destination_benchmark,isRev) : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  rows += `<tr class="retained"><td>${lever} (retained)</td><td>—</td><td>${fmt(m.retained_self_attribution,isRev)}</td><td>stays credited to ${lever} itself</td></tr>`;
+
+  out.innerHTML = `<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+      <b>${lever}</b> ${badge(entry.status)}
+    </div>
+    <div class="headline">
+      <span class="num">${fmt(m.evidence_budget, isRev)}</span>
+      <span class="unit">total validated ${metric==='orders'?'incremental orders':'incremental revenue'} to reallocate, weekly</span>
+    </div>
+    <table>
+      <tr><th>Destination</th><th>Routing share</th><th>Reallocated</th><th>Note</th></tr>
+      ${rows}
+    </table>
+    <div class="zero-sum">Zero-sum check: ${fmt(allocatedSum,isRev)} allocated + ${fmt(m.retained_self_attribution,isRev)} retained = ${fmt(allocatedSum+m.retained_self_attribution,isRev)}, matching the total effect of ${fmt(m.evidence_budget,isRev)}. Nothing created or lost in the split.</div>
+    <p class="note">Reallocation is capped at 20% of each destination's own existing ${metric} volume — a destination can't be credited with more halo than a plausible share of its own business, and rows marked "capped" hit that ceiling rather than reflecting the full routing-share estimate.</p>
+  </div>`;
+}
+
+sel.value = DATA.validated_channels[0] || LEVERS[0];
+render();
+
+})();
+</script>
+</div>
+
+<div style="display:none" aria-hidden="true">
 <div class="answer">
   <div class="big" id="hero">&nbsp;</div>
   <p id="heroTxt"></p>
@@ -176,6 +748,7 @@ details.apx>summary h2{display:inline;font-size:20px}
 
 <p class="note" style="margin:10px 0 0"><strong>Cells measure orders <em>credited</em> to the column, not orders that happened.</strong> A green cell can mean the row channel created demand the column got the click for. <strong>Shading is what a cell actually contributes, not whether it passed a test.</strong> Nothing is excluded for being weak: a nearly-white cell is still counted, at a few percent of its measured effect, and the number stops printing only when it is too small to read. Darker means more of the effect survived the credibility discount.</p><p class="note" style="margin:8px 0 0">A pair can be well evidenced and still run the other way &mdash; more spend at the row against <em>fewer</em> orders credited to the column. That is cannibalisation, and it <strong>subtracts</strong>: those pairs are counted in every total on this page, at full weight, with a minus sign. They are not shaded in the grid, because a second colour scale competing with the first made the picture harder to read rather than easier &mdash; so the grid shows where credit is gained and the totals are net of where it is lost. <span id="negn"></span></p>
 <p class="note" style="margin:8px 0 0"><strong>Why they have to count.</strong> Keeping only the positive half of the evidence was the single largest error in earlier versions of this page. Selection on sign keeps half of any noise and cancels none of it: a shuffled US &mdash; spend moved in time so no real effect can survive &mdash; produced <strong>636,379 orders</strong> of positive-only halo out of nothing. Two large multipliers were then applied to bring that back down, which is why the page once reported 14% of what it measured. Netting the signs centres the noise on zero instead, and the discounting reduces to one honest step.</p>
+</div>
 
 <div class="warn" id="warn" style="display:none"></div>
 
