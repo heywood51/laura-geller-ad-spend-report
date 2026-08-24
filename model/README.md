@@ -38,11 +38,13 @@ separation (`1 - max future/correct effect ratio`) for both the source total and
 destination routing. It also publishes a non-negative plausible range for every
 cell. Diagonals remain accounting residuals, and the point allocation plus the
 explicit non-addressable remainder reconciles exactly to original attribution.
-The site exposes three zero-sum views of the same evidence: Conservative applies
-both interval and timing discounts, Central observational applies the interval
-discount without treating weak timing separation as a known effect size, and
-Upper plausible allocates the positive 80% source bound. These are sensitivity
-scenarios, not three competing causal estimates.
+The site exposes three zero-sum evidence standards. Validated conservative
+requires every hard gate and applies interval and timing discounts. Best
+observational recovers empirical-null-adjusted signals before the hard lead gate
+and applies interval precision plus a soft `1 / (1 + lead ratio)` timing penalty.
+Raw association stress uses positive uncorrected source and routing associations,
+capped by each destination's attribution benchmark. The raw view is a confounding
+stress test, not an estimate; none of the three is a causal result.
 
 ## Run the embedded-data preview
 

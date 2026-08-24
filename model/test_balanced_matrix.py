@@ -3,7 +3,12 @@
 import json
 from pathlib import Path
 
-from build_balanced_matrix import build_balanced_matrix, evidence_weight
+from build_balanced_matrix import (
+    build_balanced_matrix,
+    empirical_effect,
+    evidence_weight,
+    soft_timing_weight,
+)
 
 
 GENERATED = Path(__file__).parent / "generated"
@@ -50,6 +55,19 @@ def test_nearby_future_signal_is_continuously_discounted() -> None:
     assert abs(evidence_weight(candidate) - 0.1) < 1e-8
 
 
+def test_observational_scenario_recovers_empirical_signal_with_soft_timing() -> None:
+    candidate = total_cell(0, 10, False)
+    candidate.update({
+        "raw_effect": 120,
+        "placebo_bias": 10,
+        "placebo_threshold": 20,
+        "passes_empirical_null": True,
+        "lead_to_reference_ratio": 1.0,
+    })
+    assert empirical_effect(candidate) == 90
+    assert soft_timing_weight(candidate) == 0.5
+
+
 def test_published_balanced_outputs_reconcile() -> None:
     for measure in ("orders", "revenue"):
         model = json.loads(
@@ -61,7 +79,7 @@ def test_published_balanced_outputs_reconcile() -> None:
             )
             balanced_total = sum(view["row_totals"].values()) + view["unassigned_total"]
             assert abs(balanced_total - benchmark_total) < 1e-6
-            for scenario in ("conservative", "central", "upper"):
+            for scenario in ("conservative", "central", "raw"):
                 scenario_total = (
                     sum(view["scenario_row_totals"][scenario].values())
                     + view["scenario_unassigned_totals"][scenario]
@@ -73,7 +91,7 @@ def test_published_balanced_outputs_reconcile() -> None:
                     for source in model["channels"]
                 )
                 assert abs(assigned + rec["unassigned_original_attribution"] - rec["benchmark"]) < 1e-6
-                for scenario in ("conservative", "central", "upper"):
+                for scenario in ("conservative", "central", "raw"):
                     scenario_assigned = sum(
                         view["cells"][f"{source}|{destination}"]["scenario_effects"][scenario]
                         for source in model["channels"]
@@ -104,5 +122,6 @@ def test_published_balanced_outputs_reconcile() -> None:
 if __name__ == "__main__":
     test_diagonal_retains_remainder_and_columns_balance()
     test_nearby_future_signal_is_continuously_discounted()
+    test_observational_scenario_recovers_empirical_signal_with_soft_timing()
     test_published_balanced_outputs_reconcile()
     print("balanced_matrix: all accounting checks passed")
