@@ -31,21 +31,24 @@ const body = `
 <div class="warn" id="warn"></div>
 <div class="panel" id="panel"><h3 style="color:#888;font-weight:500">Select a cell</h3><p style="color:#888">Pick a source and destination pair to see its raw estimate, empirical correction, interval and placebo diagnostics.</p></div>
 
-<h2>Where the measured impact appears</h2>
-<p class="note"><strong>Annual scenario totals from the corrected model.</strong> Direct is the source channel&rsquo;s own credited destination; other destinations show attribution paths; Total business sums every destination for that source. Only the total is relevant to the overall order or revenue impact of reducing the source.</p>
+<h2>Budget decision guide</h2>
+<p class="note"><strong>Orders, revenue and spend are joined at the source-row level.</strong> The economic comparison uses the spend saved by the modelled 20% reduction—not full annual spend. Intervals are diagnostic 80% row intervals; decisions remain observational until a holdout confirms them.</p>
 <div id="spill"></div>
 
 <h3 class="shifth">Direct credited effect versus total business effect</h3>
 <p class="cap" id="shiftcap"></p>
 <div id="shift"></div>
 
-<h2>What this changes</h2><div class="method" id="soWhat"></div>
-<h2>How much of each effect is real?</h2><div id="rely"></div>
-<h3 style="margin-top:30px">What did the false-history tests find?</h3><div id="sens"></div>
-<h3 style="margin-top:30px">How stable is the pattern across markets?</h3><div id="stab"></div>
-<h2>Does it add up?</h2><div id="cons"></div>
-<h2>Suggestions</h2><p class="note">Everything above this line is what the observational model estimates. Everything below is a decision aid, not causal proof.</p><div id="suggest"></div>
-<h3 style="margin-top:30px">The experiments worth running</h3><div id="hold"></div>
+<h2>Experiment priorities</h2><p class="note">Specific planning targets for the strongest actionable rows. Expected effects are scaled to the proposed eight-week test; final power must be checked against experiment-specific daily variance before launch.</p><div id="hold"></div>
+<h2>Decision rules</h2><p class="note">These rules keep observational evidence separate from budget authority.</p><div id="suggest"></div>
+
+<details class="apx"><summary><h2>Diagnostics &mdash; falsification, uncertainty and market consistency</h2></summary><div class="method">
+  <h3>How much survives falsification?</h3><div id="rely"></div>
+  <h3>What did the false-history tests find?</h3><div id="sens"></div>
+  <h3>Does the pattern repeat across markets?</h3><div id="stab"></div>
+  <h3>Does the report reconcile?</h3><div id="cons"></div>
+  <h3>Downloads</h3><p><a class="dl" href="model/generated/halo-daily-orders.json" download>Corrected orders JSON</a><a class="dl" href="model/generated/halo-daily-revenue.json" download>Corrected revenue JSON</a><a class="dl" href="model/generated/placebo-validation.json" download>Orders placebo audit</a><a class="dl" href="model/generated/report-summary.json" download>Annual source summary</a></p>
+</div></details>
 
 <details class="sec"><summary><h2>How this was worked out</h2><span class="tease">Daily distributed lags, hierarchical pooling, placebo debiasing and what the method cannot prove</span></summary>
 <div class="method">
@@ -55,7 +58,7 @@ const body = `
   <p><strong>Interpretation.</strong> A source-to-destination cell can reflect incremental demand, attribution displacement, or both. The method controls observed co-movement and tests temporal placebos, but it remains observational. A randomized geo or audience holdout is still required to establish causality.</p>
 </div></details>
 
-<details class="apx"><summary><h2>Appendix &mdash; diagnostics in this build</h2></summary><div class="method" id="appendix"></div></details>
+<details class="apx"><summary><h2>Appendix &mdash; build status</h2></summary><div class="method" id="appendix"></div></details>
 <div class="foot">Daily hierarchical distributed-lag model. Cell-specific time-shift placebo debiasing, 95% empirical false-signal threshold, and false-discovery control. Scenario period: 365 days through 27 July 2026.</div>
 </div>
 <script src="app.js"></script>`;
