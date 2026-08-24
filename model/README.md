@@ -32,6 +32,13 @@ strong as the correctly timed effect, because that pattern is compatible with pl
 pacing or demand causing spend. Cells that fail either gate become zero. Passing values are labeled `placebo_adjusted_observational`, never
 experiment-calibrated.
 
+The balanced attribution artifact is intentionally a sensitivity scenario rather
+than a causal output. Its point halo multiplies interval reliability by timing
+separation (`1 - max future/correct effect ratio`) for both the source total and
+destination routing. It also publishes a non-negative plausible range for every
+cell. Diagonals remain accounting residuals, and the point allocation plus the
+explicit non-addressable remainder reconciles exactly to original attribution.
+
 ## Run the embedded-data preview
 
 ```powershell

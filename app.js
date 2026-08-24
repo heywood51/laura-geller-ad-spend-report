@@ -2,14 +2,14 @@
 
 let M='orders', R='Total', SELECTED=null;
 let MODEL={}, TOTAL={}, BALANCED={}, SUMMARY={}, IVALID={}, TVDIAG={};
-const GREEN='#1f7a3f', RED='#b3261e', GREY='#c9c7bd';
+const GREEN='#1f7a3f', AMBER='#b7791f', RED='#b3261e', GREY='#c9c7bd';
 const fmtN=new Intl.NumberFormat('en-US',{maximumFractionDigits:0});
 const fmtM=v=>(v<0?'-':'')+'$'+(Math.abs(v)>=1e6?(Math.abs(v)/1e6).toFixed(1)+'m':fmtN.format(Math.abs(v)));
 const num=(v,m=M)=>m==='revenue'?fmtM(v):fmtN.format(v);
 const signed=(v,m=M)=>(v>0?'+':'')+num(v,m);
 const short=(v,m)=>{const a=Math.abs(v),p=v<0?'-':v>0?'+':'';const n=a>=1e6?(a/1e6).toFixed(1)+'m':a>=1e3?(a/1e3).toFixed(0)+'k':fmtN.format(a);return p+(m==='revenue'?'$':'')+n};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const DATA_VERSION='12';
+const DATA_VERSION='13';
 const modelFile=name=>`model/generated/${name}?v=${DATA_VERSION}`;
 
 Promise.all([
@@ -64,9 +64,9 @@ function setOn(id,k,v){document.querySelectorAll('#'+id+' button').forEach(b=>b.
 function render(){renderHero();renderMatrixV2();renderPanelV3();renderSpill();renderShift();renderText()}
 
 function renderHero(){
-  const view=balancedData(),rec=Object.values(view.column_reconciliation),halo=rec.reduce((a,x)=>a+x.cross_source_halo,0),benchmark=rec.reduce((a,x)=>a+x.benchmark,0),paths=MODEL[M].channels.flatMap(s=>MODEL[M].destinations.map(d=>s!==d&&balancedCell(s,d)?.effect>0)).filter(Boolean).length,v=IVALID[M].summary;
-  document.getElementById('hero').innerHTML=`${short(halo,M)} <em>of the ${num(benchmark)} attribution benchmark is reassigned as halo</em>`;
-  document.getElementById('heroTxt').innerHTML=`In <strong>${esc(R)}</strong>, ${paths} off-diagonal paths remain as observational allocation candidates after uncertainty weighting and future-spend falsification. The remainder stays with its original destination diagonal, so one correlated channel cannot absorb the whole business.`;
+  const view=balancedData(),rec=Object.values(view.column_reconciliation),halo=rec.reduce((a,x)=>a+x.cross_source_halo,0),low=rec.reduce((a,x)=>a+(x.cross_source_halo_low||0),0),high=rec.reduce((a,x)=>a+(x.cross_source_halo_high||0),0),benchmark=rec.reduce((a,x)=>a+x.benchmark,0),paths=MODEL[M].channels.flatMap(s=>MODEL[M].destinations.map(d=>s!==d&&balancedCell(s,d)?.effect>0)).filter(Boolean).length,v=IVALID[M].summary;
+  document.getElementById('hero').innerHTML=`${short(halo,M)} <em>possible halo scenario · plausible range ${short(low,M)} to ${short(high,M)}</em>`;
+  document.getElementById('heroTxt').innerHTML=`In <strong>${esc(R)}</strong>, ${paths} off-diagonal paths remain possible after empirical-null and future-spend checks. The point scenario is ${(100*halo/Math.max(benchmark,1)).toFixed(1)}% of the attribution benchmark; it is not a causal estimate.`;
   document.getElementById('warn').innerHTML=`<strong>Raw association is not the answer.</strong> Fake histories reproduced ${Math.round(100*v.fake_to_observed_absolute_median)}% of the raw headline magnitude, so the calculator rejects that raw model. The final gate also rejects a result when spend 1, 2, 3, 7, or 14 days in the future predicts the outcome at least as strongly as correctly timed spend. Passing this test reduces reverse-causality risk, but only a randomized holdout can establish causality.`;
 }
 
@@ -79,20 +79,21 @@ function renderMatrixV2(){
     h+=`<tr><th>${esc(s)}</th>`;
     for(const d of dst){
       const c=balancedCell(s,d),v=c?.effect||0,ok=v>0,self=s===d,structural=c?.kind==='structural_zero_non_addressable';
-      const a=ok?.15+.75*Math.sqrt(v/max):0,bg=ok?(self?`rgba(70,105,130,${a})`:`rgba(31,122,63,${a})`):'#e8e6df',fg=ok&&a>.52?'#fff':'#333';
+      const supported=c?.evidence_status==='supported',a=ok?.15+.75*Math.sqrt(v/max):0,bg=ok?(self?`rgba(70,105,130,${a})`:supported?`rgba(31,122,63,${a})`:`rgba(183,121,31,${a})`):'#e8e6df',fg=ok&&a>.52?'#fff':'#333';
       const sel=SELECTED&&SELECTED[0]===s&&SELECTED[1]===d?' sel':'';
-      const title=structural?`${s} cannot receive direct attribution; any supported effect must route off-diagonal`:ok?(self?`${signed(v)} original attribution retained on diagonal`:`${signed(v)} cross-source halo ${M} assigned from ${esc(d)} to ${esc(s)}`):'No stable halo allocated';
+      const title=structural?`${s} cannot receive direct attribution; any supported effect must route off-diagonal`:ok?(self?`${signed(v)} original attribution retained on diagonal`:`${signed(v)} possible cross-source halo; range ${num(c.range_low)} to ${num(c.range_high)}`):'No stable halo allocated';
       h+=`<td><div class="cell${sel}" data-s="${esc(s)}" data-d="${esc(d)}" style="background:${bg};color:${fg}" title="${title}">${structural?'0':ok&&v>=1?signed(v):'—'}</div></td>`;
     }
     const total=balancedRowTotal(s),ok=total>0,a=ok?.18+.72*Math.sqrt(total/rowMax):0,bg=ok?`rgba(31,122,63,${a})`:'#e8e6df',fg=ok&&a>.52?'#fff':'#222';
     h+=`<td style="border-left:3px solid #1a1a1a"><div class="cell" style="background:${bg};color:${fg};font-weight:800;cursor:default" title="${num(total)} diagonally balanced attribution assigned to ${esc(s)}">${ok?num(total):'—'}</div></td></tr>`;
   }
-  const parts=dst.map(d=>{const x=balancedData().column_reconciliation[d];return {self:x.retained_self_attribution,halo:x.cross_source_halo,gap:x.unassigned_original_attribution,benchmark:x.benchmark}}),sum=k=>parts.reduce((a,p)=>a+p[k],0);
+  const parts=dst.map(d=>{const x=balancedData().column_reconciliation[d];return {self:x.retained_self_attribution,halo:x.cross_source_halo,haloLow:x.cross_source_halo_low||0,haloHigh:x.cross_source_halo_high||0,gap:x.unassigned_original_attribution,benchmark:x.benchmark}}),sum=k=>parts.reduce((a,p)=>a+p[k],0);
   const reconRow=(label,key)=>`<tr><th>${label}</th>${parts.map(p=>`<td><div class="cell" style="cursor:default">${Math.abs(p[key])>=1?num(p[key]):'—'}</div></td>`).join('')}<td style="border-left:3px solid #1a1a1a"><div class="cell" style="cursor:default;font-weight:800">${num(sum(key))}</div></td></tr>`;
-  h+='</tbody><tfoot>'+reconRow('Retained original attribution','self')+reconRow('Cross-source halo','halo')+reconRow('Unassigned / non-addressable','gap')+reconRow('20% attribution benchmark','benchmark')+'</tfoot></table>';
+  const rangeRow=`<tr><th>Plausible halo range</th>${parts.map(p=>`<td><div class="cell" style="cursor:default;font-size:10px">${num(p.haloLow)}–${num(p.haloHigh)}</div></td>`).join('')}<td style="border-left:3px solid #1a1a1a"><div class="cell" style="cursor:default;font-size:10px;font-weight:800">${num(sum('haloLow'))}–${num(sum('haloHigh'))}</div></td></tr>`;
+  h+='</tbody><tfoot>'+reconRow('Retained original attribution','self')+reconRow('Possible halo scenario','halo')+rangeRow+reconRow('Unassigned / non-addressable','gap')+reconRow('20% attribution benchmark','benchmark')+'</tfoot></table>';
   const el=document.getElementById('matrix');el.innerHTML=h;
   el.querySelectorAll('.cell[data-d]').forEach(x=>x.onclick=()=>{SELECTED=[x.dataset.s,x.dataset.d];renderMatrixV2();renderPanelV3()});
-  document.getElementById('matcap').textContent=`Every destination column reconciles exactly: retained original attribution + uncertainty-weighted cross-source halo + any no-diagonal remainder = the 20% attribution benchmark for ${R}.`;
+  document.getElementById('matcap').textContent=`The point scenario reconciles exactly. Amber cells are possible, not proven; their ranges show how little precision the observational data provides.`;
 }
 
 function renderPanelV2(){
@@ -118,16 +119,18 @@ function renderPanelV3(){
   if(!SELECTED){document.getElementById('panel').innerHTML='<h3 style="color:#888;font-weight:500">Select a cell</h3><p style="color:#888">Blue diagonal cells retain original attribution. Green off-diagonal cells are uncertainty-weighted halo estimates.</p>';return}
   const [s,d]=SELECTED,c=balancedCell(s,d);if(!c)return;
   const self=s===d,structural=c.kind==='structural_zero_non_addressable',rec=balancedData().column_reconciliation[d],ev=c.source_evidence||balancedData().source_evidence[s];
-  const verdict=structural?'Structural zero: non-addressable':self?'Retained original attribution':c.effect>0?'Cross-source halo estimate':'No stable halo allocated';
-  const why=structural?`${s} results cannot normally be attributed back to ${s}, so this diagonal is forced to zero. Any supported ${s} effect must appear in other destination columns.`:self?`${num(c.effect)} remains on ${d}'s original-attribution diagonal after supported inbound halo is removed. This is the consistency anchor, not a claim that ${d} spend caused every retained result.`:c.effect>0?`${num(c.effect)} is reassigned from ${d}'s original attribution to ${s}. The source estimate is discounted by ${(100*ev.reliability_weight).toFixed(0)}% for uncertainty before routing.`:`The available data does not provide stable enough source and routing evidence to reassign ${d} attribution to ${s}.`;
+  const verdict=structural?'Structural zero: non-addressable':self?'Retained original attribution':c.evidence_status==='supported'?'Supported halo':c.effect>0?'Possible halo · not decision-grade':'Unresolved';
+  const why=structural?`${s} results cannot normally be attributed back to ${s}, so this diagonal is forced to zero. Any supported ${s} effect must appear in other destination columns.`:self?`${num(c.effect)} remains on ${d}'s original-attribution diagonal in the point scenario. This is an accounting anchor, not a causal estimate.`:c.effect>0?`The point scenario moves ${num(c.effect)} from ${d} to ${s}, but the plausible range is ${num(c.range_low)} to ${num(c.range_high)}. Use it for sensitivity, not a budget claim.`:`The available data does not provide stable enough source and routing evidence to reassign ${d} attribution to ${s}.`;
   const tv=TVDIAG[M],tvStats=structural?`<div class="stat"><div class="k">TV-specific candidate</div><div class="v">${signed(tv.candidate_effect)}</div><div class="ex">not published</div></div><div class="stat"><div class="k">TV candidate 80%</div><div class="v">${signed(tv.lower80)} to ${signed(tv.upper80)}</div></div><div class="stat"><div class="k">TV time-placebo p</div><div class="v">${(100*tv.time_placebo_empirical_p).toFixed(1)}%</div></div><div class="stat"><div class="k">TV failed checks</div><div class="v">${esc(tv.failed_gates.join(', ').replaceAll('_',' '))}</div></div>`:'';
-  document.getElementById('panel').innerHTML=`<h3>${esc(s)} &rarr; ${esc(d)}</h3><span class="verdict ${c.effect>0?'v-hold':'v-no'}">${verdict}</span><p class="why">${esc(why)}</p><div class="stats">
+  document.getElementById('panel').innerHTML=`<h3>${esc(s)} &rarr; ${esc(d)}</h3><span class="verdict ${c.evidence_status==='supported'?'v-hold':c.effect>0?'v-possible':'v-no'}">${verdict}</span><p class="why">${esc(why)}</p><div class="stats">
     <div class="stat"><div class="k">${structural?'Required diagonal':self?'Retained on diagonal':'Reassigned halo'}</div><div class="v">${structural?'0':c.effect>0?num(c.effect):'—'}</div></div>
+    <div class="stat"><div class="k">Plausible range</div><div class="v">${num(c.range_low)} to ${num(c.range_high)}</div></div>
     <div class="stat"><div class="k">Destination benchmark</div><div class="v">${num(rec.benchmark)}</div></div>
     <div class="stat"><div class="k">All inbound halo</div><div class="v">${num(rec.cross_source_halo)}</div></div>
     <div class="stat"><div class="k">Retained self-attribution</div><div class="v">${num(rec.retained_self_attribution)}</div></div>
     <div class="stat"><div class="k">Unassigned, no diagonal</div><div class="v">${num(rec.unassigned_original_attribution)}</div></div>
-    <div class="stat"><div class="k">Source reliability weight</div><div class="v">${(100*ev.reliability_weight).toFixed(0)}%</div><div class="ex">continuous, not pass/fail</div></div>
+    <div class="stat"><div class="k">Combined reliability weight</div><div class="v">${(100*ev.reliability_weight).toFixed(1)}%</div><div class="ex">interval × timing separation</div></div>
+    <div class="stat"><div class="k">Timing separation weight</div><div class="v">${(100*ev.timing_reliability_weight).toFixed(1)}%</div></div>
     <div class="stat"><div class="k">Source adjusted effect</div><div class="v">${signed(ev.adjusted_total_effect)}</div></div>
     <div class="stat"><div class="k">Source 80% interval</div><div class="v">${signed(ev.lower80)} to ${signed(ev.upper80)}</div></div>
     <div class="stat"><div class="k">Source lead test</div><div class="v">${ev.passes_lead_falsification?'Pass':'Fail'}</div><div class="ex">future / correct timing: ${ev.lead_to_reference_ratio.toFixed(2)}&times;</div></div>
@@ -172,7 +175,7 @@ function renderText(){
   const v=IVALID[M].summary,supported=MODEL[M].channels.filter(s=>rowIntervalFor(M,R,s).accepted),routes=supported.reduce((a,s)=>a+routeCount(M,R,s),0);
   document.getElementById('rely').innerHTML=`<div class="hscroll"><table class="s"><tr><th>Diagnostic</th><th>${esc(R)} ${M}</th></tr><tr><td class="l">Source rows tested</td><td>${MODEL[M].channels.length}</td></tr><tr><td class="l">Source rows clearing final gate</td><td>${supported.length}</td></tr><tr><td class="l">Published destination routes</td><td>${routes}</td></tr><tr><td class="l">Raw fake / observed magnitude</td><td>${(100*v.fake_to_observed_absolute_median).toFixed(1)}%</td></tr><tr><td class="l">Held-out fake rows, median</td><td>${v.heldout_fake_passing_rows_median}</td></tr><tr><td class="l">Held-out fake rows, worst</td><td>${v.heldout_fake_passing_rows_max}</td></tr><tr><td class="l">Held-out fake histories</td><td>${v.heldout_placebo_runs}</td></tr></table></div><p class="cap">The high raw fake share demonstrates confounding in the uncorrected model. The held-out rows evaluate the final decision rule on fake histories that were not used to set it.</p>`;
   const tv=TVDIAG[M];
-  document.getElementById('sens').innerHTML=`<p><strong>The calculator no longer uses a winner-takes-all source gate for the attribution matrix.</strong> Positive source evidence is continuously discounted for interval uncertainty, then divided only across corrected positive off-diagonal routes. Each destination caps inbound halo at its 20% original-attribution benchmark, and every remaining attributed result stays on that destination's diagonal.</p><div class="eq">halo budget = corrected source effect × continuous reliability weight<br>retained diagonal = attribution benchmark − supported inbound halo</div><p><strong>TV-specific result:</strong> the US donor-control intensity model estimates a directional ${num(tv.candidate_effect)} candidate, but publishes ${num(tv.published_effect)} because it failed ${esc(tv.failed_gates.join(', ').replaceAll('_',' '))}. TV ran every day and only in the US, so false timing patterns remain too large to identify its halo reliably.</p>`;
+  document.getElementById('sens').innerHTML=`<p><strong>The attribution matrix is now a sensitivity scenario, not a hidden causal claim.</strong> Positive source and routing evidence is discounted twice: once for interval uncertainty and again according to how close the strongest future-spend lead comes to the correctly timed effect. A 0.93 future/correct ratio therefore receives only 7% timing weight. The plausible range retains the model's valid uncertainty instead of hiding it behind the point estimate.</p><div class="eq">point halo budget = corrected source effect × interval weight × (1 − future/correct timing ratio)<br>retained diagonal = attribution benchmark − point halo</div><p><strong>TV-specific result:</strong> the US donor-control intensity model estimates a directional ${num(tv.candidate_effect)} candidate, but publishes ${num(tv.published_effect)} because it failed ${esc(tv.failed_gates.join(', ').replaceAll('_',' '))}. TV ran every day and only in the US, so false timing patterns remain too large to identify its halo reliably.</p>`;
   const geos=MODEL[M].metadata.geographies,stability=MODEL[M].channels.map(s=>{const total=rowIntervalFor(M,R,s),vals=geos.map(g=>rowIntervalFor(M,g,s)),pos=vals.filter(x=>x.accepted).length,unresolved=vals.filter(x=>x.passes&&!x.accepted).length,none=vals.filter(x=>!x.passes).length,o=rowIntervalFor('orders',R,s),r=rowIntervalFor('revenue',R,s),agree=o.accepted&&r.accepted?'Both pass':o.accepted||r.accepted?'One passes':'Neither passes';return{s,total,pos,unresolved,none,agree}}).sort((a,b)=>(b.total.accepted?b.total.total:0)-(a.total.accepted?a.total.total:0));
   document.getElementById('stab').innerHTML='<div class="hscroll"><table class="s"><tr><th class="stick">Source</th><th>Supported markets</th><th>Unresolved markets</th><th>No evidence</th><th>Orders / revenue</th><th>Total-business result</th></tr>'+stability.map(x=>`<tr><td class="l stick">${esc(x.s)}</td><td>${x.pos} / ${geos.length}</td><td>${x.unresolved} / ${geos.length}</td><td>${x.none} / ${geos.length}</td><td>${x.agree}</td><td>${x.total.accepted?signed(x.total.total):'—'}</td></tr>`).join('')+'</table></div>';
   document.getElementById('cons').innerHTML='<div class="method"><p><strong>The attribution matrix reconciles exactly by construction.</strong> For destinations with a matching source row, retained diagonal attribution + inbound cross-source halo equals the 20% original-attribution benchmark. Organic and Direct have no spend-source diagonal, so any remainder stays explicitly unassigned. The strict source-to-total model remains visible in the decision table as a separate diagnostic rather than controlling the whole matrix.</p></div>';

@@ -51,6 +51,7 @@ table.m tfoot tr+tr th,table.m tfoot tr+tr td{border-top:1px solid #ddd9cf}
 .panel .verdict{font-size:13px;font-weight:700;display:inline-block;padding:3px 10px;border-radius:20px;margin-bottom:10px}
 .v-hold{background:#e3f1e7;color:#14612f}.v-neg{background:#fbe9e7;color:#8c1d18;border-color:#f0c8c3}
 .v-no{background:#f0efea;color:#666}
+.v-possible{background:#fff3d6;color:#7a4d00}
 .stats{display:flex;gap:30px;flex-wrap:wrap;margin:10px 0 0}
 .stat .k{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em}
 .stat .v{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
@@ -162,11 +163,12 @@ details.apx>summary h2{display:inline;font-size:20px}
 <div class="cap" id="matcap" style="margin-top:6px"></div>
 <div class="legend">
   <span><i class="sw" style="background:#466982"></i>Original attribution retained on diagonal</span>
-  <span><i class="sw" style="background:#1f7a3f"></i>Uncertainty-weighted cross-source halo</span>
+  <span><i class="sw" style="background:#1f7a3f"></i>Supported cross-source halo</span>
+  <span><i class="sw" style="background:#b7791f"></i>Possible halo scenario</span>
   <span><i class="sw" style="background:#e8e6df"></i>Total incrementality or routing unresolved</span>
   <span style="color:#999">Click any cell</span>
 </div>
-<p class="note" style="margin:10px 0 0"><strong>The diagonal is the consistency anchor; only off-diagonal cells are halo.</strong> The calculator starts with 20% of original attribution, moves only uncertainty-weighted supported halo to other source rows, and leaves the remainder on the original destination diagonal. <strong>Television is the exception:</strong> its diagonal is structurally zero because orders cannot normally be attributed to TV; any supported TV effect must route elsewhere.</p>
+<p class="note" style="margin:10px 0 0"><strong>The diagonal is the consistency anchor; only off-diagonal cells are halo.</strong> The point scenario discounts candidate halo for interval uncertainty and weak timing separation. Amber means possible, not proven. The displayed range preserves the uncertainty that the point estimate cannot show. <strong>Television is the exception:</strong> its diagonal is structurally zero because orders cannot normally be attributed to TV.</p>
 <div class="warn" id="warn"></div>
 <div class="panel" id="panel"><h3 style="color:#888;font-weight:500">Select a cell</h3><p style="color:#888">Pick a source and destination pair to see its raw estimate, empirical correction, interval and placebo diagnostics.</p></div>
 
@@ -192,7 +194,7 @@ details.apx>summary h2{display:inline;font-size:20px}
 <details class="sec"><summary><h2>How this was worked out</h2><span class="tease">Daily distributed lags, hierarchical pooling, placebo debiasing and what the method cannot prove</span></summary>
 <div class="method">
   <p><strong>Layer one: total-business incrementality.</strong> The calculator uses daily data from 2025-01-01 through 2026-07-27. All twelve paid and CRM levers are estimated together against total new-customer orders or total new-customer revenue. A row is accepted only if it survives a 99% time-shift placebo threshold, false-discovery control, a positive conservative interval, and a directed reverse-causality test at 1, 2, 3, 7, and 14 days.</p>
-  <p><strong>Layer two: diagonally balanced attribution.</strong> Source evidence receives a continuous uncertainty discount instead of a winner-takes-all gate. Corrected positive off-diagonal routes move attribution between channels; whatever is not moved remains on the original destination diagonal. Each destination column therefore reconciles exactly.</p>
+  <p><strong>Layer two: diagonally balanced sensitivity scenario.</strong> Source and routing evidence receive continuous discounts for interval uncertainty and weak separation from future-spend leads. The point scenario moves only the discounted amount; a plausible range shows the valid observational uncertainty. Whatever is not moved remains on the original destination diagonal, so each destination column reconciles exactly.</p>
   <p><strong>The raw-confounding problem.</strong> Fake histories still reproduce much of the uncorrected association. That is why the raw model is never the answer. In held-out validation, the complete final gate—not merely the regression—must publish no fake rows before the model is released.</p>
   <p><strong>Interpretation.</strong> The page now answers: “Does this source have supported total-business incrementality, and where does corrected attribution evidence place it?” It remains observational until a randomized geo or audience holdout calibrates the source row.</p>
 </div></details>
@@ -200,4 +202,4 @@ details.apx>summary h2{display:inline;font-size:20px}
 <details class="apx"><summary><h2>Appendix &mdash; build status</h2></summary><div class="method" id="appendix"></div></details>
 <div class="foot">Daily hierarchical distributed-lag model. Source-to-total-business empirical-null correction, future-spend lead falsification, 99% source gate, positive 80% interval, and conditional destination routing. Scenario period: 365 days through 27 July 2026.</div>
 </div>
-<script src="app.js?v=12"></script></body></html>
+<script src="app.js?v=13"></script></body></html>

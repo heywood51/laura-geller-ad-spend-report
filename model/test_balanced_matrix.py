@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from build_balanced_matrix import build_balanced_matrix
+from build_balanced_matrix import build_balanced_matrix, evidence_weight
 
 
 GENERATED = Path(__file__).parent / "generated"
@@ -11,11 +11,14 @@ GENERATED = Path(__file__).parent / "generated"
 
 def total_cell(effect: float, se: float, passes: bool = True) -> dict:
     return {"effect": effect, "standard_error": se, "lower80": effect - 10,
-            "upper80": effect + 10, "passes_placebo": passes}
+            "upper80": effect + 10, "passes_placebo": passes,
+            "passes_lead_falsification": True, "lead_to_reference_ratio": 0.0}
 
 
 def route_cell(effect: float, passes: bool = True) -> dict:
-    return {"effect": effect, "passes_placebo": passes}
+    return {"effect": effect, "standard_error": 0, "lower80": effect,
+            "upper80": effect, "passes_placebo": passes,
+            "passes_lead_falsification": True, "lead_to_reference_ratio": 0.0}
 
 
 def test_diagonal_retains_remainder_and_columns_balance() -> None:
@@ -37,6 +40,14 @@ def test_diagonal_retains_remainder_and_columns_balance() -> None:
         assert abs(assigned + rec["unassigned_original_attribution"] - rec["benchmark"]) < 1e-8
     assert result["cells"]["A|A"]["kind"] == "retained_self_attribution"
     assert result["cells"]["A|B"]["kind"] == "cross_source_halo"
+    assert result["cells"]["A|B"]["range_low"] <= result["cells"]["A|B"]["effect"]
+    assert result["cells"]["A|B"]["effect"] <= result["cells"]["A|B"]["range_high"]
+
+
+def test_nearby_future_signal_is_continuously_discounted() -> None:
+    candidate = total_cell(100, 0)
+    candidate["lead_to_reference_ratio"] = 0.9
+    assert abs(evidence_weight(candidate) - 0.1) < 1e-8
 
 
 def test_published_balanced_outputs_reconcile() -> None:
@@ -79,5 +90,6 @@ def test_published_balanced_outputs_reconcile() -> None:
 
 if __name__ == "__main__":
     test_diagonal_retains_remainder_and_columns_balance()
+    test_nearby_future_signal_is_continuously_discounted()
     test_published_balanced_outputs_reconcile()
     print("balanced_matrix: all accounting checks passed")
