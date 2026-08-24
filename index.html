@@ -191,13 +191,13 @@ details.apx>summary h2{display:inline;font-size:20px}
 
 <details class="sec"><summary><h2>How this was worked out</h2><span class="tease">Daily distributed lags, hierarchical pooling, placebo debiasing and what the method cannot prove</span></summary>
 <div class="method">
-  <p><strong>Layer one: total-business incrementality.</strong> The calculator uses daily data from 2025-01-01 through 2026-07-27. All twelve paid and CRM levers are estimated together against total new-customer orders or total new-customer revenue. A row is accepted only if it survives a 99% time-shift placebo threshold, false-discovery control, and a positive conservative interval.</p>
+  <p><strong>Layer one: total-business incrementality.</strong> The calculator uses daily data from 2025-01-01 through 2026-07-27. All twelve paid and CRM levers are estimated together against total new-customer orders or total new-customer revenue. A row is accepted only if it survives a 99% time-shift placebo threshold, false-discovery control, a positive conservative interval, and a directed reverse-causality test at 1, 2, 3, 7, and 14 days.</p>
   <p><strong>Layer two: diagonally balanced attribution.</strong> Source evidence receives a continuous uncertainty discount instead of a winner-takes-all gate. Corrected positive off-diagonal routes move attribution between channels; whatever is not moved remains on the original destination diagonal. Each destination column therefore reconciles exactly.</p>
   <p><strong>The raw-confounding problem.</strong> Fake histories still reproduce much of the uncorrected association. That is why the raw model is never the answer. In held-out validation, the complete final gate—not merely the regression—must publish no fake rows before the model is released.</p>
   <p><strong>Interpretation.</strong> The page now answers: “Does this source have supported total-business incrementality, and where does corrected attribution evidence place it?” It remains observational until a randomized geo or audience holdout calibrates the source row.</p>
 </div></details>
 
 <details class="apx"><summary><h2>Appendix &mdash; build status</h2></summary><div class="method" id="appendix"></div></details>
-<div class="foot">Daily hierarchical distributed-lag model. Source-to-total-business empirical-null correction, 99% source gate, positive 80% interval, and conditional destination routing. Scenario period: 365 days through 27 July 2026.</div>
+<div class="foot">Daily hierarchical distributed-lag model. Source-to-total-business empirical-null correction, future-spend lead falsification, 99% source gate, positive 80% interval, and conditional destination routing. Scenario period: 365 days through 27 July 2026.</div>
 </div>
-<script src="app.js?v=10"></script></body></html>
+<script src="app.js?v=11"></script></body></html>

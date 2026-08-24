@@ -11,7 +11,14 @@ import numpy as np
 import pandas as pd
 
 from halo_model import build_halo
-from validate_placebos import adjust_model, matrix_scores, shifted_panel
+from validate_placebos import (
+    adjust_model,
+    apply_lead_falsification,
+    build_lead_falsification,
+    matrix_scores,
+    parse_lead_days,
+    shifted_panel,
+)
 
 
 def build_total_config(frame: pd.DataFrame, config: dict) -> tuple[pd.DataFrame, dict]:
@@ -31,6 +38,7 @@ def run_model(
     runs: int,
     seed: int,
     alpha: float,
+    lead_days: tuple[int, ...] = (1, 2, 3, 7, 14),
 ) -> tuple[dict, dict]:
     frame, config = build_total_config(frame, config)
     rng = np.random.default_rng(seed)
@@ -55,6 +63,8 @@ def run_model(
             print(f"completed {run + 1}/{runs} placebo refits", flush=True)
 
     adjusted = adjust_model(observed_model, placebo_effects, alpha)
+    reference, lead_models = build_lead_falsification(frame, config, lead_days)
+    adjusted = apply_lead_falsification(adjusted, reference, lead_models, lead_days)
     adjusted["metadata"]["model_purpose"] = config["model_purpose"]
     absolute = np.asarray([item["absolute_cell_volume"] for item in placebos])
     net = np.asarray([abs(item["net_cell_volume"]) for item in placebos])
@@ -105,6 +115,11 @@ def run_model(
                 for cell in adjusted["views"]["Total"]["cells"].values()
             )),
             "tested_total_business_rows": len(adjusted["channels"]),
+            "lead_falsification_days": list(lead_days),
+            "passing_lead_falsification_rows": int(sum(
+                cell["passes_lead_falsification"]
+                for cell in adjusted["views"]["Total"]["cells"].values()
+            )),
             "adjusted_observed_absolute_volume": float(adjusted_observed_score["absolute_volume"]),
             "heldout_adjusted_fake_absolute_median": float(np.median(heldout_absolute)),
             "heldout_adjusted_fake_absolute_max": float(np.max(heldout_absolute)),
@@ -131,12 +146,15 @@ def main() -> None:
     parser.add_argument("--runs", type=int, default=50)
     parser.add_argument("--seed", type=int, default=20260824)
     parser.add_argument("--alpha", type=float, default=0.01)
+    parser.add_argument("--lead-days", type=parse_lead_days, default=(1, 2, 3, 7, 14))
     args = parser.parse_args()
 
     frame = pd.read_csv(args.input)
     with open(args.config, encoding="utf8") as handle:
         config = json.load(handle)
-    adjusted, validation = run_model(frame, config, args.runs, args.seed, args.alpha)
+    adjusted, validation = run_model(
+        frame, config, args.runs, args.seed, args.alpha, args.lead_days
+    )
     Path(args.output).write_text(json.dumps(adjusted, indent=2, allow_nan=False), encoding="utf8")
     Path(args.validation_output).write_text(json.dumps(validation, indent=2, allow_nan=False), encoding="utf8")
     print(json.dumps(validation["summary"], indent=2))

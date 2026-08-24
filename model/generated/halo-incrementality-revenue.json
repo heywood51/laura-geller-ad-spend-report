@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "placebo_adjusted_observational",
-  "warning": "Cell-specific time-shift placebos were used to remove empirical bias, subtract a 95% false-signal threshold, and control false discoveries. These are conservative observational estimates, not randomized causal proof.",
+  "warning": "Effects must survive empirical-null correction and a directed reverse-causality test. A cell is withheld when future exposure predicts the outcome at least as strongly as correctly timed exposure. Passing estimates remain observational, not randomized causal proof.",
   "metadata": {
     "date_min": "2025-01-01",
     "date_max": "2026-07-27",
@@ -20,11 +20,20 @@
       "periods": 365
     },
     "experiment_count": 0,
-    "method": "hierarchical Bayesian distributed-lag halo model with empirical-null debiasing and FDR control",
+    "method": "hierarchical Bayesian distributed-lag halo model with empirical-null debiasing and FDR control with directed future-exposure lead falsification",
     "measure": "revenue",
     "placebo_runs": 50,
     "placebo_alpha": 0.01,
-    "model_purpose": "source-level total-business incrementality"
+    "model_purpose": "source-level total-business incrementality",
+    "lead_falsification_days": [
+      1,
+      2,
+      3,
+      7,
+      14
+    ],
+    "lead_falsification_passed_cells": 12,
+    "lead_falsification_tested_cells": 84
   },
   "channels": [
     "Meta",
@@ -48,22 +57,35 @@
     "Total": {
       "cells": {
         "Meta|Total Business": {
-          "effect": 446642.85946470825,
-          "lower80": -784467.8887345952,
-          "upper80": 1677753.6076640117,
+          "effect": 0.0,
+          "lower80": -1231110.7481993034,
+          "upper80": 1231110.7481993034,
           "standard_error": 960640.8210941852,
-          "probability_positive": 0.6790137255820557,
+          "probability_positive": 0.5,
           "calibrated": false,
           "raw_effect": 3531050.0261042784,
           "placebo_adjusted": true,
           "publishable": true,
-          "passes_placebo": true,
+          "passes_placebo": false,
           "placebo_bias": -45317.70751876905,
           "placebo_threshold": 3129724.874158339,
           "placebo_p_value": 2.644437384736096e-06,
           "placebo_empirical_p_value": 0.0196078431372549,
           "placebo_q_value": 1.0577749538944384e-05,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": true,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 3499844.5482148705,
+          "lead_effects": {
+            "1": 3896177.733134001,
+            "2": 4075813.1313733608,
+            "3": 3955916.2519451124,
+            "7": 2726403.380866338,
+            "14": 1178086.9805240596
+          },
+          "max_abs_lead_effect": 4075813.1313733608,
+          "lead_to_reference_ratio": 1.1645697616633484
         },
         "Google Search|Total Business": {
           "effect": 0.0,
@@ -81,7 +103,20 @@
           "placebo_p_value": 0.644051418117517,
           "placebo_empirical_p_value": 0.6470588235294118,
           "placebo_q_value": 0.7728617017410204,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": true,
+          "passes_validation": false,
+          "lead_reference_effect": -377378.80251757056,
+          "lead_effects": {
+            "1": -215084.4216470954,
+            "2": -103002.9660127911,
+            "3": -62459.43580051014,
+            "7": -288037.14293471177,
+            "14": -302184.3235948059
+          },
+          "max_abs_lead_effect": 302184.3235948059,
+          "lead_to_reference_ratio": 0.8007453560689497
         },
         "TikTok Shop|Total Business": {
           "effect": 540484.3240387887,
@@ -99,7 +134,20 @@
           "placebo_p_value": 0.0027908548700259677,
           "placebo_empirical_p_value": 0.0196078431372549,
           "placebo_q_value": 0.008372564610077904,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": true,
+          "passes_lead_falsification": true,
+          "passes_validation": true,
+          "lead_reference_effect": 7102348.015017272,
+          "lead_effects": {
+            "1": 6432158.777595865,
+            "2": 5390965.596859524,
+            "3": 4681042.159504197,
+            "7": 4845943.676888979,
+            "14": 5532509.090574354
+          },
+          "max_abs_lead_effect": 6432158.777595865,
+          "lead_to_reference_ratio": 0.9056383556530385
         },
         "Bing|Total Business": {
           "effect": 0.0,
@@ -117,25 +165,51 @@
           "placebo_p_value": 0.6212214106878612,
           "placebo_empirical_p_value": 0.6666666666666666,
           "placebo_q_value": 0.7728617017410204,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 385073.0772191709,
+          "lead_effects": {
+            "1": 481398.812931035,
+            "2": 602132.9287108708,
+            "3": 705374.7344514874,
+            "7": 333117.3336898995,
+            "14": 145460.26698861804
+          },
+          "max_abs_lead_effect": 705374.7344514874,
+          "lead_to_reference_ratio": 1.8317944727411086
         },
         "AppLovin|Total Business": {
-          "effect": 2407001.8067348283,
-          "lower80": 124172.741012068,
-          "upper80": 4689830.872457588,
+          "effect": 0.0,
+          "lower80": -2282829.0657227603,
+          "upper80": 2282829.0657227603,
           "standard_error": 1781300.9847580055,
-          "probability_positive": 0.9116940130334774,
+          "probability_positive": 0.5,
           "calibrated": false,
           "raw_effect": 9379186.301883513,
           "placebo_adjusted": true,
           "publishable": true,
-          "passes_placebo": true,
+          "passes_placebo": false,
           "placebo_bias": -68539.58658196982,
           "placebo_threshold": 7040724.081730654,
           "placebo_p_value": 6.253021259342953e-08,
           "placebo_empirical_p_value": 0.0196078431372549,
           "placebo_q_value": 7.503625511211543e-07,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": true,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 9416655.285288202,
+          "lead_effects": {
+            "1": 9712848.247579765,
+            "2": 9728272.618538236,
+            "3": 9395191.811399253,
+            "7": 5431296.80053752,
+            "14": 4524642.0375603195
+          },
+          "max_abs_lead_effect": 9728272.618538236,
+          "lead_to_reference_ratio": 1.0330921461824008
         },
         "Pinterest|Total Business": {
           "effect": 0.0,
@@ -153,7 +227,20 @@
           "placebo_p_value": 0.09198666758072296,
           "placebo_empirical_p_value": 0.47058823529411764,
           "placebo_q_value": 0.22076800219373513,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 161490.93720421038,
+          "lead_effects": {
+            "1": 212655.3004419027,
+            "2": 213578.2909479301,
+            "3": 207594.1920220318,
+            "7": 216476.04391479574,
+            "14": 129313.45943043745
+          },
+          "max_abs_lead_effect": 216476.04391479574,
+          "lead_to_reference_ratio": 1.3404841637710911
         },
         "Rokt|Total Business": {
           "effect": 0.0,
@@ -171,7 +258,20 @@
           "placebo_p_value": 1.4426591913569006e-06,
           "placebo_empirical_p_value": 0.0392156862745098,
           "placebo_q_value": 8.655955148141404e-06,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 2817204.5229999423,
+          "lead_effects": {
+            "1": 2945702.6932221283,
+            "2": 2949773.161461652,
+            "3": 2917258.0760828895,
+            "7": 2672822.300249162,
+            "14": 1921228.536665662
+          },
+          "max_abs_lead_effect": 2949773.161461652,
+          "lead_to_reference_ratio": 1.0470568030753202
         },
         "TikTok Social|Total Business": {
           "effect": 0.0,
@@ -189,7 +289,20 @@
           "placebo_p_value": 0.33411361483044044,
           "placebo_empirical_p_value": 0.35294117647058826,
           "placebo_q_value": 0.6682272296608809,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 2538423.725773098,
+          "lead_effects": {
+            "1": 2627057.0276517784,
+            "2": 2732027.57512517,
+            "3": 2805942.715863982,
+            "7": 3091744.984458555,
+            "14": 3484216.3129990515
+          },
+          "max_abs_lead_effect": 3484216.3129990515,
+          "lead_to_reference_ratio": 1.3725905086779413
         },
         "Television|Total Business": {
           "effect": 0.0,
@@ -207,7 +320,20 @@
           "placebo_p_value": 0.603416548416784,
           "placebo_empirical_p_value": 0.6274509803921569,
           "placebo_q_value": 0.7728617017410204,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 3936919.3559522717,
+          "lead_effects": {
+            "1": 4193236.877868103,
+            "2": 4404609.551624484,
+            "3": 4393047.990264027,
+            "7": 4806238.576911499,
+            "14": 5430763.433390444
+          },
+          "max_abs_lead_effect": 5430763.433390444,
+          "lead_to_reference_ratio": 1.3794449269527487
         },
         "YouTube|Total Business": {
           "effect": 0.0,
@@ -225,7 +351,20 @@
           "placebo_p_value": 0.9999607823808203,
           "placebo_empirical_p_value": 0.9215686274509803,
           "placebo_q_value": 0.9999607823808203,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": true,
+          "passes_validation": false,
+          "lead_reference_effect": -3.9123198947180553,
+          "lead_effects": {
+            "1": -3.912309612041487,
+            "2": -3.912297972928526,
+            "3": -3.9122835600907737,
+            "7": -3.912225428133522,
+            "14": -3.9122333427491047
+          },
+          "max_abs_lead_effect": 3.912309612041487,
+          "lead_to_reference_ratio": 0.9999973717188663
         },
         "CRM Email|Total Business": {
           "effect": 0.0,
@@ -243,7 +382,20 @@
           "placebo_p_value": 0.5851995217836921,
           "placebo_empirical_p_value": 0.5882352941176471,
           "placebo_q_value": 0.7728617017410204,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": -5349489.789651036,
+          "lead_effects": {
+            "1": -2652537.3348208168,
+            "2": -2254982.459618824,
+            "3": -801857.5876285871,
+            "7": -7956390.307690078,
+            "14": -12687849.4293258
+          },
+          "max_abs_lead_effect": 12687849.4293258,
+          "lead_to_reference_ratio": 2.37178682981531
         },
         "CRM SMS|Total Business": {
           "effect": 0.0,
@@ -261,15 +413,28 @@
           "placebo_p_value": 0.7640780665697412,
           "placebo_empirical_p_value": 0.7254901960784313,
           "placebo_q_value": 0.8335397089851722,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 95626.17661093152,
+          "lead_effects": {
+            "1": 447509.6396936143,
+            "2": 663637.0090846757,
+            "3": 118112.29219433176,
+            "7": -1841712.7869314456,
+            "14": -2439372.591280138
+          },
+          "max_abs_lead_effect": 2439372.591280138,
+          "lead_to_reference_ratio": 25.50946485296664
         }
       },
       "row_totals": {
-        "Meta": 446642.85946470825,
+        "Meta": 0.0,
         "Google Search": 0.0,
         "TikTok Shop": 540484.3240387887,
         "Bing": 0.0,
-        "AppLovin": 2407001.8067348283,
+        "AppLovin": 0.0,
         "Pinterest": 0.0,
         "Rokt": 0.0,
         "TikTok Social": 0.0,
@@ -298,7 +463,20 @@
           "placebo_p_value": 0.9839540364639002,
           "placebo_empirical_p_value": 0.6666666666666666,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": -861.351976354215,
+          "lead_effects": {
+            "1": 16032.185870417907,
+            "2": 24860.568030549588,
+            "3": 19499.069520631456,
+            "7": -29880.559223556596,
+            "14": -75702.8463175392
+          },
+          "max_abs_lead_effect": 75702.8463175392,
+          "lead_to_reference_ratio": 87.88839916286186
         },
         "Google Search|Total Business": {
           "effect": 0.0,
@@ -316,7 +494,20 @@
           "placebo_p_value": 0.21658798902338097,
           "placebo_empirical_p_value": 0.17647058823529413,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": -333729.65080346784,
+          "lead_effects": {
+            "1": -265646.1466237176,
+            "2": -231904.0966666998,
+            "3": -225026.890514545,
+            "7": -342503.67626025947,
+            "14": -319911.80855081585
+          },
+          "max_abs_lead_effect": 342503.67626025947,
+          "lead_to_reference_ratio": 1.0262908178391337
         },
         "TikTok Shop|Total Business": {
           "effect": 0.0,
@@ -334,7 +525,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "Bing|Total Business": {
           "effect": 0.0,
@@ -352,7 +556,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "AppLovin|Total Business": {
           "effect": 0.0,
@@ -370,7 +587,20 @@
           "placebo_p_value": 0.5629165888571799,
           "placebo_empirical_p_value": 0.5294117647058824,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 45522.22706832584,
+          "lead_effects": {
+            "1": 58045.9606117497,
+            "2": 68226.04247002266,
+            "3": 78576.47167250299,
+            "7": 80877.24678877731,
+            "14": 161170.0667480079
+          },
+          "max_abs_lead_effect": 161170.0667480079,
+          "lead_to_reference_ratio": 3.5404697249566093
         },
         "Pinterest|Total Business": {
           "effect": 0.0,
@@ -388,7 +618,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "Rokt|Total Business": {
           "effect": 0.0,
@@ -406,7 +649,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "TikTok Social|Total Business": {
           "effect": 0.0,
@@ -424,7 +680,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "Television|Total Business": {
           "effect": 0.0,
@@ -442,7 +711,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "YouTube|Total Business": {
           "effect": 0.0,
@@ -460,7 +742,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "CRM Email|Total Business": {
           "effect": 0.0,
@@ -478,7 +773,20 @@
           "placebo_p_value": 0.6649587646824467,
           "placebo_empirical_p_value": 0.6862745098039216,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": -566546.6218990601,
+          "lead_effects": {
+            "1": -317108.37856498855,
+            "2": -240070.39047741122,
+            "3": -150214.25096095703,
+            "7": -727940.1984733524,
+            "14": -1178891.5248461044
+          },
+          "max_abs_lead_effect": 1178891.5248461044,
+          "lead_to_reference_ratio": 2.080837620908353
         },
         "CRM SMS|Total Business": {
           "effect": 0.0,
@@ -496,7 +804,20 @@
           "placebo_p_value": 0.21461372571994686,
           "placebo_empirical_p_value": 0.2549019607843137,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": true,
+          "passes_validation": false,
+          "lead_reference_effect": -705031.9369664467,
+          "lead_effects": {
+            "1": -686523.572070519,
+            "2": -651426.6309997473,
+            "3": -661518.7035137804,
+            "7": -665082.5506952459,
+            "14": -642087.2921519153
+          },
+          "max_abs_lead_effect": 686523.572070519,
+          "lead_to_reference_ratio": 0.9737481893720106
         }
       },
       "row_totals": {
@@ -533,7 +854,20 @@
           "placebo_p_value": 0.0069480775481801866,
           "placebo_empirical_p_value": 0.0392156862745098,
           "placebo_q_value": 0.08337693057816224,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 520432.7729885183,
+          "lead_effects": {
+            "1": 600949.6642761587,
+            "2": 612375.0548755798,
+            "3": 578882.5712544844,
+            "7": 374830.1946511715,
+            "14": 223009.766834585
+          },
+          "max_abs_lead_effect": 612375.0548755798,
+          "lead_to_reference_ratio": 1.1766650500488176
         },
         "Google Search|Total Business": {
           "effect": 0.0,
@@ -551,7 +885,20 @@
           "placebo_p_value": 0.17931024531797138,
           "placebo_empirical_p_value": 0.19607843137254902,
           "placebo_q_value": 0.562565849143216,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": true,
+          "passes_validation": false,
+          "lead_reference_effect": -395482.77375461656,
+          "lead_effects": {
+            "1": -345840.9549469636,
+            "2": -312812.350948849,
+            "3": -283042.53662750346,
+            "7": -193338.26524980256,
+            "14": -127113.12643909708
+          },
+          "max_abs_lead_effect": 345840.9549469636,
+          "lead_to_reference_ratio": 0.8744779239399842
         },
         "TikTok Shop|Total Business": {
           "effect": 0.0,
@@ -569,7 +916,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "Bing|Total Business": {
           "effect": 0.0,
@@ -587,7 +947,20 @@
           "placebo_p_value": 0.8113372225041289,
           "placebo_empirical_p_value": 0.803921568627451,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 50475.413234023385,
+          "lead_effects": {
+            "1": 89168.2034498355,
+            "2": 137558.9587683945,
+            "3": 201100.2731678135,
+            "7": 128995.86446935721,
+            "14": 41176.691571610594
+          },
+          "max_abs_lead_effect": 201100.2731678135,
+          "lead_to_reference_ratio": 3.9841233638927425
         },
         "AppLovin|Total Business": {
           "effect": 0.0,
@@ -605,7 +978,20 @@
           "placebo_p_value": 0.11885242661861056,
           "placebo_empirical_p_value": 0.23529411764705882,
           "placebo_q_value": 0.562565849143216,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 39778.08563612292,
+          "lead_effects": {
+            "1": 46332.07893681872,
+            "2": 50638.17598299264,
+            "3": 52503.00519893601,
+            "7": 45963.82531128892,
+            "14": 53632.728718011815
+          },
+          "max_abs_lead_effect": 53632.728718011815,
+          "lead_to_reference_ratio": 1.3482983874243393
         },
         "Pinterest|Total Business": {
           "effect": 0.0,
@@ -623,7 +1009,20 @@
           "placebo_p_value": 0.5692985808295001,
           "placebo_empirical_p_value": 0.5294117647058824,
           "placebo_q_value": 0.9759404242791431,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 24113.101045967596,
+          "lead_effects": {
+            "1": 26959.442588066555,
+            "2": 26789.32611450893,
+            "3": 23812.603979836946,
+            "7": 22717.612139299752,
+            "14": 19367.592179255957
+          },
+          "max_abs_lead_effect": 26959.442588066555,
+          "lead_to_reference_ratio": 1.1180412895327267
         },
         "Rokt|Total Business": {
           "effect": 0.0,
@@ -641,7 +1040,20 @@
           "placebo_p_value": 0.18752194971440533,
           "placebo_empirical_p_value": 0.47058823529411764,
           "placebo_q_value": 0.562565849143216,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 9183.139480226699,
+          "lead_effects": {
+            "1": 26218.76147310004,
+            "2": 39574.0095695712,
+            "3": 53772.968235633605,
+            "7": 93365.35732434176,
+            "14": 107719.45484951076
+          },
+          "max_abs_lead_effect": 107719.45484951076,
+          "lead_to_reference_ratio": 11.730133804615974
         },
         "TikTok Social|Total Business": {
           "effect": 0.0,
@@ -659,7 +1071,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": true,
+          "passes_validation": false,
+          "lead_reference_effect": -5845.122437937361,
+          "lead_effects": {
+            "1": -3640.0232665821413,
+            "2": -1122.4779517742995,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 3640.0232665821413,
+          "lead_to_reference_ratio": 0.6227454266752093
         },
         "Television|Total Business": {
           "effect": 0.0,
@@ -677,7 +1102,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "YouTube|Total Business": {
           "effect": 0.0,
@@ -695,7 +1133,20 @@
           "placebo_p_value": 0.9063735112899999,
           "placebo_empirical_p_value": 0.9607843137254902,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": -1556.2497675221534,
+          "lead_effects": {
+            "1": -1556.2497675221534,
+            "2": -1556.2497675221534,
+            "3": -1556.2497675221534,
+            "7": -1556.2497675221534,
+            "14": -1556.2497671408842
+          },
+          "max_abs_lead_effect": 1556.2497675221534,
+          "lead_to_reference_ratio": 1.0
         },
         "CRM Email|Total Business": {
           "effect": 0.0,
@@ -713,7 +1164,20 @@
           "placebo_p_value": 0.38540884037119855,
           "placebo_empirical_p_value": 0.3333333333333333,
           "placebo_q_value": 0.9249812168908764,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": -889345.0279004244,
+          "lead_effects": {
+            "1": -840919.5033339515,
+            "2": -784351.0449539998,
+            "3": -852810.0927377094,
+            "7": -776226.2009512804,
+            "14": -1019465.075297015
+          },
+          "max_abs_lead_effect": 1019465.075297015,
+          "lead_to_reference_ratio": 1.1463099734236772
         },
         "CRM SMS|Total Business": {
           "effect": 0.0,
@@ -731,7 +1195,20 @@
           "placebo_p_value": 0.5499919393617796,
           "placebo_empirical_p_value": 0.5490196078431373,
           "placebo_q_value": 0.9759404242791431,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": -257518.79292716668,
+          "lead_effects": {
+            "1": -226975.1764684606,
+            "2": -199556.8211233188,
+            "3": -206523.72216469454,
+            "7": -270734.6604529548,
+            "14": -346132.80709125474
+          },
+          "max_abs_lead_effect": 346132.80709125474,
+          "lead_to_reference_ratio": 1.3441069801424181
         }
       },
       "row_totals": {
@@ -768,7 +1245,20 @@
           "placebo_p_value": 0.49284105451263066,
           "placebo_empirical_p_value": 0.5098039215686274,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": true,
+          "passes_validation": false,
+          "lead_reference_effect": 50544.0775468492,
+          "lead_effects": {
+            "1": 48906.591718798256,
+            "2": 48213.81100262313,
+            "3": 48134.14012519342,
+            "7": 48460.230302743345,
+            "14": 44687.234953951054
+          },
+          "max_abs_lead_effect": 48906.591718798256,
+          "lead_to_reference_ratio": 0.9676028150571516
         },
         "Google Search|Total Business": {
           "effect": 0.0,
@@ -786,7 +1276,20 @@
           "placebo_p_value": 0.7951539499627474,
           "placebo_empirical_p_value": 0.7843137254901961,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 10750.983757924223,
+          "lead_effects": {
+            "1": 9989.724234782445,
+            "2": 9347.766777011619,
+            "3": 8548.163309186908,
+            "7": 13673.746394672988,
+            "14": 18528.54774098451
+          },
+          "max_abs_lead_effect": 18528.54774098451,
+          "lead_to_reference_ratio": 1.7234281213872809
         },
         "TikTok Shop|Total Business": {
           "effect": 0.0,
@@ -804,7 +1307,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "Bing|Total Business": {
           "effect": 0.0,
@@ -822,7 +1338,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "AppLovin|Total Business": {
           "effect": 0.0,
@@ -840,7 +1369,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "Pinterest|Total Business": {
           "effect": 0.0,
@@ -858,7 +1400,20 @@
           "placebo_p_value": 0.2692732586322944,
           "placebo_empirical_p_value": 0.47058823529411764,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 21792.39381788675,
+          "lead_effects": {
+            "1": 22026.736200864125,
+            "2": 22088.454403548894,
+            "3": 21929.788260668334,
+            "7": 21969.74217882673,
+            "14": 19000.043648592124
+          },
+          "max_abs_lead_effect": 22088.454403548894,
+          "lead_to_reference_ratio": 1.0135855008924786
         },
         "Rokt|Total Business": {
           "effect": 0.0,
@@ -876,7 +1431,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "TikTok Social|Total Business": {
           "effect": 0.0,
@@ -894,7 +1462,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "Television|Total Business": {
           "effect": 0.0,
@@ -912,7 +1493,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "YouTube|Total Business": {
           "effect": 0.0,
@@ -930,7 +1524,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "CRM Email|Total Business": {
           "effect": 0.0,
@@ -948,7 +1555,20 @@
           "placebo_p_value": 0.6038031177416203,
           "placebo_empirical_p_value": 0.6666666666666666,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": -783287.8492906424,
+          "lead_effects": {
+            "1": -861943.5879143261,
+            "2": -803516.8005468633,
+            "3": -964145.8201333245,
+            "7": -963357.4988413863,
+            "14": -1194332.4101755023
+          },
+          "max_abs_lead_effect": 1194332.4101755023,
+          "lead_to_reference_ratio": 1.5247682078269287
         },
         "CRM SMS|Total Business": {
           "effect": 0.0,
@@ -966,7 +1586,20 @@
           "placebo_p_value": 0.2142221166911096,
           "placebo_empirical_p_value": 0.21568627450980393,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": -789836.0027507555,
+          "lead_effects": {
+            "1": -792193.9447011934,
+            "2": -769331.0737669694,
+            "3": -774299.940524061,
+            "7": -769585.2123912314,
+            "14": -746460.2501429946
+          },
+          "max_abs_lead_effect": 792193.9447011934,
+          "lead_to_reference_ratio": 1.0029853563805977
         }
       },
       "row_totals": {
@@ -1003,7 +1636,20 @@
           "placebo_p_value": 0.8833743766879382,
           "placebo_empirical_p_value": 0.8823529411764706,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": -27849.19024689925,
+          "lead_effects": {
+            "1": -40744.91176595071,
+            "2": -52683.132052370114,
+            "3": -62749.684829372345,
+            "7": -65197.75169678991,
+            "14": -11064.037180848754
+          },
+          "max_abs_lead_effect": 65197.75169678991,
+          "lead_to_reference_ratio": 2.3411004456062803
         },
         "Google Search|Total Business": {
           "effect": 0.0,
@@ -1021,7 +1667,20 @@
           "placebo_p_value": 0.029502558268508932,
           "placebo_empirical_p_value": 0.3137254901960784,
           "placebo_q_value": 0.35403069922210717,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": true,
+          "passes_validation": false,
+          "lead_reference_effect": 151540.7134005765,
+          "lead_effects": {
+            "1": 143168.75179557383,
+            "2": 136131.31944003564,
+            "3": 128584.88514184672,
+            "7": 103881.78569747457,
+            "14": 74329.6646498215
+          },
+          "max_abs_lead_effect": 143168.75179557383,
+          "lead_to_reference_ratio": 0.9447543738106038
         },
         "TikTok Shop|Total Business": {
           "effect": 0.0,
@@ -1039,7 +1698,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "Bing|Total Business": {
           "effect": 0.0,
@@ -1057,7 +1729,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "AppLovin|Total Business": {
           "effect": 0.0,
@@ -1075,7 +1760,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "Pinterest|Total Business": {
           "effect": 0.0,
@@ -1093,7 +1791,20 @@
           "placebo_p_value": 0.27497298164742495,
           "placebo_empirical_p_value": 0.4117647058823529,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 61170.38750877686,
+          "lead_effects": {
+            "1": 61877.9389733313,
+            "2": 62105.85068188956,
+            "3": 61563.611772191536,
+            "7": 60375.10636258508,
+            "14": 51450.73136426607
+          },
+          "max_abs_lead_effect": 62105.85068188956,
+          "lead_to_reference_ratio": 1.0152927455785445
         },
         "Rokt|Total Business": {
           "effect": 0.0,
@@ -1111,7 +1822,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "TikTok Social|Total Business": {
           "effect": 0.0,
@@ -1129,7 +1853,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "Television|Total Business": {
           "effect": 0.0,
@@ -1147,7 +1884,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "YouTube|Total Business": {
           "effect": 0.0,
@@ -1165,7 +1915,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "CRM Email|Total Business": {
           "effect": 0.0,
@@ -1183,7 +1946,20 @@
           "placebo_p_value": 0.3853412650882545,
           "placebo_empirical_p_value": 0.4117647058823529,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": -1196207.1994171506,
+          "lead_effects": {
+            "1": -1285319.3948078414,
+            "2": -1208821.0121992792,
+            "3": -1376054.3095786043,
+            "7": -1275664.0482687522,
+            "14": -1546800.642581175
+          },
+          "max_abs_lead_effect": 1546800.642581175,
+          "lead_to_reference_ratio": 1.2930875548440524
         },
         "CRM SMS|Total Business": {
           "effect": 0.0,
@@ -1201,7 +1977,20 @@
           "placebo_p_value": 0.07245463055002425,
           "placebo_empirical_p_value": 0.13725490196078433,
           "placebo_q_value": 0.4347277833001455,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": -890336.0603298687,
+          "lead_effects": {
+            "1": -900327.5946044582,
+            "2": -878085.8540712498,
+            "3": -883112.9386671635,
+            "7": -864410.0543342468,
+            "14": -796726.3930213649
+          },
+          "max_abs_lead_effect": 900327.5946044582,
+          "lead_to_reference_ratio": 1.0112222055466198
         }
       },
       "row_totals": {
@@ -1223,22 +2012,35 @@
     "United Kingdom": {
       "cells": {
         "Meta|Total Business": {
-          "effect": 427711.1784318851,
-          "lower80": -361403.2750299615,
-          "upper80": 1216825.6318937317,
+          "effect": 0.0,
+          "lower80": -789114.4534618466,
+          "upper80": 789114.4534618466,
           "standard_error": 615749.2797619184,
-          "probability_positive": 0.7563529640412787,
+          "probability_positive": 0.5,
           "calibrated": false,
           "raw_effect": 1771006.3413928286,
           "placebo_adjusted": true,
           "publishable": true,
-          "passes_placebo": true,
+          "passes_placebo": false,
           "placebo_bias": -103117.18437214164,
           "placebo_threshold": 1446412.3473330853,
           "placebo_p_value": 0.0001544968331630504,
           "placebo_empirical_p_value": 0.0196078431372549,
           "placebo_q_value": 0.0018539619979566048,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": true,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 1882440.715347425,
+          "lead_effects": {
+            "1": 2095504.6092889411,
+            "2": 2190465.8754991316,
+            "3": 2138619.8056606096,
+            "7": 1505244.2120899984,
+            "14": 686394.6539626023
+          },
+          "max_abs_lead_effect": 2190465.8754991316,
+          "lead_to_reference_ratio": 1.16363073622473
         },
         "Google Search|Total Business": {
           "effect": 0.0,
@@ -1256,7 +2058,20 @@
           "placebo_p_value": 0.7532171211437866,
           "placebo_empirical_p_value": 0.7843137254901961,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": -83033.23250502977,
+          "lead_effects": {
+            "1": -60252.133365708665,
+            "2": -33722.99947720875,
+            "3": -21536.689238509236,
+            "7": -85944.04092789907,
+            "14": -108364.79528690282
+          },
+          "max_abs_lead_effect": 108364.79528690282,
+          "lead_to_reference_ratio": 1.305077401151865
         },
         "TikTok Shop|Total Business": {
           "effect": 0.0,
@@ -1274,7 +2089,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "Bing|Total Business": {
           "effect": 0.0,
@@ -1292,7 +2120,20 @@
           "placebo_p_value": 0.46029888774649624,
           "placebo_empirical_p_value": 0.45098039215686275,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 374678.6245025505,
+          "lead_effects": {
+            "1": 402830.7016604928,
+            "2": 453648.43714216346,
+            "3": 475831.7699222215,
+            "7": 200562.7553724434,
+            "14": 17877.629077241487
+          },
+          "max_abs_lead_effect": 475831.7699222215,
+          "lead_to_reference_ratio": 1.2699730884140212
         },
         "AppLovin|Total Business": {
           "effect": 0.0,
@@ -1310,7 +2151,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "Pinterest|Total Business": {
           "effect": 0.0,
@@ -1328,7 +2182,20 @@
           "placebo_p_value": 0.7976438260989287,
           "placebo_empirical_p_value": 0.5882352941176471,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 9952.23086219625,
+          "lead_effects": {
+            "1": 10444.827507423202,
+            "2": 10075.623334136559,
+            "3": 9561.88900789601,
+            "7": 16532.240646623017,
+            "14": 15269.683683013158
+          },
+          "max_abs_lead_effect": 16532.240646623017,
+          "lead_to_reference_ratio": 1.6611592793150598
         },
         "Rokt|Total Business": {
           "effect": 0.0,
@@ -1346,7 +2213,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "TikTok Social|Total Business": {
           "effect": 0.0,
@@ -1364,7 +2244,20 @@
           "placebo_p_value": 0.18266386754296587,
           "placebo_empirical_p_value": 0.27450980392156865,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": true,
+          "passes_validation": false,
+          "lead_reference_effect": 372731.97783424286,
+          "lead_effects": {
+            "1": 356499.19694655854,
+            "2": 344851.07916108286,
+            "3": 338161.8266716739,
+            "7": 259656.58933672117,
+            "14": 189045.68740376108
+          },
+          "max_abs_lead_effect": 356499.19694655854,
+          "lead_to_reference_ratio": 0.9564491864046525
         },
         "Television|Total Business": {
           "effect": 0.0,
@@ -1382,7 +2275,20 @@
           "placebo_p_value": 1.0,
           "placebo_empirical_p_value": 1.0,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 0.0,
+          "lead_effects": {
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "7": 0.0,
+            "14": 0.0
+          },
+          "max_abs_lead_effect": 0.0,
+          "lead_to_reference_ratio": 0.0
         },
         "YouTube|Total Business": {
           "effect": 0.0,
@@ -1400,7 +2306,20 @@
           "placebo_p_value": 0.8474069932316026,
           "placebo_empirical_p_value": 0.7254901960784313,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 1842.8351876085349,
+          "lead_effects": {
+            "1": 1842.8351876085349,
+            "2": 1842.8351876085349,
+            "3": 1842.8351876085349,
+            "7": 1842.8351876085349,
+            "14": 1842.8351897909972
+          },
+          "max_abs_lead_effect": 1842.8351897909972,
+          "lead_to_reference_ratio": 1.000000001184296
         },
         "CRM Email|Total Business": {
           "effect": 0.0,
@@ -1418,7 +2337,20 @@
           "placebo_p_value": 0.5308816954620418,
           "placebo_empirical_p_value": 0.5294117647058824,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": -572118.8337810409,
+          "lead_effects": {
+            "1": -328589.24481202697,
+            "2": -277894.4233374349,
+            "3": -226416.65241542598,
+            "7": -606846.2519721232,
+            "14": -1453869.2993597651
+          },
+          "max_abs_lead_effect": 1453869.2993597651,
+          "lead_to_reference_ratio": 2.54120160623166
         },
         "CRM SMS|Total Business": {
           "effect": 0.0,
@@ -1436,11 +2368,24 @@
           "placebo_p_value": 0.6109546982180514,
           "placebo_empirical_p_value": 0.6274509803921569,
           "placebo_q_value": 1.0,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": -176824.60173175888,
+          "lead_effects": {
+            "1": -105221.85768014779,
+            "2": -44299.01741668029,
+            "3": -104537.78896436373,
+            "7": -311132.0971819498,
+            "14": -486735.26715543785
+          },
+          "max_abs_lead_effect": 486735.26715543785,
+          "lead_to_reference_ratio": 2.7526444984946736
         }
       },
       "row_totals": {
-        "Meta": 427711.1784318851,
+        "Meta": 0.0,
         "Google Search": 0.0,
         "TikTok Shop": 0.0,
         "Bing": 0.0,
@@ -1473,7 +2418,20 @@
           "placebo_p_value": 0.0036944071097619663,
           "placebo_empirical_p_value": 0.058823529411764705,
           "placebo_q_value": 0.011083221329285898,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 1147829.5932571643,
+          "lead_effects": {
+            "1": 1248221.6624474677,
+            "2": 1325273.022719679,
+            "3": 1306222.4189153987,
+            "7": 965639.123444604,
+            "14": 383454.2769731421
+          },
+          "max_abs_lead_effect": 1325273.022719679,
+          "lead_to_reference_ratio": 1.1545903943450249
         },
         "Google Search|Total Business": {
           "effect": 0.0,
@@ -1491,7 +2449,20 @@
           "placebo_p_value": 0.464395408173671,
           "placebo_empirical_p_value": 0.49019607843137253,
           "placebo_q_value": 0.831996493104338,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 165910.7936914016,
+          "lead_effects": {
+            "1": 196831.97356329928,
+            "2": 223293.03116728086,
+            "3": 223349.26843337464,
+            "7": 109528.94371546224,
+            "14": 53682.8305955641
+          },
+          "max_abs_lead_effect": 223349.26843337464,
+          "lead_to_reference_ratio": 1.346200952114123
         },
         "TikTok Shop|Total Business": {
           "effect": 0.0,
@@ -1509,7 +2480,20 @@
           "placebo_p_value": 0.0027908548700259677,
           "placebo_empirical_p_value": 0.0196078431372549,
           "placebo_q_value": 0.011083221329285898,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": true,
+          "passes_validation": false,
+          "lead_reference_effect": 7102348.015017272,
+          "lead_effects": {
+            "1": 6432158.777595865,
+            "2": 5390965.596859524,
+            "3": 4681042.159504197,
+            "7": 4845943.676888979,
+            "14": 5532509.090574354
+          },
+          "max_abs_lead_effect": 6432158.777595865,
+          "lead_to_reference_ratio": 0.9056383556530385
         },
         "Bing|Total Business": {
           "effect": 0.0,
@@ -1527,25 +2511,51 @@
           "placebo_p_value": 0.8554153809583377,
           "placebo_empirical_p_value": 0.8235294117647058,
           "placebo_q_value": 0.9999968742108902,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": true,
+          "passes_validation": false,
+          "lead_reference_effect": -114310.47301160461,
+          "lead_effects": {
+            "1": -84829.60467349444,
+            "2": -63303.979693889174,
+            "3": -45786.82113275047,
+            "7": -70670.79864610302,
+            "14": 12176.433845565552
+          },
+          "max_abs_lead_effect": 84829.60467349444,
+          "lead_to_reference_ratio": 0.7420982735753588
         },
         "AppLovin|Total Business": {
-          "effect": 2619505.159959725,
-          "lower80": 525972.4142354755,
-          "upper80": 4713037.905683975,
+          "effect": 0.0,
+          "lower80": -2093532.7457242496,
+          "upper80": 2093532.7457242496,
           "standard_error": 1633592.2814269238,
-          "probability_positive": 0.9455905419215473,
+          "probability_positive": 0.5,
           "calibrated": false,
           "raw_effect": 9296148.78664432,
           "placebo_adjusted": true,
           "publishable": true,
-          "passes_placebo": true,
+          "passes_placebo": false,
           "placebo_bias": -81348.34888539235,
           "placebo_threshold": 6757991.975569987,
           "placebo_p_value": 4.62768344275818e-09,
           "placebo_empirical_p_value": 0.0196078431372549,
           "placebo_q_value": 5.5532201313098164e-08,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": true,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 9350551.479887648,
+          "lead_effects": {
+            "1": 9627666.715335088,
+            "2": 9628604.907389116,
+            "3": 9283308.841831708,
+            "7": 5323652.235741347,
+            "14": 4329035.749398192
+          },
+          "max_abs_lead_effect": 9628604.907389116,
+          "lead_to_reference_ratio": 1.0297365805749041
         },
         "Pinterest|Total Business": {
           "effect": 0.0,
@@ -1563,25 +2573,51 @@
           "placebo_p_value": 0.872131899612746,
           "placebo_empirical_p_value": 0.5686274509803921,
           "placebo_q_value": 0.9999968742108902,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 39581.40894247737,
+          "lead_effects": {
+            "1": 86464.94014531323,
+            "2": 87637.62138694045,
+            "3": 85844.88397453305,
+            "7": 89999.92756055515,
+            "14": 19343.993528404815
+          },
+          "max_abs_lead_effect": 89999.92756055515,
+          "lead_to_reference_ratio": 2.2737929236260817
         },
         "Rokt|Total Business": {
-          "effect": 6005.545121175703,
-          "lower80": -677013.5822425917,
-          "upper80": 689024.6724849431,
+          "effect": 0.0,
+          "lower80": -683019.1273637674,
+          "upper80": 683019.1273637674,
           "standard_error": 532962.6569286861,
-          "probability_positive": 0.5044952777343976,
+          "probability_positive": 0.5,
           "calibrated": false,
           "raw_effect": 2471341.587750318,
           "placebo_adjusted": true,
           "publishable": true,
-          "passes_placebo": true,
+          "passes_placebo": false,
           "placebo_bias": 28103.354349656838,
           "placebo_threshold": 2437232.6882794853,
           "placebo_p_value": 1.3531613574788035e-06,
           "placebo_empirical_p_value": 0.0196078431372549,
           "placebo_q_value": 8.118968144872821e-06,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": true,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 2808021.3835197296,
+          "lead_effects": {
+            "1": 2919483.931749041,
+            "2": 2910199.1518920916,
+            "3": 2863485.1078472696,
+            "7": 2579456.942924832,
+            "14": 1813509.0818161652
+          },
+          "max_abs_lead_effect": 2919483.931749041,
+          "lead_to_reference_ratio": 1.039694337401946
         },
         "TikTok Social|Total Business": {
           "effect": 0.0,
@@ -1599,7 +2635,20 @@
           "placebo_p_value": 0.40768632363361434,
           "placebo_empirical_p_value": 0.4117647058823529,
           "placebo_q_value": 0.831996493104338,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 2219196.565637312,
+          "lead_effects": {
+            "1": 2321857.549232323,
+            "2": 2435958.669176382,
+            "3": 2515440.5844528275,
+            "7": 2879748.0903823543,
+            "14": 3342830.3208558112
+          },
+          "max_abs_lead_effect": 3342830.3208558112,
+          "lead_to_reference_ratio": 1.5063245737746591
         },
         "Television|Total Business": {
           "effect": 0.0,
@@ -1617,7 +2666,20 @@
           "placebo_p_value": 0.603416548416784,
           "placebo_empirical_p_value": 0.6274509803921569,
           "placebo_q_value": 0.905124822625176,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 3936919.3559522717,
+          "lead_effects": {
+            "1": 4193236.877868103,
+            "2": 4404609.551624484,
+            "3": 4393047.990264027,
+            "7": 4806238.576911499,
+            "14": 5430763.433390444
+          },
+          "max_abs_lead_effect": 5430763.433390444,
+          "lead_to_reference_ratio": 1.3794449269527487
         },
         "YouTube|Total Business": {
           "effect": 0.0,
@@ -1635,7 +2697,20 @@
           "placebo_p_value": 0.9999968742108902,
           "placebo_empirical_p_value": 0.9607843137254902,
           "placebo_q_value": 0.9999968742108902,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": true,
+          "passes_validation": false,
+          "lead_reference_effect": -0.3693810072734239,
+          "lead_effects": {
+            "1": -0.36937072459685527,
+            "2": -0.369359085483894,
+            "3": -0.36934467264614224,
+            "7": -0.3692865406888904,
+            "14": -0.3692970190360858
+          },
+          "max_abs_lead_effect": 0.36937072459685527,
+          "lead_to_reference_ratio": 0.9999721624112606
         },
         "CRM Email|Total Business": {
           "effect": 0.0,
@@ -1653,7 +2728,20 @@
           "placebo_p_value": 0.9313255093890775,
           "placebo_empirical_p_value": 0.9607843137254902,
           "placebo_q_value": 0.9999968742108902,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": -1376299.6542017495,
+          "lead_effects": {
+            "1": 947027.3777732885,
+            "2": 1025355.8150571246,
+            "3": 2733468.141358403,
+            "7": -3640671.5060222154,
+            "14": -6328805.873905278
+          },
+          "max_abs_lead_effect": 6328805.873905278,
+          "lead_to_reference_ratio": 4.598421466272888
         },
         "CRM SMS|Total Business": {
           "effect": 0.0,
@@ -1671,7 +2759,20 @@
           "placebo_p_value": 0.48533128764419714,
           "placebo_empirical_p_value": 0.49019607843137253,
           "placebo_q_value": 0.831996493104338,
-          "placebo_runs": 50
+          "placebo_runs": 50,
+          "passes_empirical_null": false,
+          "passes_lead_falsification": false,
+          "passes_validation": false,
+          "lead_reference_effect": 3036533.2545185206,
+          "lead_effects": {
+            "1": 3280111.468419998,
+            "2": 3327696.0896642264,
+            "3": 2869465.0692299893,
+            "7": 1160591.471325777,
+            "14": 700129.1014844211
+          },
+          "max_abs_lead_effect": 3327696.0896642264,
+          "lead_to_reference_ratio": 1.0958865952521482
         }
       },
       "row_totals": {
@@ -1679,9 +2780,9 @@
         "Google Search": 0.0,
         "TikTok Shop": 0.0,
         "Bing": 0.0,
-        "AppLovin": 2619505.159959725,
+        "AppLovin": 0.0,
         "Pinterest": 0.0,
-        "Rokt": 6005.545121175703,
+        "Rokt": 0.0,
         "TikTok Social": 0.0,
         "Television": 0.0,
         "YouTube": 0.0,

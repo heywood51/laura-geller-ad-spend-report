@@ -9,13 +9,15 @@ from pathlib import Path
 
 def build_created_matrix(total_model: dict, routing_model: dict) -> dict:
     result = json.loads(json.dumps(routing_model))
-    result["status"] = "two_stage_placebo_adjusted_observational"
+    result["status"] = "two_stage_placebo_and_lead_adjusted_observational"
     result["warning"] = (
         "Destination effects are published only when the source-to-total-business effect "
-        "and the positive destination-routing effect both survive empirical-null correction."
+        "and the positive destination-routing effect both survive empirical-null correction "
+        "and directed future-exposure falsification."
     )
     result["metadata"]["method"] = (
-        "source-level total-business incrementality gate followed by positive destination routing"
+        "source-level total-business incrementality gate followed by positive destination routing; "
+        "both layers require empirical-null and future-exposure lead checks"
     )
     result["metadata"]["incrementality_model"] = "source-to-total-business"
     result["metadata"]["routing_model"] = "conditional positive attribution routing"
@@ -76,6 +78,10 @@ def build_created_matrix(total_model: dict, routing_model: dict) -> dict:
                     "incrementality_lower80": float(total_cell["lower80"]),
                     "incrementality_upper80": float(total_cell["upper80"]),
                     "incrementality_passes": bool(total_cell["passes_placebo"]),
+                    "incrementality_passes_empirical_null": bool(total_cell.get("passes_empirical_null", total_cell["passes_placebo"])),
+                    "incrementality_passes_lead_falsification": bool(total_cell.get("passes_lead_falsification", False)),
+                    "incrementality_lead_effects": total_cell.get("lead_effects", {}),
+                    "incrementality_lead_to_reference_ratio": float(total_cell.get("lead_to_reference_ratio", 0.0)),
                     "incrementality_q_value": float(total_cell["placebo_q_value"]),
                     "incrementality_placebo_threshold": float(total_cell["placebo_threshold"]),
                     "passes_placebo": bool(weight > 0),
@@ -89,6 +95,10 @@ def build_created_matrix(total_model: dict, routing_model: dict) -> dict:
                     "placebo_empirical_p_value": float(old["placebo_empirical_p_value"]),
                     "placebo_q_value": float(old["placebo_q_value"]),
                     "placebo_runs": int(old["placebo_runs"]),
+                    "routing_passes_empirical_null": bool(old.get("passes_empirical_null", old["passes_placebo"])),
+                    "routing_passes_lead_falsification": bool(old.get("passes_lead_falsification", False)),
+                    "routing_lead_effects": old.get("lead_effects", {}),
+                    "routing_lead_to_reference_ratio": float(old.get("lead_to_reference_ratio", 0.0)),
                 }
             row_totals[source] = total_effect if allocatable else 0.0
             row_status[source] = status

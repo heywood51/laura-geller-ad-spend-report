@@ -16,6 +16,132 @@ from halo_model import build_halo
 Z80 = 1.2815515655446004
 
 
+def parse_lead_days(value: str) -> tuple[int, ...]:
+    """Parse a comma-separated list of strictly positive daily leads."""
+    leads = tuple(sorted({int(item.strip()) for item in value.split(",") if item.strip()}))
+    if not leads or any(lead <= 0 for lead in leads):
+        raise argparse.ArgumentTypeError("lead days must be positive comma-separated integers")
+    return leads
+
+
+def trim_panel_for_leads(frame: pd.DataFrame, config: dict, max_lead: int) -> pd.DataFrame:
+    """Use one common sample that has future exposure available for every lead."""
+    date_column = config["date_column"]
+    geo_column = config["geo_column"]
+    ordered = frame.copy()
+    ordered[date_column] = pd.to_datetime(ordered[date_column], errors="raise")
+    ordered = ordered.sort_values([geo_column, date_column])
+    position = ordered.groupby(geo_column).cumcount()
+    size = ordered.groupby(geo_column)[geo_column].transform("size")
+    return ordered.loc[position < size - max_lead].copy().reset_index(drop=True)
+
+
+def future_exposure_panel(
+    frame: pd.DataFrame,
+    config: dict,
+    channel: str,
+    lead: int,
+    max_lead: int,
+) -> pd.DataFrame:
+    """Put exposure from t+lead on row t without circular wraparound."""
+    date_column = config["date_column"]
+    geo_column = config["geo_column"]
+    exposure_column = config["channels"][channel]["column"]
+    ordered = frame.copy()
+    ordered[date_column] = pd.to_datetime(ordered[date_column], errors="raise")
+    ordered = ordered.sort_values([geo_column, date_column])
+    future = ordered.groupby(geo_column)[exposure_column].shift(-lead)
+    position = ordered.groupby(geo_column).cumcount()
+    size = ordered.groupby(geo_column)[geo_column].transform("size")
+    eligible = position < size - max_lead
+    result = ordered.loc[eligible].copy()
+    result[exposure_column] = future.loc[eligible].to_numpy()
+    return result.reset_index(drop=True)
+
+
+def build_lead_falsification(
+    frame: pd.DataFrame,
+    config: dict,
+    lead_days: tuple[int, ...],
+) -> tuple[dict, dict[int, dict]]:
+    """Fit current-timing and future-exposure models on an identical sample."""
+    max_lead = max(lead_days)
+    reference = build_halo(trim_panel_for_leads(frame, config, max_lead), config)
+    lead_models: dict[int, dict] = {}
+    for channel in config["channels"]:
+        for lead in lead_days:
+            shifted = future_exposure_panel(frame, config, channel, lead, max_lead)
+            model = build_halo(shifted, config)
+            lead_models.setdefault(lead, {})[channel] = model
+    return reference, lead_models
+
+
+def apply_lead_falsification(
+    adjusted_model: dict,
+    reference_model: dict,
+    lead_models: dict[int, dict],
+    lead_days: tuple[int, ...],
+) -> dict:
+    """Reject a cell when future exposure explains as much as correct-timing exposure."""
+    result = json.loads(json.dumps(adjusted_model))
+    passed = 0
+    tested = 0
+    for view_name, view in result["views"].items():
+        for key, cell in view["cells"].items():
+            source = key.split("|", 1)[0]
+            current_raw = float(reference_model["views"][view_name]["cells"][key]["effect"])
+            null_bias = float(cell.get("placebo_bias", 0.0))
+            current = current_raw - null_bias
+            lead_effects = {
+                str(lead): float(
+                    lead_models[lead][source]["views"][view_name]["cells"][key]["effect"]
+                    - null_bias
+                )
+                for lead in lead_days
+            }
+            max_abs_lead = max(abs(value) for value in lead_effects.values())
+            lead_passes = abs(current) > max_abs_lead
+            empirical_passes = bool(cell.get("passes_empirical_null", cell["passes_placebo"]))
+            passes_validation = empirical_passes and lead_passes
+            cell.update({
+                "passes_empirical_null": empirical_passes,
+                "passes_lead_falsification": bool(lead_passes),
+                "passes_validation": bool(passes_validation),
+                "lead_reference_effect": current,
+                "lead_effects": lead_effects,
+                "max_abs_lead_effect": float(max_abs_lead),
+                "lead_to_reference_ratio": float(max_abs_lead / max(abs(current), 1e-9)),
+                # Backward-compatible publication gate used by downstream builders.
+                "passes_placebo": bool(passes_validation),
+            })
+            tested += 1
+            passed += int(lead_passes)
+            if not passes_validation:
+                cell["effect"] = 0.0
+                cell["lower80"] = -Z80 * float(cell["standard_error"])
+                cell["upper80"] = Z80 * float(cell["standard_error"])
+                cell["probability_positive"] = 0.5
+        view["row_totals"] = {
+            channel: float(sum(
+                item["effect"]
+                for item_key, item in view["cells"].items()
+                if item_key.split("|", 1)[0] == channel
+            ))
+            for channel in result["channels"]
+        }
+    result["metadata"]["lead_falsification_days"] = list(lead_days)
+    result["metadata"]["lead_falsification_passed_cells"] = passed
+    result["metadata"]["lead_falsification_tested_cells"] = tested
+    result["metadata"]["method"] += " with directed future-exposure lead falsification"
+    result["status"] = "placebo_and_lead_adjusted_observational"
+    result["warning"] = (
+        "Effects must survive empirical-null correction and a directed reverse-causality test. "
+        "A cell is withheld when future exposure predicts the outcome at least as strongly as correctly timed exposure. "
+        "Passing estimates remain observational, not randomized causal proof."
+    )
+    return result
+
+
 def benjamini_hochberg(p_values: dict[str, float]) -> dict[str, float]:
     """Control the false-discovery rate across the entire halo matrix."""
     ordered = sorted(p_values, key=p_values.get)
@@ -142,6 +268,7 @@ def main() -> None:
     parser.add_argument("--runs", type=int, default=100)
     parser.add_argument("--seed", type=int, default=20260820)
     parser.add_argument("--alpha", type=float, default=0.05)
+    parser.add_argument("--lead-days", type=parse_lead_days, default=(1, 2, 3, 7, 14))
     args = parser.parse_args()
 
     frame = pd.read_csv(args.input)
@@ -184,6 +311,10 @@ def main() -> None:
     output.write_text(json.dumps(result, indent=2), encoding="utf8")
     if args.adjusted_output:
         adjusted = adjust_model(observed_model, placebo_effects, args.alpha)
+        reference, lead_models = build_lead_falsification(frame, config, args.lead_days)
+        adjusted = apply_lead_falsification(
+            adjusted, reference, lead_models, args.lead_days
+        )
         adjusted_path = Path(args.adjusted_output)
         adjusted_path.parent.mkdir(parents=True, exist_ok=True)
         adjusted_path.write_text(json.dumps(adjusted, indent=2, allow_nan=False), encoding="utf8")

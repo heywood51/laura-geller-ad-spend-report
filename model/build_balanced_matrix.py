@@ -38,7 +38,7 @@ def build_balanced_matrix(
     scenario_share = abs(float(summary["scenario_relative_change"]))
     result = {
         "status": "diagonal_anchored_observational_allocation",
-        "warning": "Off-diagonal values are stability-weighted observational halo estimates; diagonal values retain original attribution needed for exact column reconciliation.",
+        "warning": "Off-diagonal values are stability-weighted observational halo estimates that passed empirical-null and future-exposure lead checks; diagonal values retain original attribution needed for exact column reconciliation.",
         "metadata": {
             **routing_model["metadata"],
             "method": "continuous source reliability, corrected positive routing, diagonal residual balancing",
@@ -79,6 +79,10 @@ def build_balanced_matrix(
                 "lower80": float(total_cell["lower80"]),
                 "upper80": float(total_cell["upper80"]),
                 "passes_placebo": bool(total_cell["passes_placebo"]),
+                "passes_empirical_null": bool(total_cell.get("passes_empirical_null", total_cell["passes_placebo"])),
+                "passes_lead_falsification": bool(total_cell.get("passes_lead_falsification", False)),
+                "lead_effects": total_cell.get("lead_effects", {}),
+                "lead_to_reference_ratio": float(total_cell.get("lead_to_reference_ratio", 0.0)),
                 "reliability_weight": reliability,
                 "halo_budget": evidence_budget,
             }
@@ -124,6 +128,10 @@ def build_balanced_matrix(
                     "passes_placebo": bool(effect > 0),
                     "routing_effect": float(route["effect"]),
                     "routing_passes": bool(route["passes_placebo"]),
+                    "routing_passes_empirical_null": bool(route.get("passes_empirical_null", route["passes_placebo"])),
+                    "routing_passes_lead_falsification": bool(route.get("passes_lead_falsification", False)),
+                    "routing_lead_effects": route.get("lead_effects", {}),
+                    "routing_lead_to_reference_ratio": float(route.get("lead_to_reference_ratio", 0.0)),
                     "source_evidence": source_evidence[source],
                 }
         row_totals = {

@@ -25,8 +25,11 @@ empirical-null correction rather than treating predictive fit as causality.
 
 For every cell, the production pass subtracts the median placebo bias, requires the
 debiased signal to exceed that cell's 95th-percentile false-signal threshold, and applies
-Benjamini-Hochberg false-discovery control across all 168 comparisons. Cells that fail
-become zero. Passing values are labeled `placebo_adjusted_observational`, never
+Benjamini-Hochberg false-discovery control across all 168 comparisons. It then refits
+each source using exposure from 1, 2, 3, 7, and 14 days in the future on an identical
+trimmed sample. A result is rejected when any future-exposure effect is at least as
+strong as the correctly timed effect, because that pattern is compatible with platform
+pacing or demand causing spend. Cells that fail either gate become zero. Passing values are labeled `placebo_adjusted_observational`, never
 experiment-calibrated.
 
 ## Run the embedded-data preview
@@ -68,6 +71,13 @@ python model/validate_placebos.py --input model/generated/daily_panel.csv `
   --output model/generated/placebo-validation-revenue.json `
   --adjusted-output model/generated/halo-daily-revenue.json `
   --runs 50 --alpha 0.05 --seed 20260821
+
+# To add the lead gate to an already empirical-null-adjusted artifact without
+# repeating the time-shift placebo fits:
+python model/apply_lead_falsification.py --input model/generated/daily_panel.csv `
+  --config model/config.daily.orders.json `
+  --adjusted-input model/generated/halo-daily-orders.json `
+  --output model/generated/halo-daily-orders.json
 
 python model/build_report_summary.py `
   --input model/generated/daily_panel.csv `

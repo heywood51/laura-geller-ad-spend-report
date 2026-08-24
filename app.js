@@ -64,8 +64,8 @@ function render(){renderHero();renderMatrixV2();renderPanelV3();renderSpill();re
 function renderHero(){
   const view=balancedData(),rec=Object.values(view.column_reconciliation),halo=rec.reduce((a,x)=>a+x.cross_source_halo,0),benchmark=rec.reduce((a,x)=>a+x.benchmark,0),paths=MODEL[M].channels.flatMap(s=>MODEL[M].destinations.map(d=>s!==d&&balancedCell(s,d)?.effect>0)).filter(Boolean).length,v=IVALID[M].summary;
   document.getElementById('hero').innerHTML=`${short(halo,M)} <em>of the ${num(benchmark)} attribution benchmark is reassigned as halo</em>`;
-  document.getElementById('heroTxt').innerHTML=`In <strong>${esc(R)}</strong>, ${paths} off-diagonal paths are supported after continuous uncertainty weighting. The remainder stays with its original destination diagonal, so one correlated channel cannot absorb the whole business.`;
-  document.getElementById('warn').innerHTML=`<strong>Raw association is not the answer.</strong> Fake histories reproduced ${Math.round(100*v.fake_to_observed_absolute_median)}% of the raw headline magnitude, so the calculator rejects that raw model. After calibration, the separate held-out gate published <strong>0 false source rows in both the median and worst of ${v.heldout_placebo_runs} fake histories</strong>. This is strong falsification performance, but only a randomized holdout can establish causality.`;
+  document.getElementById('heroTxt').innerHTML=`In <strong>${esc(R)}</strong>, ${paths} off-diagonal paths remain as observational allocation candidates after uncertainty weighting and future-spend falsification. The remainder stays with its original destination diagonal, so one correlated channel cannot absorb the whole business.`;
+  document.getElementById('warn').innerHTML=`<strong>Raw association is not the answer.</strong> Fake histories reproduced ${Math.round(100*v.fake_to_observed_absolute_median)}% of the raw headline magnitude, so the calculator rejects that raw model. The final gate also rejects a result when spend 1, 2, 3, 7, or 14 days in the future predicts the outcome at least as strongly as correctly timed spend. Passing this test reduces reverse-causality risk, but only a randomized holdout can establish causality.`;
 }
 
 function renderMatrixV2(){
@@ -128,7 +128,9 @@ function renderPanelV3(){
     <div class="stat"><div class="k">Source reliability weight</div><div class="v">${(100*ev.reliability_weight).toFixed(0)}%</div><div class="ex">continuous, not pass/fail</div></div>
     <div class="stat"><div class="k">Source adjusted effect</div><div class="v">${signed(ev.adjusted_total_effect)}</div></div>
     <div class="stat"><div class="k">Source 80% interval</div><div class="v">${signed(ev.lower80)} to ${signed(ev.upper80)}</div></div>
+    <div class="stat"><div class="k">Source lead test</div><div class="v">${ev.passes_lead_falsification?'Pass':'Fail'}</div><div class="ex">future / correct timing: ${ev.lead_to_reference_ratio.toFixed(2)}&times;</div></div>
     <div class="stat"><div class="k">Routing evidence</div><div class="v">${c.routing_passes?'Pass':'Unresolved'}</div></div>
+    <div class="stat"><div class="k">Routing lead test</div><div class="v">${c.routing_passes_lead_falsification?'Pass':'Fail'}</div><div class="ex">future / correct timing: ${c.routing_lead_to_reference_ratio.toFixed(2)}&times;</div></div>
     ${tvStats}<div class="stat"><div class="k">Cell role</div><div class="v">${structural?'Non-addressable structural zero':self?'Consistency check':'Halo'}</div></div></div>`;
 }
 
