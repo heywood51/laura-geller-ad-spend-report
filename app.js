@@ -13,8 +13,8 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 Promise.all([
   fetch('model/generated/halo-created-orders.json').then(r=>r.json()),
   fetch('model/generated/halo-created-revenue.json').then(r=>r.json()),
-  fetch('model/generated/halo-balanced-orders.json').then(r=>r.json()),
-  fetch('model/generated/halo-balanced-revenue.json').then(r=>r.json()),
+  fetch('model/generated/halo-balanced-orders.json?v=2').then(r=>r.json()),
+  fetch('model/generated/halo-balanced-revenue.json?v=2').then(r=>r.json()),
   fetch('model/generated/halo-incrementality-orders.json').then(r=>r.json()),
   fetch('model/generated/halo-incrementality-revenue.json').then(r=>r.json()),
   fetch('model/generated/report-summary.json').then(r=>r.json()),
