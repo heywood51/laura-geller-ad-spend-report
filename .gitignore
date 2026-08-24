@@ -17,3 +17,5 @@ model/generated/placebo-validation-*.json
 !model/generated/placebo-incrementality-revenue.json
 !model/generated/halo-created-orders.json
 !model/generated/halo-created-revenue.json
+!model/generated/halo-balanced-orders.json
+!model/generated/halo-balanced-revenue.json

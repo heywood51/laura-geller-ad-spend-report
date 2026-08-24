@@ -1,7 +1,7 @@
 'use strict';
 
 let M='orders', R='Total', SELECTED=null;
-let MODEL={}, TOTAL={}, SUMMARY={}, IVALID={};
+let MODEL={}, TOTAL={}, BALANCED={}, SUMMARY={}, IVALID={};
 const GREEN='#1f7a3f', GREY='#c9c7bd';
 const fmtN=new Intl.NumberFormat('en-US',{maximumFractionDigits:0});
 const fmtM=v=>(v<0?'-':'')+'$'+(Math.abs(v)>=1e6?(Math.abs(v)/1e6).toFixed(1)+'m':fmtN.format(Math.abs(v)));
@@ -13,18 +13,24 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 Promise.all([
   fetch('model/generated/halo-created-orders.json').then(r=>r.json()),
   fetch('model/generated/halo-created-revenue.json').then(r=>r.json()),
+  fetch('model/generated/halo-balanced-orders.json').then(r=>r.json()),
+  fetch('model/generated/halo-balanced-revenue.json').then(r=>r.json()),
   fetch('model/generated/halo-incrementality-orders.json').then(r=>r.json()),
   fetch('model/generated/halo-incrementality-revenue.json').then(r=>r.json()),
   fetch('model/generated/report-summary.json').then(r=>r.json()),
   fetch('model/generated/placebo-incrementality-orders.json').then(r=>r.json()),
   fetch('model/generated/placebo-incrementality-revenue.json').then(r=>r.json())
-]).then(([createdOrders,createdRevenue,totalOrders,totalRevenue,summary,valOrders,valRevenue])=>{
+]).then(([createdOrders,createdRevenue,balancedOrders,balancedRevenue,totalOrders,totalRevenue,summary,valOrders,valRevenue])=>{
   MODEL={orders:createdOrders,revenue:createdRevenue}; TOTAL={orders:totalOrders,revenue:totalRevenue};
+  BALANCED={orders:balancedOrders,revenue:balancedRevenue};
   SUMMARY=summary; IVALID={orders:valOrders,revenue:valRevenue}; buildTabs(); bind(); render();
 }).catch(err=>{document.getElementById('hero').textContent='The model files could not be loaded';document.getElementById('heroTxt').textContent=err.message});
 
 function data(){return MODEL[M].views[R]||MODEL[M].views.Total}
 function cell(s,d){return data().cells[s+'|'+d]||null}
+function balancedData(){return BALANCED[M].views[R]||BALANCED[M].views.Total}
+function balancedCell(s,d){return balancedData().cells[s+'|'+d]||null}
+function balancedRowTotal(s){return balancedData().row_totals[s]||0}
 function cellFor(m,g,s,d){return MODEL[m].views[g]?.cells[s+'|'+d]||null}
 function totalCellFor(m,g,s){return TOTAL[m].views[g]?.cells[s+'|Total Business']||null}
 function accepted(c){return !!(c?.passes_placebo&&c.effect>0&&c.lower80>0)}
@@ -52,38 +58,38 @@ function sourceStatus(s,g=R){
 function buildTabs(){const geos=['Total',...MODEL.orders.metadata.geographies];document.getElementById('rTabs').innerHTML=geos.map(g=>`<button data-r="${esc(g)}" class="${g==='Total'?'on':''}">${g==='United Kingdom'?'UK':g==='United States'?'US':esc(g)}</button>`).join('')}
 function bind(){document.getElementById('mTabs').onclick=e=>{if(!e.target.dataset.m)return;M=e.target.dataset.m;SELECTED=null;setOn('mTabs','m',M);render()};document.getElementById('rTabs').onclick=e=>{if(!e.target.dataset.r)return;R=e.target.dataset.r;SELECTED=null;setOn('rTabs','r',R);render()}}
 function setOn(id,k,v){document.querySelectorAll('#'+id+' button').forEach(b=>b.classList.toggle('on',b.dataset[k]===v))}
-function render(){renderHero();renderMatrixV2();renderPanelV2();renderSpill();renderShift();renderText()}
+function render(){renderHero();renderMatrixV2();renderPanelV3();renderSpill();renderShift();renderText()}
 
 function renderHero(){
-  const supported=MODEL[M].channels.filter(s=>rowIntervalFor(M,R,s).accepted),haloRoutes=supported.reduce((a,s)=>a+haloRouteCount(M,R,s),0),selfChecks=supported.reduce((a,s)=>a+(cellFor(M,R,s,s)?.passes_placebo?1:0),0),v=IVALID[M].summary;
-  document.getElementById('hero').innerHTML=`${supported.length} / ${MODEL[M].channels.length} <em>source rows clear the final total-business gate</em>`;
-  document.getElementById('heroTxt').innerHTML=`In <strong>${esc(R)}</strong>, the calculator supports total-business ${M} creation for <strong>${supported.length?supported.map(esc).join(', '):'none'}</strong>. It finds ${haloRoutes} supported cross-source halo paths and ${selfChecks} same-source checks. Every destination column is reconciled separately below.`;
+  const view=balancedData(),rec=Object.values(view.column_reconciliation),halo=rec.reduce((a,x)=>a+x.cross_source_halo,0),benchmark=rec.reduce((a,x)=>a+x.benchmark,0),paths=MODEL[M].channels.flatMap(s=>MODEL[M].destinations.map(d=>s!==d&&balancedCell(s,d)?.effect>0)).filter(Boolean).length,v=IVALID[M].summary;
+  document.getElementById('hero').innerHTML=`${short(halo,M)} <em>of the ${num(benchmark)} attribution benchmark is reassigned as halo</em>`;
+  document.getElementById('heroTxt').innerHTML=`In <strong>${esc(R)}</strong>, ${paths} off-diagonal paths are supported after continuous uncertainty weighting. The remainder stays with its original destination diagonal, so one correlated channel cannot absorb the whole business.`;
   document.getElementById('warn').innerHTML=`<strong>Raw association is not the answer.</strong> Fake histories reproduced ${Math.round(100*v.fake_to_observed_absolute_median)}% of the raw headline magnitude, so the calculator rejects that raw model. After calibration, the separate held-out gate published <strong>0 false source rows in both the median and worst of ${v.heldout_placebo_runs} fake histories</strong>. This is strong falsification performance, but only a randomized holdout can establish causality.`;
 }
 
 function renderMatrixV2(){
   const src=MODEL[M].channels,dst=MODEL[M].destinations;
-  const max=Math.max(...src.flatMap(s=>dst.map(d=>Math.abs(cell(s,d)?.effect||0))),1);
-  const rowMax=Math.max(...src.map(rowTotal),1);
+  const max=Math.max(...src.flatMap(s=>dst.map(d=>Math.abs(balancedCell(s,d)?.effect||0))),1);
+  const rowMax=Math.max(...src.map(balancedRowTotal),1);
   let h='<table class="m"><thead><tr><th></th>'+dst.map(d=>`<th class="col">${esc(d)}</th>`).join('')+'<th class="col" style="font-weight:800;color:#1a1a1a">Total business</th></tr></thead><tbody>';
   for(const s of src){
     h+=`<tr><th>${esc(s)}</th>`;
     for(const d of dst){
-      const c=cell(s,d),v=c?.effect||0,ok=!!c?.passes_placebo,self=s===d;
+      const c=balancedCell(s,d),v=c?.effect||0,ok=v>0,self=s===d;
       const a=ok?.15+.75*Math.sqrt(v/max):0,bg=ok?(self?`rgba(70,105,130,${a})`:`rgba(31,122,63,${a})`):'#e8e6df',fg=ok&&a>.52?'#fff':'#333';
       const sel=SELECTED&&SELECTED[0]===s&&SELECTED[1]===d?' sel':'';
       const title=ok?(self?`${signed(v)} same-source attribution check`:`${signed(v)} cross-source halo ${M} created by ${esc(s)} and credited to ${esc(d)}`):'No created result published: total incrementality, routing, or both are unresolved';
       h+=`<td><div class="cell${sel}" data-s="${esc(s)}" data-d="${esc(d)}" style="background:${bg};color:${fg}" title="${title}">${ok&&v>=1?signed(v):'—'}</div></td>`;
     }
-    const total=rowTotal(s),ok=accepted(totalCellFor(M,R,s)),a=ok?.18+.72*Math.sqrt(total/rowMax):0,bg=ok?`rgba(31,122,63,${a})`:'#e8e6df',fg=ok&&a>.52?'#fff':'#222';
-    h+=`<td style="border-left:3px solid #1a1a1a"><div class="cell" style="background:${bg};color:${fg};font-weight:800;cursor:default" title="${ok?`${signed(total)} supported total-business ${M} created by ${esc(s)}`:'No supported total-business creation result'}">${ok?signed(total):'—'}</div></td></tr>`;
+    const total=balancedRowTotal(s),ok=total>0,a=ok?.18+.72*Math.sqrt(total/rowMax):0,bg=ok?`rgba(31,122,63,${a})`:'#e8e6df',fg=ok&&a>.52?'#fff':'#222';
+    h+=`<td style="border-left:3px solid #1a1a1a"><div class="cell" style="background:${bg};color:${fg};font-weight:800;cursor:default" title="${num(total)} diagonally balanced attribution assigned to ${esc(s)}">${ok?num(total):'—'}</div></td></tr>`;
   }
-  const parts=dst.map(d=>columnParts(M,R,d)),sum=k=>parts.reduce((a,p)=>a+p[k],0);
+  const parts=dst.map(d=>{const x=balancedData().column_reconciliation[d];return {self:x.retained_self_attribution,halo:x.cross_source_halo,gap:x.unassigned_original_attribution,benchmark:x.benchmark}}),sum=k=>parts.reduce((a,p)=>a+p[k],0);
   const reconRow=(label,key)=>`<tr><th>${label}</th>${parts.map(p=>`<td><div class="cell" style="cursor:default">${Math.abs(p[key])>=1?num(p[key]):'—'}</div></td>`).join('')}<td style="border-left:3px solid #1a1a1a"><div class="cell" style="cursor:default;font-weight:800">${num(sum(key))}</div></td></tr>`;
-  h+='</tbody><tfoot>'+reconRow('Same-source check','self')+reconRow('Cross-source halo','halo')+reconRow('Unresolved / overage gap','gap')+reconRow('20% attribution benchmark','benchmark')+'</tfoot></table>';
+  h+='</tbody><tfoot>'+reconRow('Retained original attribution','self')+reconRow('Cross-source halo','halo')+reconRow('Unassigned (no diagonal)','gap')+reconRow('20% attribution benchmark','benchmark')+'</tfoot></table>';
   const el=document.getElementById('matrix');el.innerHTML=h;
-  el.querySelectorAll('.cell[data-d]').forEach(x=>x.onclick=()=>{SELECTED=[x.dataset.s,x.dataset.d];renderMatrixV2();renderPanelV2()});
-  document.getElementById('matcap').textContent=`Rows reconcile to supported total-business ${M}. Columns reconcile as same-source check + cross-source halo + reconciliation gap = 20% original-attribution benchmark for ${R}. A negative gap flags modelled creation above that benchmark.`;
+  el.querySelectorAll('.cell[data-d]').forEach(x=>x.onclick=()=>{SELECTED=[x.dataset.s,x.dataset.d];renderMatrixV2();renderPanelV3()});
+  document.getElementById('matcap').textContent=`Every destination column reconciles exactly: retained original attribution + uncertainty-weighted cross-source halo + any no-diagonal remainder = the 20% attribution benchmark for ${R}.`;
 }
 
 function renderPanelV2(){
@@ -103,6 +109,25 @@ function renderPanelV2(){
     <div class="stat"><div class="k">${parts.gap>=0?'Unresolved remainder':'Over benchmark'}</div><div class="v">${num(Math.abs(parts.gap))}</div></div>
     <div class="stat"><div class="k">Routing gate</div><div class="v">${c.routing_passes?'Pass':'Unresolved'}</div></div>
     <div class="stat"><div class="k">Row status</div><div class="v">${esc((c.row_status||'unresolved').replaceAll('_',' '))}</div></div></div>`;
+}
+
+function renderPanelV3(){
+  if(!SELECTED){document.getElementById('panel').innerHTML='<h3 style="color:#888;font-weight:500">Select a cell</h3><p style="color:#888">Blue diagonal cells retain original attribution. Green off-diagonal cells are uncertainty-weighted halo estimates.</p>';return}
+  const [s,d]=SELECTED,c=balancedCell(s,d);if(!c)return;
+  const self=s===d,rec=balancedData().column_reconciliation[d],ev=c.source_evidence||balancedData().source_evidence[s];
+  const verdict=self?'Retained original attribution':c.effect>0?'Cross-source halo estimate':'No stable halo allocated';
+  const why=self?`${num(c.effect)} remains on ${d}'s original-attribution diagonal after supported inbound halo is removed. This is the consistency anchor, not a claim that ${d} spend caused every retained order.`:c.effect>0?`${num(c.effect)} is reassigned from ${d}'s original attribution to ${s}. The source estimate is discounted by ${(100*ev.reliability_weight).toFixed(0)}% for uncertainty before routing.`:`The available data does not provide stable enough source and routing evidence to reassign ${d} attribution to ${s}.`;
+  document.getElementById('panel').innerHTML=`<h3>${esc(s)} &rarr; ${esc(d)}</h3><span class="verdict ${c.effect>0?'v-hold':'v-no'}">${verdict}</span><p class="why">${esc(why)}</p><div class="stats">
+    <div class="stat"><div class="k">${self?'Retained on diagonal':'Reassigned halo'}</div><div class="v">${c.effect>0?num(c.effect):'—'}</div></div>
+    <div class="stat"><div class="k">Destination benchmark</div><div class="v">${num(rec.benchmark)}</div></div>
+    <div class="stat"><div class="k">All inbound halo</div><div class="v">${num(rec.cross_source_halo)}</div></div>
+    <div class="stat"><div class="k">Retained self-attribution</div><div class="v">${num(rec.retained_self_attribution)}</div></div>
+    <div class="stat"><div class="k">Unassigned, no diagonal</div><div class="v">${num(rec.unassigned_original_attribution)}</div></div>
+    <div class="stat"><div class="k">Source reliability weight</div><div class="v">${(100*ev.reliability_weight).toFixed(0)}%</div><div class="ex">continuous, not pass/fail</div></div>
+    <div class="stat"><div class="k">Source adjusted effect</div><div class="v">${signed(ev.adjusted_total_effect)}</div></div>
+    <div class="stat"><div class="k">Source 80% interval</div><div class="v">${signed(ev.lower80)} to ${signed(ev.upper80)}</div></div>
+    <div class="stat"><div class="k">Routing evidence</div><div class="v">${c.routing_passes?'Pass':'Unresolved'}</div></div>
+    <div class="stat"><div class="k">Cell role</div><div class="v">${self?'Consistency check':'Halo'}</div></div></div>`;
 }
 
 function renderMatrix(){
@@ -126,20 +151,19 @@ function renderSpill(){
 }
 
 function renderShift(){
-  const el=document.getElementById('shift');if(!el)return;const cap=document.getElementById('shiftcap');if(cap)cap.innerHTML=(M==='revenue'?'Revenue':'Orders')+' created by source for <strong>'+esc(R)+'</strong>. Gray is the amount credited back to the source itself; green is the supported total across all destinations.';
-  const rows=MODEL[M].channels.map(k=>({k,a:direct(k),b:rowTotal(k)})).sort((x,y)=>y.b-x.b),W=880,L=118,RPAD=88,rowH=30,top=6,HH=top+rows.length*rowH+24,hi=Math.max(1,...rows.flatMap(x=>[x.a,x.b])),plotW=W-L-RPAD,x=v=>L+v/hi*plotW;
-  let svg=`<div class="key"><span><i style="background:${GREY}"></i>Credited to same channel</span><span><i style="background:${GREEN}"></i>Total created</span></div><svg viewBox="0 0 ${W} ${HH}" role="img" aria-label="Own credited created effect compared with total created effect by channel"><line class="axis" x1="${L}" x2="${L}" y1="0" y2="${HH-19}"/>`;
+  const el=document.getElementById('shift');if(!el)return;const cap=document.getElementById('shiftcap');if(cap)cap.innerHTML=(M==='revenue'?'Revenue':'Orders')+' assigned to likely driver for <strong>'+esc(R)+'</strong>. Gray is retained original attribution; green is the balanced row total after halo reassignment.';
+  const rows=MODEL[M].channels.map(k=>({k,a:balancedCell(k,k)?.effect||0,b:balancedRowTotal(k)})).sort((x,y)=>y.b-x.b),W=880,L=118,RPAD=88,rowH=30,top=6,HH=top+rows.length*rowH+24,hi=Math.max(1,...rows.flatMap(x=>[x.a,x.b])),plotW=W-L-RPAD,x=v=>L+v/hi*plotW;
+  let svg=`<div class="key"><span><i style="background:${GREY}"></i>Retained original attribution</span><span><i style="background:${GREEN}"></i>Balanced driver total</span></div><svg viewBox="0 0 ${W} ${HH}" role="img" aria-label="Retained attribution compared with balanced driver total by channel"><line class="axis" x1="${L}" x2="${L}" y1="0" y2="${HH-19}"/>`;
   rows.forEach((r,i)=>{const y=top+i*rowH,bar=(v,yy,color)=>`<rect x="${L}" y="${yy}" width="${Math.max(v?1:0,x(v)-L)}" height="8" rx="1" fill="${color}"/>`;svg+=`<text class="lab" x="${L-7}" y="${y+14}" text-anchor="end">${esc(r.k)}</text>${bar(r.a,y+3,GREY)}${bar(r.b,y+13,GREEN)}<text class="val" x="${x(r.b)+5}" y="${y+21}" text-anchor="start" fill="${GREEN}">${r.b?signed(r.b):'—'}</text>`});svg+='</svg>';el.innerHTML=svg;
 }
 
 function renderText(){
   const v=IVALID[M].summary,supported=MODEL[M].channels.filter(s=>rowIntervalFor(M,R,s).accepted),routes=supported.reduce((a,s)=>a+routeCount(M,R,s),0);
   document.getElementById('rely').innerHTML=`<div class="hscroll"><table class="s"><tr><th>Diagnostic</th><th>${esc(R)} ${M}</th></tr><tr><td class="l">Source rows tested</td><td>${MODEL[M].channels.length}</td></tr><tr><td class="l">Source rows clearing final gate</td><td>${supported.length}</td></tr><tr><td class="l">Published destination routes</td><td>${routes}</td></tr><tr><td class="l">Raw fake / observed magnitude</td><td>${(100*v.fake_to_observed_absolute_median).toFixed(1)}%</td></tr><tr><td class="l">Held-out fake rows, median</td><td>${v.heldout_fake_passing_rows_median}</td></tr><tr><td class="l">Held-out fake rows, worst</td><td>${v.heldout_fake_passing_rows_max}</td></tr><tr><td class="l">Held-out fake histories</td><td>${v.heldout_placebo_runs}</td></tr></table></div><p class="cap">The high raw fake share demonstrates confounding in the uncorrected model. The held-out rows evaluate the final decision rule on fake histories that were not used to set it.</p>`;
-  document.getElementById('sens').innerHTML=`<p><strong>Layer one asks whether spend here predicts incremental total-business ${M}.</strong> It models each source against the sum of every credited destination, removes its empirical fake-history behavior, applies a 99% source gate, and requires a positive 80% interval. <strong>Layer two asks where the supported total is credited.</strong> Only positive destination routes that pass their own diagnostics receive a share.</p><div class="eq">created at destination = supported total-business incrementality × accepted routing share<br>sum of printed destinations = supported total-business incrementality</div>`;
+  document.getElementById('sens').innerHTML=`<p><strong>The calculator no longer uses a winner-takes-all source gate for the attribution matrix.</strong> Positive source evidence is continuously discounted for interval uncertainty, then divided only across corrected positive off-diagonal routes. Each destination caps inbound halo at its 20% original-attribution benchmark, and every remaining attributed result stays on that destination's diagonal.</p><div class="eq">halo budget = corrected source effect × continuous reliability weight<br>retained diagonal = attribution benchmark − supported inbound halo</div>`;
   const geos=MODEL[M].metadata.geographies,stability=MODEL[M].channels.map(s=>{const total=rowIntervalFor(M,R,s),vals=geos.map(g=>rowIntervalFor(M,g,s)),pos=vals.filter(x=>x.accepted).length,unresolved=vals.filter(x=>x.passes&&!x.accepted).length,none=vals.filter(x=>!x.passes).length,o=rowIntervalFor('orders',R,s),r=rowIntervalFor('revenue',R,s),agree=o.accepted&&r.accepted?'Both pass':o.accepted||r.accepted?'One passes':'Neither passes';return{s,total,pos,unresolved,none,agree}}).sort((a,b)=>(b.total.accepted?b.total.total:0)-(a.total.accepted?a.total.total:0));
   document.getElementById('stab').innerHTML='<div class="hscroll"><table class="s"><tr><th class="stick">Source</th><th>Supported markets</th><th>Unresolved markets</th><th>No evidence</th><th>Orders / revenue</th><th>Total-business result</th></tr>'+stability.map(x=>`<tr><td class="l stick">${esc(x.s)}</td><td>${x.pos} / ${geos.length}</td><td>${x.unresolved} / ${geos.length}</td><td>${x.none} / ${geos.length}</td><td>${x.agree}</td><td>${x.total.accepted?signed(x.total.total):'—'}</td></tr>`).join('')+'</table></div>';
-  const overages=MODEL[M].destinations.filter(d=>columnParts(M,R,d).overage>0);
-  document.getElementById('cons').innerHTML=`<div class="method"><p><strong>The matrix reconciles in both directions.</strong> Every source row sums to its accepted total-business incrementality estimate. Every destination column shows the identity: same-source check + cross-source halo + reconciliation gap = 20% original-attribution benchmark. A positive gap remains unresolved instead of being assigned to a channel without evidence; a negative gap flags an overage.</p><p><strong>Column check:</strong> ${overages.length?'Supported creation exceeds the benchmark for '+overages.map(esc).join(', ')+'; investigate scale or model fit.':'All destination columns reconcile without supported creation exceeding their benchmark.'}</p></div>`;
+  document.getElementById('cons').innerHTML='<div class="method"><p><strong>The attribution matrix reconciles exactly by construction.</strong> For destinations with a matching source row, retained diagonal attribution + inbound cross-source halo equals the 20% original-attribution benchmark. Organic and Direct have no spend-source diagonal, so any remainder stays explicitly unassigned. The strict source-to-total model remains visible in the decision table as a separate diagnostic rather than controlling the whole matrix.</p></div>';
   const groups={protect:[],partial:[],unresolved:[],test:[],none:[]};MODEL.orders.channels.forEach(s=>groups[sourceStatus(s).key].push(s));
   document.getElementById('suggest').innerHTML=`<div class="callout"><h4>Supported on both outcomes</h4><p>${groups.protect.length?groups.protect.map(esc).join(', '):'None in this view.'} Protect while confirming with a randomized holdout.</p></div><div class="callout"><h4>Partial evidence</h4><p>${groups.partial.length?groups.partial.map(esc).join(', '):'None in this view.'} One outcome clears the gate and the other does not.</p></div><div class="callout"><h4>Unresolved</h4><p>${[...groups.unresolved,...groups.test].length?[...groups.unresolved,...groups.test].map(esc).join(', '):'None in this view.'} Do not infer a cut or an increase from these observational estimates.</p></div><div class="callout"><h4>No incrementality evidence</h4><p>${groups.none.length?groups.none.map(esc).join(', '):'None in this view.'} This means the calculator cannot make a claim, not that effectiveness is zero.</p></div>`;
   const rank={protect:3,partial:2,unresolved:1},paid=MODEL.orders.channels.filter(s=>SUMMARY.views[R]?.sources?.[s]?.spend!=null),priorities=paid.filter(s=>rank[sourceStatus(s).key]).sort((a,b)=>rank[sourceStatus(b).key]-rank[sourceStatus(a).key]).slice(0,3),days=56;
