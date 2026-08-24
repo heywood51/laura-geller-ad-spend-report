@@ -2,7 +2,7 @@
 
 let M='orders', R='Total', SELECTED=null;
 let MODEL={}, TOTAL={}, BALANCED={}, SUMMARY={}, IVALID={}, TVDIAG={};
-const GREEN='#1f7a3f', GREY='#c9c7bd';
+const GREEN='#1f7a3f', RED='#b3261e', GREY='#c9c7bd';
 const fmtN=new Intl.NumberFormat('en-US',{maximumFractionDigits:0});
 const fmtM=v=>(v<0?'-':'')+'$'+(Math.abs(v)>=1e6?(Math.abs(v)/1e6).toFixed(1)+'m':fmtN.format(Math.abs(v)));
 const num=(v,m=M)=>m==='revenue'?fmtM(v):fmtN.format(v);
@@ -153,10 +153,10 @@ function renderSpill(){
 }
 
 function renderShift(){
-  const el=document.getElementById('shift');if(!el)return;const cap=document.getElementById('shiftcap');if(cap)cap.innerHTML=(M==='revenue'?'Revenue':'Orders')+' assigned to likely driver for <strong>'+esc(R)+'</strong>. Gray is retained original attribution; green is the balanced row total after halo reassignment.';
-  const rows=MODEL[M].channels.map(k=>({k,a:balancedCell(k,k)?.effect||0,b:balancedRowTotal(k)})).sort((x,y)=>y.b-x.b),W=880,L=118,RPAD=88,rowH=30,top=6,HH=top+rows.length*rowH+24,hi=Math.max(1,...rows.flatMap(x=>[x.a,x.b])),plotW=W-L-RPAD,x=v=>L+v/hi*plotW;
-  let svg=`<div class="key"><span><i style="background:${GREY}"></i>Retained original attribution</span><span><i style="background:${GREEN}"></i>Balanced driver total</span></div><svg viewBox="0 0 ${W} ${HH}" role="img" aria-label="Retained attribution compared with balanced driver total by channel"><line class="axis" x1="${L}" x2="${L}" y1="0" y2="${HH-19}"/>`;
-  rows.forEach((r,i)=>{const y=top+i*rowH,bar=(v,yy,color)=>`<rect x="${L}" y="${yy}" width="${Math.max(v?1:0,x(v)-L)}" height="8" rx="1" fill="${color}"/>`;svg+=`<text class="lab" x="${L-7}" y="${y+14}" text-anchor="end">${esc(r.k)}</text>${bar(r.a,y+3,GREY)}${bar(r.b,y+13,GREEN)}<text class="val" x="${x(r.b)+5}" y="${y+21}" text-anchor="start" fill="${GREEN}">${r.b?signed(r.b):'—'}</text>`});svg+='</svg>';el.innerHTML=svg;
+  const el=document.getElementById('shift');if(!el)return;const cap=document.getElementById('shiftcap');if(cap)cap.innerHTML=(M==='revenue'?'Revenue':'Orders')+' assigned to likely driver for <strong>'+esc(R)+'</strong>. Gray is the original attribution benchmark; the balanced total is green for a net gain and red for a net loss.';
+  const rows=MODEL[M].channels.map(k=>({k,a:balancedData().column_reconciliation[k]?.benchmark||0,b:balancedRowTotal(k)})).sort((x,y)=>y.b-x.b),W=880,L=118,RPAD=155,rowH=30,top=6,HH=top+rows.length*rowH+24,hi=Math.max(1,...rows.flatMap(x=>[x.a,x.b])),plotW=W-L-RPAD,x=v=>L+v/hi*plotW;
+  let svg=`<div class="key"><span><i style="background:${GREY}"></i>Original attribution benchmark</span><span><i style="background:${GREEN}"></i>Balanced total · net gain</span><span><i style="background:${RED}"></i>Balanced total · net loss</span></div><svg viewBox="0 0 ${W} ${HH}" role="img" aria-label="Original attribution compared with balanced driver total and net gain or loss by channel"><line class="axis" x1="${L}" x2="${L}" y1="0" y2="${HH-19}"/>`;
+  rows.forEach((r,i)=>{const y=top+i*rowH,net=r.b-r.a,color=net>=0?GREEN:RED,bar=(v,yy,c)=>`<rect x="${L}" y="${yy}" width="${Math.max(v?1:0,x(v)-L)}" height="8" rx="1" fill="${c}"/>`,label=`${num(r.b)} (${net>0?'+':''}${num(net)} net)`;svg+=`<text class="lab" x="${L-7}" y="${y+14}" text-anchor="end">${esc(r.k)}</text>${bar(r.a,y+3,GREY)}${bar(r.b,y+13,color)}<text class="val" x="${x(r.b)+5}" y="${y+21}" text-anchor="start" fill="${color}">${label}</text>`});svg+='</svg>';el.innerHTML=svg;
 }
 
 function renderText(){

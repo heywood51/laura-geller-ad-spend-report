@@ -58,6 +58,18 @@ def test_published_balanced_outputs_reconcile() -> None:
             tv_cell = view["cells"]["Television|Television"]
             assert tv_cell["effect"] == 0
             assert tv_cell["kind"] == "structural_zero_non_addressable"
+            for source in model["channels"]:
+                benchmark = view["column_reconciliation"][source]["benchmark"]
+                inbound = view["column_reconciliation"][source]["cross_source_halo"]
+                outbound = sum(
+                    view["cells"][f"{source}|{destination}"]["effect"]
+                    for destination in model["destinations"]
+                    if destination != source
+                )
+                structural_loss = benchmark if source == "Television" else 0.0
+                expected_net = outbound - inbound - structural_loss
+                actual_net = view["row_totals"][source] - benchmark
+                assert abs(actual_net - expected_net) < 1e-6
 
 
 if __name__ == "__main__":

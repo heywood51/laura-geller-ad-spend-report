@@ -35,7 +35,7 @@ const body = `
 <p class="note"><strong>Orders, revenue and spend are joined at the source-row level.</strong> Only total-business rows passing the strict final gate enter economics. The comparison uses the spend saved by the modelled 20% reduction—not full annual spend. Destination routing never creates extra volume.</p>
 <div id="spill"></div>
 
-<h3 class="shifth">Original attribution retained versus balanced driver total</h3>
+<h3 class="shifth">Original attribution versus balanced driver total</h3>
 <p class="cap" id="shiftcap"></p>
 <div id="shift"></div>
 
@@ -61,7 +61,7 @@ const body = `
 <details class="apx"><summary><h2>Appendix &mdash; build status</h2></summary><div class="method" id="appendix"></div></details>
 <div class="foot">Daily hierarchical distributed-lag model. Source-to-total-business empirical-null correction, 99% source gate, positive 80% interval, and conditional destination routing. Scenario period: 365 days through 27 July 2026.</div>
 </div>
-<script src="app.js?v=7"></script>`;
+<script src="app.js?v=8"></script>`;
 
 const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
