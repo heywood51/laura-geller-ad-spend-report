@@ -1,0 +1,98 @@
+{
+  "status": "tv_specific_observational_diagnostic",
+  "method": "US residual intensity response with non-US donor outcomes, half-life ensemble, block bootstrap, time placebos and lead falsification",
+  "data_fact": "TV spend is US-only and present on every observed day; identification comes from intensity changes, not on/off or geo treatment variation.",
+  "orders": {
+    "measure": "orders",
+    "candidate_effect": 8312.954448414363,
+    "published_effect": 0.0,
+    "publishable": false,
+    "lower80": -7166.725150036143,
+    "upper80": 57952.35148813442,
+    "positive_half_life_share": 0.5,
+    "effects_by_half_life": {
+      "1": 36294.94409250922,
+      "3": 50217.936433031064,
+      "7": 25629.653546194404,
+      "14": -9003.74464936568,
+      "21": -27402.045758032673,
+      "28": -39027.92924457192
+    },
+    "time_placebo_empirical_p": 0.7920792079207921,
+    "time_placebo_abs_p95": 63169.064186043695,
+    "lead_effects": {
+      "7": -5495.314416734209,
+      "14": -24360.857652342478,
+      "21": -11408.052055097141,
+      "28": 41306.11119394683
+    },
+    "failed_gates": [
+      "block_bootstrap_interval",
+      "half_life_stability",
+      "time_placebo",
+      "lead_falsification"
+    ],
+    "candidate_destination_routing": {
+      "Meta": 1062.228638035621,
+      "Google Search": 2443.913455239028,
+      "TikTok Shop": 3296.948112585825,
+      "Bing": 0.0,
+      "AppLovin": 311.65142961274415,
+      "Pinterest": 0.0,
+      "Rokt": 338.3694545563124,
+      "TikTok Social": 599.0003549012102,
+      "Television": 0.0,
+      "YouTube": 0.0,
+      "CRM Email": 0.0,
+      "CRM SMS": 260.84300348362166,
+      "Organic": 0.0,
+      "Direct": 0.0
+    }
+  },
+  "revenue": {
+    "measure": "revenue",
+    "candidate_effect": 726094.7110401819,
+    "published_effect": 0.0,
+    "publishable": false,
+    "lower80": 247526.9925742624,
+    "upper80": 3147199.130812324,
+    "positive_half_life_share": 0.5,
+    "effects_by_half_life": {
+      "1": 2244460.4214661685,
+      "3": 2820496.49863952,
+      "7": 1497470.8304610397,
+      "14": -45281.408380675784,
+      "21": -814426.2809630713,
+      "28": -1295828.4833351707
+    },
+    "time_placebo_empirical_p": 0.6039603960396039,
+    "time_placebo_abs_p95": 2815057.188317954,
+    "lead_effects": {
+      "7": 243766.9236933657,
+      "14": -902040.5104136073,
+      "21": -608473.1366229858,
+      "28": 1441352.3959556585
+    },
+    "failed_gates": [
+      "half_life_stability",
+      "time_placebo",
+      "lead_falsification"
+    ],
+    "candidate_destination_routing": {
+      "Meta": 0.0,
+      "Google Search": 198946.06350124927,
+      "TikTok Shop": 350059.69722128066,
+      "Bing": 0.0,
+      "AppLovin": 65784.67420134398,
+      "Pinterest": 0.0,
+      "Rokt": 18480.246301856565,
+      "TikTok Social": 37028.58451133689,
+      "Television": 0.0,
+      "YouTube": 0.0,
+      "CRM Email": 0.0,
+      "CRM SMS": 55795.44530311452,
+      "Organic": 0.0,
+      "Direct": 0.0
+    }
+  }
+}

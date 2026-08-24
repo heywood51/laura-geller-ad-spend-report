@@ -20,6 +20,7 @@ python build_created_matrix.py --incrementality generated/halo-incrementality-or
 python build_created_matrix.py --incrementality generated/halo-incrementality-revenue.json --routing generated/halo-daily-revenue.json --output generated/halo-created-revenue.json
 python build_balanced_matrix.py --incrementality generated/halo-incrementality-orders.json --routing generated/halo-daily-orders.json --summary generated/report-summary.json --output generated/halo-balanced-orders.json
 python build_balanced_matrix.py --incrementality generated/halo-incrementality-revenue.json --routing generated/halo-daily-revenue.json --summary generated/report-summary.json --output generated/halo-balanced-revenue.json
+python build_tv_halo.py --input generated/daily_panel.csv --orders-config config.daily.orders.json --revenue-config config.daily.revenue.json --output generated/tv-halo-diagnostic.json
 ```
 
 The private daily panel is `model/generated/daily_panel.csv` and is intentionally ignored by Git.

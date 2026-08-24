@@ -19,3 +19,4 @@ model/generated/placebo-validation-*.json
 !model/generated/halo-created-revenue.json
 !model/generated/halo-balanced-orders.json
 !model/generated/halo-balanced-revenue.json
+!model/generated/tv-halo-diagnostic.json

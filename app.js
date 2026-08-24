@@ -1,7 +1,7 @@
 'use strict';
 
 let M='orders', R='Total', SELECTED=null;
-let MODEL={}, TOTAL={}, BALANCED={}, SUMMARY={}, IVALID={};
+let MODEL={}, TOTAL={}, BALANCED={}, SUMMARY={}, IVALID={}, TVDIAG={};
 const GREEN='#1f7a3f', GREY='#c9c7bd';
 const fmtN=new Intl.NumberFormat('en-US',{maximumFractionDigits:0});
 const fmtM=v=>(v<0?'-':'')+'$'+(Math.abs(v)>=1e6?(Math.abs(v)/1e6).toFixed(1)+'m':fmtN.format(Math.abs(v)));
@@ -19,11 +19,12 @@ Promise.all([
   fetch('model/generated/halo-incrementality-revenue.json').then(r=>r.json()),
   fetch('model/generated/report-summary.json').then(r=>r.json()),
   fetch('model/generated/placebo-incrementality-orders.json').then(r=>r.json()),
-  fetch('model/generated/placebo-incrementality-revenue.json').then(r=>r.json())
-]).then(([createdOrders,createdRevenue,balancedOrders,balancedRevenue,totalOrders,totalRevenue,summary,valOrders,valRevenue])=>{
+  fetch('model/generated/placebo-incrementality-revenue.json').then(r=>r.json()),
+  fetch('model/generated/tv-halo-diagnostic.json?v=1').then(r=>r.json())
+]).then(([createdOrders,createdRevenue,balancedOrders,balancedRevenue,totalOrders,totalRevenue,summary,valOrders,valRevenue,tvdiag])=>{
   MODEL={orders:createdOrders,revenue:createdRevenue}; TOTAL={orders:totalOrders,revenue:totalRevenue};
   BALANCED={orders:balancedOrders,revenue:balancedRevenue};
-  SUMMARY=summary; IVALID={orders:valOrders,revenue:valRevenue}; buildTabs(); bind(); render();
+  SUMMARY=summary; IVALID={orders:valOrders,revenue:valRevenue}; TVDIAG=tvdiag; buildTabs(); bind(); render();
 }).catch(err=>{document.getElementById('hero').textContent='The model files could not be loaded';document.getElementById('heroTxt').textContent=err.message});
 
 function data(){return MODEL[M].views[R]||MODEL[M].views.Total}
@@ -116,7 +117,8 @@ function renderPanelV3(){
   const [s,d]=SELECTED,c=balancedCell(s,d);if(!c)return;
   const self=s===d,structural=c.kind==='structural_zero_non_addressable',rec=balancedData().column_reconciliation[d],ev=c.source_evidence||balancedData().source_evidence[s];
   const verdict=structural?'Structural zero: non-addressable':self?'Retained original attribution':c.effect>0?'Cross-source halo estimate':'No stable halo allocated';
-  const why=structural?`${s} orders cannot normally be attributed back to ${s}, so this diagonal is forced to zero. Any supported ${s} effect must appear in other destination columns.`:self?`${num(c.effect)} remains on ${d}'s original-attribution diagonal after supported inbound halo is removed. This is the consistency anchor, not a claim that ${d} spend caused every retained order.`:c.effect>0?`${num(c.effect)} is reassigned from ${d}'s original attribution to ${s}. The source estimate is discounted by ${(100*ev.reliability_weight).toFixed(0)}% for uncertainty before routing.`:`The available data does not provide stable enough source and routing evidence to reassign ${d} attribution to ${s}.`;
+  const why=structural?`${s} results cannot normally be attributed back to ${s}, so this diagonal is forced to zero. Any supported ${s} effect must appear in other destination columns.`:self?`${num(c.effect)} remains on ${d}'s original-attribution diagonal after supported inbound halo is removed. This is the consistency anchor, not a claim that ${d} spend caused every retained result.`:c.effect>0?`${num(c.effect)} is reassigned from ${d}'s original attribution to ${s}. The source estimate is discounted by ${(100*ev.reliability_weight).toFixed(0)}% for uncertainty before routing.`:`The available data does not provide stable enough source and routing evidence to reassign ${d} attribution to ${s}.`;
+  const tv=TVDIAG[M],tvStats=structural?`<div class="stat"><div class="k">TV-specific candidate</div><div class="v">${signed(tv.candidate_effect)}</div><div class="ex">not published</div></div><div class="stat"><div class="k">TV candidate 80%</div><div class="v">${signed(tv.lower80)} to ${signed(tv.upper80)}</div></div><div class="stat"><div class="k">TV time-placebo p</div><div class="v">${(100*tv.time_placebo_empirical_p).toFixed(1)}%</div></div><div class="stat"><div class="k">TV failed checks</div><div class="v">${esc(tv.failed_gates.join(', ').replaceAll('_',' '))}</div></div>`:'';
   document.getElementById('panel').innerHTML=`<h3>${esc(s)} &rarr; ${esc(d)}</h3><span class="verdict ${c.effect>0?'v-hold':'v-no'}">${verdict}</span><p class="why">${esc(why)}</p><div class="stats">
     <div class="stat"><div class="k">${structural?'Required diagonal':self?'Retained on diagonal':'Reassigned halo'}</div><div class="v">${structural?'0':c.effect>0?num(c.effect):'—'}</div></div>
     <div class="stat"><div class="k">Destination benchmark</div><div class="v">${num(rec.benchmark)}</div></div>
@@ -127,7 +129,7 @@ function renderPanelV3(){
     <div class="stat"><div class="k">Source adjusted effect</div><div class="v">${signed(ev.adjusted_total_effect)}</div></div>
     <div class="stat"><div class="k">Source 80% interval</div><div class="v">${signed(ev.lower80)} to ${signed(ev.upper80)}</div></div>
     <div class="stat"><div class="k">Routing evidence</div><div class="v">${c.routing_passes?'Pass':'Unresolved'}</div></div>
-    <div class="stat"><div class="k">Cell role</div><div class="v">${structural?'Non-addressable structural zero':self?'Consistency check':'Halo'}</div></div></div>`;
+    ${tvStats}<div class="stat"><div class="k">Cell role</div><div class="v">${structural?'Non-addressable structural zero':self?'Consistency check':'Halo'}</div></div></div>`;
 }
 
 function renderMatrix(){
@@ -160,7 +162,8 @@ function renderShift(){
 function renderText(){
   const v=IVALID[M].summary,supported=MODEL[M].channels.filter(s=>rowIntervalFor(M,R,s).accepted),routes=supported.reduce((a,s)=>a+routeCount(M,R,s),0);
   document.getElementById('rely').innerHTML=`<div class="hscroll"><table class="s"><tr><th>Diagnostic</th><th>${esc(R)} ${M}</th></tr><tr><td class="l">Source rows tested</td><td>${MODEL[M].channels.length}</td></tr><tr><td class="l">Source rows clearing final gate</td><td>${supported.length}</td></tr><tr><td class="l">Published destination routes</td><td>${routes}</td></tr><tr><td class="l">Raw fake / observed magnitude</td><td>${(100*v.fake_to_observed_absolute_median).toFixed(1)}%</td></tr><tr><td class="l">Held-out fake rows, median</td><td>${v.heldout_fake_passing_rows_median}</td></tr><tr><td class="l">Held-out fake rows, worst</td><td>${v.heldout_fake_passing_rows_max}</td></tr><tr><td class="l">Held-out fake histories</td><td>${v.heldout_placebo_runs}</td></tr></table></div><p class="cap">The high raw fake share demonstrates confounding in the uncorrected model. The held-out rows evaluate the final decision rule on fake histories that were not used to set it.</p>`;
-  document.getElementById('sens').innerHTML=`<p><strong>The calculator no longer uses a winner-takes-all source gate for the attribution matrix.</strong> Positive source evidence is continuously discounted for interval uncertainty, then divided only across corrected positive off-diagonal routes. Each destination caps inbound halo at its 20% original-attribution benchmark, and every remaining attributed result stays on that destination's diagonal.</p><div class="eq">halo budget = corrected source effect × continuous reliability weight<br>retained diagonal = attribution benchmark − supported inbound halo</div>`;
+  const tv=TVDIAG[M];
+  document.getElementById('sens').innerHTML=`<p><strong>The calculator no longer uses a winner-takes-all source gate for the attribution matrix.</strong> Positive source evidence is continuously discounted for interval uncertainty, then divided only across corrected positive off-diagonal routes. Each destination caps inbound halo at its 20% original-attribution benchmark, and every remaining attributed result stays on that destination's diagonal.</p><div class="eq">halo budget = corrected source effect × continuous reliability weight<br>retained diagonal = attribution benchmark − supported inbound halo</div><p><strong>TV-specific result:</strong> the US donor-control intensity model estimates a directional ${num(tv.candidate_effect)} candidate, but publishes ${num(tv.published_effect)} because it failed ${esc(tv.failed_gates.join(', ').replaceAll('_',' '))}. TV ran every day and only in the US, so false timing patterns remain too large to identify its halo reliably.</p>`;
   const geos=MODEL[M].metadata.geographies,stability=MODEL[M].channels.map(s=>{const total=rowIntervalFor(M,R,s),vals=geos.map(g=>rowIntervalFor(M,g,s)),pos=vals.filter(x=>x.accepted).length,unresolved=vals.filter(x=>x.passes&&!x.accepted).length,none=vals.filter(x=>!x.passes).length,o=rowIntervalFor('orders',R,s),r=rowIntervalFor('revenue',R,s),agree=o.accepted&&r.accepted?'Both pass':o.accepted||r.accepted?'One passes':'Neither passes';return{s,total,pos,unresolved,none,agree}}).sort((a,b)=>(b.total.accepted?b.total.total:0)-(a.total.accepted?a.total.total:0));
   document.getElementById('stab').innerHTML='<div class="hscroll"><table class="s"><tr><th class="stick">Source</th><th>Supported markets</th><th>Unresolved markets</th><th>No evidence</th><th>Orders / revenue</th><th>Total-business result</th></tr>'+stability.map(x=>`<tr><td class="l stick">${esc(x.s)}</td><td>${x.pos} / ${geos.length}</td><td>${x.unresolved} / ${geos.length}</td><td>${x.none} / ${geos.length}</td><td>${x.agree}</td><td>${x.total.accepted?signed(x.total.total):'—'}</td></tr>`).join('')+'</table></div>';
   document.getElementById('cons').innerHTML='<div class="method"><p><strong>The attribution matrix reconciles exactly by construction.</strong> For destinations with a matching source row, retained diagonal attribution + inbound cross-source halo equals the 20% original-attribution benchmark. Organic and Direct have no spend-source diagonal, so any remainder stays explicitly unassigned. The strict source-to-total model remains visible in the decision table as a separate diagnostic rather than controlling the whole matrix.</p></div>';
