@@ -70,8 +70,15 @@ table.s.tight th{vertical-align:bottom;line-height:1.25}
 .ledg .out{color:#b3261e}
 .hscroll{overflow-x:auto;border:1px solid #eeece5;border-radius:8px}
 h3.shifth{font-size:15px;font-weight:600;margin:26px 0 2px}
-.notebox{margin:12px 0 0;max-width:900px}
-.notebox>.nlabel{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border:1px solid #e2e0d9;border-radius:20px;background:#fbfaf7;font-size:12.5px;color:#6b6960;margin-bottom:4px}
+details.notes{margin:12px 0 0;max-width:900px}
+details.notes>summary{cursor:pointer;list-style:none;font-size:12.5px;color:#6b6960;
+  display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border:1px solid #e2e0d9;
+  border-radius:20px;background:#fbfaf7;user-select:none}
+details.notes>summary:hover{background:#f4f2ec;border-color:#d5d3cc}
+details.notes>summary::-webkit-details-marker{display:none}
+details.notes>summary::before{content:"▸";font-size:9px;color:#a8a69d}
+details.notes[open]>summary::before{content:"▾"}
+details.notes[open]>summary{margin-bottom:4px}
 #shift svg{display:block;max-width:100%;height:auto}
 #shift .lab{font-size:11.5px;fill:#444}
 #shift .val{font-size:10.5px;font-variant-numeric:tabular-nums}
@@ -168,8 +175,11 @@ details.sec .tease{display:block;font-size:12.5px;color:#8a877e;margin:2px 0 0;f
   <span style="color:#999">Click any cell</span>
 </div>
 
-<p class="note" style="margin:10px 0 0"><strong>Cells measure orders <em>credited</em> to the column, not orders that happened.</strong> A green cell can mean the row channel created demand the column got the click for. <strong>Shading is what a cell actually contributes, not whether it passed a test.</strong> Nothing is excluded for being weak: a nearly-white cell is still counted, at a few percent of its measured effect, and the number stops printing only when it is too small to read. Darker means more of the effect survived the credibility discount.</p><p class="note" style="margin:8px 0 0">A pair can be well evidenced and still run the other way &mdash; more spend at the row against <em>fewer</em> orders credited to the column. That is cannibalisation, and it <strong>subtracts</strong>: those pairs are counted in every total on this page, at full weight, with a minus sign. They are not shaded in the grid, because a second colour scale competing with the first made the picture harder to read rather than easier &mdash; so the grid shows where credit is gained and the totals are net of where it is lost. <span id="negn"></span></p>
-<p class="note" style="margin:8px 0 0"><strong>Why they have to count.</strong> Keeping only the positive half of the evidence was the single largest error in earlier versions of this page. Selection on sign keeps half of any noise and cancels none of it: a shuffled US &mdash; spend moved in time so no real effect can survive &mdash; produced <strong>636,379 orders</strong> of positive-only halo out of nothing. Two large multipliers were then applied to bring that back down, which is why the page once reported 14% of what it measured. Netting the signs centres the noise on zero instead, and the discounting reduces to one honest step.</p>
+<details class="notes" style="margin-top:10px"><summary>Notes on reading this grid <span style="color:#a8a69d">3</span></summary>
+<p class="note"><strong>Cells measure orders <em>credited</em> to the column, not orders that happened.</strong> A green cell can mean the row channel created demand the column got the click for. <strong>Shading is what a cell actually contributes, not whether it passed a test.</strong> Nothing is excluded for being weak: a nearly-white cell is still counted, at a few percent of its measured effect, and the number stops printing only when it is too small to read. Darker means more of the effect survived the credibility discount.</p>
+<p class="note">A pair can be well evidenced and still run the other way &mdash; more spend at the row against <em>fewer</em> orders credited to the column. That is cannibalisation, and it <strong>subtracts</strong>: those pairs are counted in every total on this page, at full weight, with a minus sign. They are not shaded in the grid, because a second colour scale competing with the first made the picture harder to read rather than easier &mdash; so the grid shows where credit is gained and the totals are net of where it is lost. <span id="negn"></span></p>
+<p class="note"><strong>Why they have to count.</strong> Keeping only the positive half of the evidence was the single largest error in earlier versions of this page. Selection on sign keeps half of any noise and cancels none of it: a shuffled US &mdash; spend moved in time so no real effect can survive &mdash; produced <strong>636,379 orders</strong> of positive-only halo out of nothing. Two large multipliers were then applied to bring that back down, which is why the page once reported 14% of what it measured. Netting the signs centres the noise on zero instead, and the discounting reduces to one honest step.</p>
+</details>
 
 <div class="warn" id="warn" style="display:none"></div>
 
@@ -909,7 +919,7 @@ function renderCons(){
 function nbox(inner,label){
   if(!inner||!inner.trim()) return '';
   const n=(inner.match(/<p[ >]/g)||[]).length||1;
-  return '<div class="notebox"><div class="nlabel">'+(label||'Notes on this')+' <span style="color:#a8a69d">'+n+'</span></div>'+inner+'</div>';
+  return '<details class="notes"><summary>'+(label||'Notes on this')+' <span style="color:#a8a69d">'+n+'</span></summary>'+inner+'</details>';
 }
 function renderShift(){
   const el=document.getElementById('shift'); if(!el) return;
