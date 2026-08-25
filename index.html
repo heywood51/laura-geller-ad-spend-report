@@ -194,20 +194,20 @@ details.sec .tease{display:block;font-size:12.5px;color:#8a877e;margin:2px 0 0;f
 <p class="cap" id="shiftcap"></p>
 <div id="shift"></div>
 
-<details class="sec"><summary><h2>What this changes</h2></summary>
+<details class="sec" open><summary><h2>What this changes</h2></summary>
 <div class="method" id="soWhat"></div>
 </details>
 
-<details class="sec"><summary><h2>What the caused customers are worth</h2><span class="tease">Twelve-month gross profit per customer, before and after reallocation</span></summary>
+<details class="sec" open><summary><h2>What the caused customers are worth</h2><span class="tease">Twelve-month gross profit per customer, before and after reallocation</span></summary>
 <p class="note">Reallocating orders changes what they are worth, because orders are not interchangeable. Twelve-month gross profit per customer runs from <span id="ltvlo"></span> to <span id="ltvhi"></span> depending on where the customer came from, so a channel shown to drive orders into a better-retaining destination gains more value than the order count alone suggests &mdash; and one being credited for other people&rsquo;s orders may be losing better customers than it keeps.</p>
 <div id="ltv"></div>
 </details>
 
-<details class="sec" id="tvsec" style="display:none"><summary><h2>Television, the channel with no attribution</h2></summary>
+<details class="sec" id="tvsec" style="display:none" open><summary><h2>Television, the channel with no attribution</h2></summary>
 <div id="tvbox"></div>
 </details>
 
-<details class="sec"><summary><h2>How much of each effect is real?</h2><span class="tease">The per-pair discount breakdown, and how firm each estimate is</span></summary>
+<details class="sec" open><summary><h2>How much of each effect is real?</h2><span class="tease">The per-pair discount breakdown, and how firm each estimate is</span></summary>
 <div id="rely"></div>
 
 
@@ -218,11 +218,11 @@ details.sec .tease{display:block;font-size:12.5px;color:#8a877e;margin:2px 0 0;f
 <div id="stab"></div>
 </details>
 
-<details class="sec"><summary><h2>Does it add up?</h2></summary>
+<details class="sec" open><summary><h2>Does it add up?</h2></summary>
 <div id="cons"></div>
 </details>
 
-<details class="sec"><summary><h2>Suggestions</h2></summary>
+<details class="sec" open><summary><h2>Suggestions</h2></summary>
 <p class="note">Everything above this line is what the data shows. Everything below it is a judgement about what to do with it &mdash; a different kind of claim, kept separate on purpose.</p>
 <div id="suggest"></div>
 
@@ -231,7 +231,7 @@ details.sec .tease{display:block;font-size:12.5px;color:#8a877e;margin:2px 0 0;f
 </details>
 
 
-<details class="sec"><summary><h2>How this was worked out</h2><span class="tease">Weekly changes, two-week effects, promotions, and what the method cannot do</span></summary>
+<details class="sec" open><summary><h2>How this was worked out</h2><span class="tease">Weekly changes, two-week effects, promotions, and what the method cannot do</span></summary>
 <div class="method">
 <p><strong>The problem.</strong> Every budget rises and falls together with demand, so a naive comparison of Meta spend against TikTok Shop revenue mostly measures "the business had a good week". Everything here is estimated with all twelve levers in one model &mdash; the ten paid budgets plus email and SMS campaign volume &mdash; so each effect is what remains once the others are held still. Promotional depth, gift-with-purchase, November/December and two Fourier seasonal terms are also held still.</p>
 <p><strong>Promotions never stop, which limits what can be asked.</strong> A promotion ran on <em>every single day</em> of this window &mdash; not most days, all of them. So there is no unpromoted baseline anywhere in the data, and nothing here can answer what sales would look like without discounting. What does vary is promotional <em>depth</em>, and that is what the model controls for. It matters: weekly changes in promo depth correlate with weekly changes in total ad spend at r&nbsp;=&nbsp;0.39, so a model that ignored promotions would credit ad channels for discounting.</p>
