@@ -99,6 +99,12 @@ details.apx>summary::-webkit-details-marker{display:none}
 details.apx>summary::before{content:"▸ ";color:#999}
 details.apx[open]>summary::before{content:"▾ ";color:#999}
 details.apx>summary h2{display:inline;font-size:20px}
+details.apxsec{margin:22px 0 0}
+details.apxsec>summary{cursor:pointer;font-size:16px;font-weight:600;margin:0;list-style:none;color:#1a1a1a}
+details.apxsec>summary::-webkit-details-marker{display:none}
+details.apxsec>summary::before{content:"▸ ";color:#999;font-size:14px}
+details.apxsec[open]>summary::before{content:"▾ ";color:#999;font-size:14px}
+details.apxsec>summary h3{display:inline;font-size:16px;margin:0;color:#1a1a1a}
 details.sec>summary{cursor:pointer;font-size:20px;font-weight:600;margin:34px 0 0;list-style:none}
 details.sec>summary::-webkit-details-marker{display:none}
 details.sec>summary::before{content:"▸ ";color:#999}
@@ -188,7 +194,9 @@ details.sec .tease{display:block;font-size:12.5px;color:#8a877e;margin:2px 0 0;f
 <div id="ltv"></div>
 </details>
 
+<details class="sec" id="tvsec" style="display:none"><summary><h2>Television, the channel with no attribution</h2></summary>
 <div id="tvbox"></div>
+</details>
 
 <details class="sec"><summary><h2>How much of each effect is real?</h2><span class="tease">The per-pair discount breakdown, and how firm each estimate is</span></summary>
 <div id="rely"></div>
@@ -243,7 +251,8 @@ details.sec .tease{display:block;font-size:12.5px;color:#8a877e;margin:2px 0 0;f
 </div>
 </details>
 
-<details class="apx"><summary><h2>Appendix &mdash; every calculation, worked through</h2></summary>
+<details class="apx"><summary><h2>Appendix</h2></summary>
+<details class="apxsec"><summary><h3>Every calculation, worked through</h3></summary>
 <div class="method">
 <p>One pair is followed from the raw weekly rows to the final adjusted cost, with the actual arithmetic at each step. The pair is <strong>Meta spend &rarr; CRM&nbsp;Email orders</strong>, on the default view: all regions, orders, holidays included. Every other cell on the page is produced by the identical procedure.</p>
 
@@ -374,7 +383,7 @@ weeks = 2 &times; (2.8 &times; 892 / 430)<sup>2</sup> = 2 &times; 34 = <strong>6
 </div>
 </details>
 
-<details class="apx"><summary><h2>Appendix &mdash; the underlying data</h2></summary>
+<details class="apxsec"><summary><h3>The underlying data</h3></summary>
 <div class="method">
 <p>Everything the analysis is built on, in readable form. The weekly panel is the actual model input; the monthly view is an aggregation of it for reading. Nothing here is seasonally adjusted &mdash; the model controls for seasonality with terms inside the regression rather than by altering the data first, so there is no adjusted variant to show.</p>
 <h3>Downloads</h3>
@@ -399,6 +408,7 @@ weeks = 2 &times; (2.8 &times; 892 / 430)<sup>2</sup> = 2 &times; 34 = <strong>6
 <p><strong>Region.</strong> US versus International by <code>shipping_address_country_code</code>. TikTok Shop is US-only, so its International row is empty by construction.</p>
 <p><strong>Coverage gap.</strong> Non-paid channel attribution (Organic, Direct, CRM) only begins 11 September 2023. It is complete across this window, but any extension further back would not be.</p>
 </div>
+</details>
 </details>
 
 <div class="foot">Weekly panel from <code>agg_master.custom_sessions_orders_spend</code>. Window matches the two-year period used elsewhere: Aug 2024 to Aug 2026. Data through 10 August 2026.</div>
@@ -1004,19 +1014,19 @@ function renderLtv(){
 
 function renderTv(){
   const num=v=>Math.round(v).toLocaleString();
-  const el=document.getElementById('tvbox'), T=D.tv||{};
+  const el=document.getElementById('tvbox'), sec=document.getElementById('tvsec'), T=D.tv||{};
   const F=D[key()], E=(F&&F.econ)||{}, V=E['Television'];
   const holdsC=c=>verdict(c)==='hold';
   const ds=Object.entries(F.cells||{}).filter(([k,c])=>k.indexOf('Television|')===0&&!c.own&&holdsC(c))
             .map(([k,c])=>[k.split('|')[1],c]).sort((x,y)=>y[1].b-x[1].b);
-  if(!V&&!ds.length){ el.innerHTML=''; return; }
+  if(!V&&!ds.length){ el.innerHTML=''; if(sec) sec.style.display='none'; return; }
+  if(sec) sec.style.display='';
   const spend=V?V.spend:T.spend, attr=V?Math.round(V.attr_o):T.attr_o;
-  let s='<h2>Television, the channel with no attribution</h2><div class="callout">'
-   +'<p>Television took '+money(spend)+' in this view and was credited with <strong>'+attr+' new customer orders</strong>. '
+  let s='<p>Television took '+money(spend)+' in this view and was credited with <strong>'+attr+' new customer orders</strong>. '
    +'Read literally that is a cost per order in the millions, which is why earlier versions of this analysis set the channel aside as unmeasurable rather than bad &mdash; a television advert leaves no click to follow, so attribution never sees it.</p>';
   if(!ds.length){
     s+='<p><strong>In this view, nothing survives.</strong> Television has no spillover here that clears the correction, so there is nothing to say beyond what attribution reports &mdash; which is almost nothing. '
-     +'That is worth knowing rather than hiding: the Television result is not robust to every way of cutting the data, and the holiday weeks carry much of the spend variation it depends on. Switch holidays back in to see the case at its strongest.</p></div>';
+     +'That is worth knowing rather than hiding: the Television result is not robust to every way of cutting the data, and the holiday weeks carry much of the spend variation it depends on. Switch holidays back in to see the case at its strongest.</p>';
     el.innerHTML=s; return;
   }
   const rate=ds.reduce((a,[k,c])=>a+c.b,0);
@@ -1040,7 +1050,7 @@ function renderTv(){
    +'And the delayed shape is not what a spurious correlation produces &mdash; a channel accidentally tracking demand shows up in the same week, not consistently in the next one.</p>'
    +'<p><strong>What would still overturn it.</strong> Television is planned against the same calendar as everything else, so if the media plan concentrates weight into weeks that were already going to be strong for reasons the model has not captured, these coefficients would absorb that. '
    +'The backwards test rules out the simplest version of that problem, not a sophisticated one. It is also the only channel here where the answer is genuinely unknown rather than merely unproven.</p>';
-  s+=nbox(nt,'Notes on the Television estimate')+'</div>';
+  s+=nbox(nt,'Notes on the Television estimate');
   el.innerHTML=s;
 }
 
