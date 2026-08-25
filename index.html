@@ -79,12 +79,17 @@ details.notes>summary::-webkit-details-marker{display:none}
 details.notes>summary::before{content:"B8";font-size:9px;color:#a8a69d}
 details.notes[open]>summary::before{content:"BE"}
 details.notes[open]>summary{margin-bottom:4px}
+.notebox{margin:12px 0 0;max-width:900px}
+.notebox>.nlabel{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border:1px solid #e2e0d9;border-radius:20px;background:#fbfaf7;font-size:12.5px;color:#6b6960;margin-bottom:4px}
 details.sec>summary{cursor:pointer;list-style:none;margin:34px 0 0}
 details.sec>summary::-webkit-details-marker{display:none}
 details.sec>summary h2{display:inline;font-size:20px}
 details.sec>summary::before{content:"B8 ";color:#999}
 details.sec[open]>summary::before{content:"BE ";color:#999}
 details.sec .tease{display:block;font-size:12.5px;color:#8a877e;margin:2px 0 0}
+.secstat{margin:34px 0 0}
+.secstat>h2{font-size:20px;margin:0;display:inline}
+.secstat>.tease{display:block;font-size:12.5px;color:#8a877e;margin:2px 0 0}
 #shift svg{display:block;max-width:100%;height:auto}
 #shift .lab{font-size:11.5px;fill:#444}
 #shift .val{font-size:10.5px;font-variant-numeric:tabular-nums}
@@ -188,14 +193,14 @@ details.apx>summary h2{display:inline;font-size:20px}
 <h2>What this changes</h2>
 <div class="method" id="soWhat"></div>
 
-<details class="sec"><summary><h2>What the caused customers are worth</h2><span class="tease">Twelve-month gross profit per customer, before and after reallocation</span></summary>
+<div class="secstat"><h2>What the caused customers are worth</h2><span class="tease">Twelve-month gross profit per customer, before and after reallocation</span>
 <p class="note">Reallocating orders changes what they are worth, because orders are not interchangeable. Twelve-month gross profit per customer runs from <span id="ltvlo"></span> to <span id="ltvhi"></span> depending on where the customer came from, so a channel shown to drive orders into a better-retaining destination gains more value than the order count alone suggests &mdash; and one being credited for other people&rsquo;s orders may be losing better customers than it keeps.</p>
 <div id="ltv"></div>
-</details>
+</div>
 
 <div id="tvbox"></div>
 
-<details class="sec"><summary><h2>How much of each effect is real?</h2><span class="tease">The per-pair discount breakdown, and how firm each estimate is</span></summary>
+<div class="secstat"><h2>How much of each effect is real?</h2><span class="tease">The per-pair discount breakdown, and how firm each estimate is</span>
 <div id="rely"></div>
 
 
@@ -204,7 +209,7 @@ details.apx>summary h2{display:inline;font-size:20px}
 
 <h3 style="margin-top:30px">Is this a lasting pattern or a recent one?</h3>
 <div id="stab"></div>
-</details>
+</div>
 
 <h2>Does it add up?</h2>
 <div id="cons"></div>
@@ -217,7 +222,7 @@ details.apx>summary h2{display:inline;font-size:20px}
 <div id="hold"></div>
 
 
-<details class="sec"><summary><h2>How this was worked out</h2><span class="tease">Weekly changes, two-week effects, promotions, and what the method cannot do</span></summary>
+<div class="secstat"><h2>How this was worked out</h2><span class="tease">Weekly changes, two-week effects, promotions, and what the method cannot do</span>
 <div class="method">
 <p><strong>The problem.</strong> Every budget rises and falls together with demand, so a naive comparison of Meta spend against TikTok Shop revenue mostly measures "the business had a good week". Everything here is estimated with all twelve levers in one model &mdash; the ten paid budgets plus email and SMS campaign volume &mdash; so each effect is what remains once the others are held still. Promotional depth, gift-with-purchase, November/December and two Fourier seasonal terms are also held still.</p>
 <p><strong>Promotions never stop, which limits what can be asked.</strong> A promotion ran on <em>every single day</em> of this window &mdash; not most days, all of them. So there is no unpromoted baseline anywhere in the data, and nothing here can answer what sales would look like without discounting. What does vary is promotional <em>depth</em>, and that is what the model controls for. It matters: weekly changes in promo depth correlate with weekly changes in total ad spend at r&nbsp;=&nbsp;0.39, so a model that ignored promotions would credit ad channels for discounting.</p>
@@ -243,6 +248,7 @@ details.apx>summary h2{display:inline;font-size:20px}
 <p><strong>The backwards test.</strong> A real effect cannot work backwards, so each lever is also regressed the other way &mdash; orders explaining last week's spend, not spend explaining this week's orders. A genuine causal pair should find nothing going backwards; where it does, that pattern means both series are being driven by something the model has not captured, not that spend is truly following orders. This is no longer a pass/fail gate: it produces the &ldquo;direction&rdquo; factor described above, the share of the combined forward-and-reverse evidence that points the way causation should run, so a lever with a weak reverse signal loses some weight rather than all of it, and only a lever whose own forward link cannot clear a basic bar (t&nbsp;&lt;&nbsp;1.645) is floored to zero outright.</p>
 <p><strong>Measured alone, versus measured properly.</strong> Every pair is also estimated the naive way &mdash; that one spend series against that one result, nothing held still. The detail panel shows both. The gap between them is what a single-channel reading would have wrongly credited to the channel, and it is usually large.</p>
 <p><strong>What this still is not.</strong> Observational evidence. Holding a channel still in a model is not the same as switching it off. A spillover here can also mean credit moving rather than demand appearing: Meta causes a purchase that arrives via Direct and is recorded as Direct. That matters for deciding where budget goes, but it is not new demand. The only way to settle a specific channel is to withhold it and watch.</p>
+</div>
 </div>
 
 <details class="apx"><summary><h2>Appendix &mdash; every calculation, worked through</h2></summary>
@@ -902,7 +908,7 @@ function renderCons(){
 function nbox(inner,label){
   if(!inner||!inner.trim()) return '';
   const n=(inner.match(/<p[ >]/g)||[]).length||1;
-  return '<details class="notes"><summary>'+(label||'Notes on this')+' <span style="color:#a8a69d">'+n+'</span></summary>'+inner+'</details>';
+  return '<div class="notebox"><div class="nlabel">'+(label||'Notes on this')+' <span style="color:#a8a69d">'+n+'</span></div>'+inner+'</div>';
 }
 function renderShift(){
   const el=document.getElementById('shift'); if(!el) return;
