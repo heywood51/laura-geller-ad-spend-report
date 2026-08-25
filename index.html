@@ -72,8 +72,6 @@ table.s.tight th{vertical-align:bottom;line-height:1.25}
 h3.shifth{font-size:15px;font-weight:600;margin:26px 0 2px}
 .notebox{margin:12px 0 0;max-width:900px}
 .notebox>.nlabel{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border:1px solid #e2e0d9;border-radius:20px;background:#fbfaf7;font-size:12.5px;color:#6b6960;margin-bottom:4px}
-.secstat{margin:34px 0 0}
-.secstat>.tease{display:block;font-size:12.5px;color:#8a877e;margin:2px 0 0}
 #shift svg{display:block;max-width:100%;height:auto}
 #shift .lab{font-size:11.5px;fill:#444}
 #shift .val{font-size:10.5px;font-variant-numeric:tabular-nums}
@@ -101,6 +99,12 @@ details.apx>summary::-webkit-details-marker{display:none}
 details.apx>summary::before{content:"▸ ";color:#999}
 details.apx[open]>summary::before{content:"▾ ";color:#999}
 details.apx>summary h2{display:inline;font-size:20px}
+details.sec>summary{cursor:pointer;font-size:20px;font-weight:600;margin:34px 0 0;list-style:none}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::before{content:"▸ ";color:#999}
+details.sec[open]>summary::before{content:"▾ ";color:#999}
+details.sec>summary h2{display:inline;font-size:20px}
+details.sec .tease{display:block;font-size:12.5px;color:#8a877e;margin:2px 0 0;font-weight:400}
 .spark{margin:14px 0 0}
 .spark svg{display:block}
 .spark .cap{font-size:11px;color:#888;margin-top:3px}
@@ -166,25 +170,27 @@ details.apx>summary h2{display:inline;font-size:20px}
 <div class="panel" id="panel"><h3 style="color:#888;font-weight:500">Select a cell</h3>
 <p style="color:#888">Rows are where the money goes in. Columns are where results come out. Pick any pair to see the size of the effect, how certain it is, and how it splits across two weeks, and whether it survives the backwards test.</p></div>
 
-<h2>Where the credit actually belongs</h2>
+<details class="sec"><summary><h2>Where the credit actually belongs</h2></summary>
 <p class="note"><strong>Annual totals, with credit moved to the channel shown to have earned it.</strong> Every channel appears, including the four with no budget of their own. Cost figures are our ad dollars, not what a customer pays. Contribution margin is shown as a percentage of the twelve-month revenue those customers go on to produce, after the channel&rsquo;s own ad spend &mdash; the same basis as the weekly sales meeting. Hover any adjusted figure for the per-$1,000 rate underneath it.</p>
 <div id="spill"></div>
 
 <h3 class="shifth">The same orders, sorted differently</h3>
 <p class="cap" id="shiftcap"></p>
 <div id="shift"></div>
+</details>
 
-<h2>What this changes</h2>
+<details class="sec"><summary><h2>What this changes</h2></summary>
 <div class="method" id="soWhat"></div>
+</details>
 
-<div class="secstat"><h2>What the caused customers are worth</h2><span class="tease">Twelve-month gross profit per customer, before and after reallocation</span>
+<details class="sec"><summary><h2>What the caused customers are worth</h2><span class="tease">Twelve-month gross profit per customer, before and after reallocation</span></summary>
 <p class="note">Reallocating orders changes what they are worth, because orders are not interchangeable. Twelve-month gross profit per customer runs from <span id="ltvlo"></span> to <span id="ltvhi"></span> depending on where the customer came from, so a channel shown to drive orders into a better-retaining destination gains more value than the order count alone suggests &mdash; and one being credited for other people&rsquo;s orders may be losing better customers than it keeps.</p>
 <div id="ltv"></div>
-</div>
+</details>
 
 <div id="tvbox"></div>
 
-<div class="secstat"><h2>How much of each effect is real?</h2><span class="tease">The per-pair discount breakdown, and how firm each estimate is</span>
+<details class="sec"><summary><h2>How much of each effect is real?</h2><span class="tease">The per-pair discount breakdown, and how firm each estimate is</span></summary>
 <div id="rely"></div>
 
 
@@ -193,20 +199,22 @@ details.apx>summary h2{display:inline;font-size:20px}
 
 <h3 style="margin-top:30px">Is this a lasting pattern or a recent one?</h3>
 <div id="stab"></div>
-</div>
+</details>
 
-<h2>Does it add up?</h2>
+<details class="sec"><summary><h2>Does it add up?</h2></summary>
 <div id="cons"></div>
+</details>
 
-<h2>Suggestions</h2>
+<details class="sec"><summary><h2>Suggestions</h2></summary>
 <p class="note">Everything above this line is what the data shows. Everything below it is a judgement about what to do with it &mdash; a different kind of claim, kept separate on purpose.</p>
 <div id="suggest"></div>
 
 <h3 style="margin-top:30px">The one experiment worth running</h3>
 <div id="hold"></div>
+</details>
 
 
-<div class="secstat"><h2>How this was worked out</h2><span class="tease">Weekly changes, two-week effects, promotions, and what the method cannot do</span>
+<details class="sec"><summary><h2>How this was worked out</h2><span class="tease">Weekly changes, two-week effects, promotions, and what the method cannot do</span></summary>
 <div class="method">
 <p><strong>The problem.</strong> Every budget rises and falls together with demand, so a naive comparison of Meta spend against TikTok Shop revenue mostly measures "the business had a good week". Everything here is estimated with all twelve levers in one model &mdash; the ten paid budgets plus email and SMS campaign volume &mdash; so each effect is what remains once the others are held still. Promotional depth, gift-with-purchase, November/December and two Fourier seasonal terms are also held still.</p>
 <p><strong>Promotions never stop, which limits what can be asked.</strong> A promotion ran on <em>every single day</em> of this window &mdash; not most days, all of them. So there is no unpromoted baseline anywhere in the data, and nothing here can answer what sales would look like without discounting. What does vary is promotional <em>depth</em>, and that is what the model controls for. It matters: weekly changes in promo depth correlate with weekly changes in total ad spend at r&nbsp;=&nbsp;0.39, so a model that ignored promotions would credit ad channels for discounting.</p>
@@ -233,7 +241,7 @@ details.apx>summary h2{display:inline;font-size:20px}
 <p><strong>Measured alone, versus measured properly.</strong> Every pair is also estimated the naive way &mdash; that one spend series against that one result, nothing held still. The detail panel shows both. The gap between them is what a single-channel reading would have wrongly credited to the channel, and it is usually large.</p>
 <p><strong>What this still is not.</strong> Observational evidence. Holding a channel still in a model is not the same as switching it off. A spillover here can also mean credit moving rather than demand appearing: Meta causes a purchase that arrives via Direct and is recorded as Direct. That matters for deciding where budget goes, but it is not new demand. The only way to settle a specific channel is to withhold it and watch.</p>
 </div>
-</div>
+</details>
 
 <details class="apx"><summary><h2>Appendix &mdash; every calculation, worked through</h2></summary>
 <div class="method">
