@@ -332,7 +332,7 @@ details.sec .tease{display:block;font-size:12.5px;color:#8a877e;margin:2px 0 0;f
 <p>All three multiply to one weight per lever, applied to every destination that lever reaches:</p>
 <div class="eq">combined weight = w<sub>precision</sub> &times; w<sub>exist</sub> &times; w<sub>direction</sub><br>
 Meta (US): 89.8% &times; 98.8% &times; 92.7% = 82.2%</div>
-<p>Before any of that multiplication, two absolute bars apply: the lever's own forward t-statistic must clear 1.645, and its total effect must be positive. Fail either and the weight is floored to zero regardless of what the other two factors would have said &mdash; see &ldquo;How much of each effect is real?&rdquo; above for the full table, and which three US channels and two International channels are floored this way.</p>
+<p>Before any of that multiplication, two absolute bars apply: the lever's own forward t-statistic must clear 1.645, and its total effect must be positive. Fail either and the weight is floored to zero regardless of what the other two factors would have said &mdash; see &ldquo;How much of each effect is real?&rdquo; above for the full table, and which channels are floored this way (three in the US, three in International).</p>
 <p>That one weight is applied once, at the lever level, to turn Meta's total effect into an annual order budget &mdash; not to each pair separately:</p>
 <div class="eq">annual budget = tot<sub>o</sub> &times; annualize(pullback) &times; combined weight<br>
 Meta (US): 271,692 orders/year</div>
@@ -586,9 +586,9 @@ function renderRely(){
      +'<th>Combined weight</th><th>q-value</th><th>Status</th></tr>';
     rows.forEach(([lever,e])=>{
       s+='<tr><td class="l stick">'+lever+'</td>'
-       +'<td>'+pct(e&&e.w_precision)+'</td>'
-       +'<td>'+pct(e&&e.w_exist)+'</td>'
-       +'<td>'+pct(e&&e.w_direction)+'</td>'
+       +'<td>'+pct(e&&e.weight_components&&e.weight_components.w_precision)+'</td>'
+       +'<td>'+pct(e&&e.weight_components&&e.weight_components.w_exist)+'</td>'
+       +'<td>'+pct(e&&e.weight_components&&e.weight_components.w_direction)+'</td>'
        +'<td><strong>'+pct(e&&e.combined_weight)+'</strong></td>'
        +'<td style="color:#888">'+(e&&e.q_value!=null?e.q_value.toFixed(3):'&mdash;')+'</td>'
        +'<td>'+statusText(e)+'</td></tr>';
@@ -599,7 +599,7 @@ function renderRely(){
    +'That weight is three questions multiplied together. <strong>Precision</strong> shrinks the estimate for how noisy it is &mdash; a wide standard error pulls it towards zero. '
    +'<strong>Existence</strong> is one minus the false-discovery-rate q-value from a permutation test: the effect is compared against thousands of refits on time-shuffled spend, and existence is how much of that comparison it survives. '
    +'<strong>Direction</strong> asks the same question the old page asked with a pass/fail bar, but continuously: spend is regressed on orders as well as orders on spend, and this is the share of the combined evidence pointing the way causation should &mdash; spend explaining orders, not the other way round.</p>'
-   +(H==='excl'?'<p class="note"><strong>Nov/Dec excluded is active.</strong> The weights below are refit from scratch on the holiday-excluded weeks only &mdash; a fully independent permutation test and forward/reverse gauntlet, not the included-months weights with holiday rows removed after the fact. With roughly a fifth of the year&rsquo;s weeks dropped, expect wider standard errors, a few q-values landing on the other side of the floor than the included view, and occasionally a lever changing status.</p>':'')
+   +(H==='excl'?'<p class="note"><strong>Nov/Dec excluded is active.</strong> The precision and existence weights below are refit from scratch on the holiday-excluded weeks only &mdash; an independent permutation test, not the included-months weights with holiday rows removed after the fact. The forward/reverse direction test that feeds the third factor is not holiday-specific and is shared with the included view. With roughly a fifth of the year&rsquo;s weeks dropped, expect wider standard errors, a few q-values landing on the other side of the floor than the included view, and occasionally a lever changing status.</p>':'')
    +'<p class="note"><strong>The floor.</strong> Multiplying three fractions can produce a small-looking-like-evidence number even when none of the three is individually convincing. So before any of that: a lever&rsquo;s own spend has to move its own orders by a distinguishable amount (forward t-statistic &ge;1.645, roughly a one-sided 90% threshold) and the total effect has to be positive. Fail either and the weight is forced to zero &mdash; &ldquo;floored to zero&rdquo; below &mdash; rather than diluted by the other two factors into something that still prints a number.</p>';
   const DISC_ACTIVE=(H==='excl'?DISC_EXCL:DISC);
   s+='<h4 style="margin:16px 0 4px">US</h4>'+oneRegionTable('US',Object.entries(DISC_ACTIVE.US||{}));
