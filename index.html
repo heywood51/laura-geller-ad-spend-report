@@ -35,6 +35,8 @@ table.m td{padding:0;border:1px solid #fff}
 .cell:hover{outline:2px solid #1a1a1a;outline-offset:-2px}
 .cell.own{background:#f2f1ec!important;color:#bbb;cursor:default}
 .cell.own:hover{outline:none}
+.cell.na{background:#f2f1ec!important;color:#bbb;cursor:default}
+.cell.na:hover{outline:none}
 .cell.sel{outline:3px solid #1a1a1a;outline-offset:-3px}
 .legend{display:flex;gap:20px;align-items:center;margin:14px 0 0;font-size:12px;color:#666;flex-wrap:wrap}
 .sw{display:inline-block;width:13px;height:13px;border-radius:2px;margin-right:5px;vertical-align:-2px}
@@ -168,6 +170,7 @@ details.sec .tease{display:block;font-size:12.5px;color:#8a877e;margin:2px 0 0;f
   <span><i class="sw" style="background:#e8e6df"></i>Nothing detectable</span>
   <span><i class="sw" style="background:#f2f1ec"></i>Own channel &mdash; not a spillover</span>
   <span><i class="sw" style="background:#f0efea;color:#b3261e;font-weight:700;text-align:center;line-height:13px;font-size:11px">&minus;</i>Points down &mdash; subtracts from the total</span>
+  <span><i class="sw" style="background:#f2f1ec;color:#bbb;font-weight:700;text-align:center;line-height:13px;font-size:11px">&times;</i>No spend on that channel in this region</span>
   <span style="color:#999">Click any cell</span>
 </div>
 
@@ -989,12 +992,24 @@ function shade(c,max){
 }
 function draw(){
   const F=D[key()];
+  // The row set is fixed to every lever this brand runs anywhere (Total always has the
+  // full list), not just the ones active in the region currently showing. A region with
+  // no spend on a given channel -- e.g. Television has no International budget at all --
+  // still gets that row, marked '×' throughout rather than dropped, so the grid is the
+  // same shape in every region and a reader isn't left wondering whether a row went
+  // missing by omission or by design.
+  const ALL_LEVERS=D['Total|orders|incl'].levers;
   const max=Math.max(...Object.values(F.cells).filter(c=>!c.own&&c.keep&&(c.kept_b||0)>0).map(c=>c.kept_b||0),1);
   let h='<table class="m"><tr><th></th>';
   F.dests.forEach(d=>h+='<th class="col">'+d+'</th>');
   h+='</tr>';
-  F.levers.forEach(l=>{
+  ALL_LEVERS.forEach(l=>{
     h+='<tr><th>'+l+'</th>';
+    if(F.levers.indexOf(l)<0){
+      F.dests.forEach(()=>{ h+='<td><div class="cell na" title="'+l+' carries no spend in this region">&times;</div></td>'; });
+      h+='</tr>';
+      return;
+    }
     F.dests.forEach(d=>{
       const c=F.cells[l+'|'+d];
       if(!c){h+='<td></td>';return;}
@@ -1014,7 +1029,8 @@ function draw(){
     const box=document.getElementById('matrix').parentElement;
     const hid=box&&box.scrollWidth>box.clientWidth+4;
     const C=counts();
-    mc.innerHTML=F.dests.length+' destination columns, '+F.levers.length+' spending rows'
+    mc.innerHTML=F.dests.length+' destination columns, '+ALL_LEVERS.length+' spending rows'
+      +(F.levers.length<ALL_LEVERS.length?' ('+(ALL_LEVERS.length-F.levers.length)+' marked &times; carry no spend in this region)':'')
       +(hid?' &mdash; <strong>scroll sideways for the rest</strong>. ':'. ')
       +'<strong>'+C.measured+' pairs measured, '+C.counted+' counted, '+C.legible+' legible</strong> &mdash; '
       +'every pair is measured; a pair is <em>counted</em> if it contributes anything to the totals, and <em>legible</em> if its share is large enough to print. '
@@ -1029,7 +1045,7 @@ function draw(){
       +'A channel&rsquo;s gains are read along its <em>row</em> (money it spent, credited elsewhere); its losses down its <em>column</em> (orders it was credited for that another budget bought).';
   })();
   document.querySelectorAll('.cell').forEach(el=>{
-    if(el.classList.contains('own'))return;
+    if(el.classList.contains('own')||el.classList.contains('na'))return;
     el.onclick=()=>{SEL=el.dataset.k;draw();detail();};
     if(el.dataset.k===SEL) el.classList.add('sel');
   });
