@@ -15,11 +15,6 @@ h1{font-size:29px;margin:0 0 6px;letter-spacing:-.4px}
 .asof{color:#8a877e;font-size:12.5px;letter-spacing:.02em}
 ol.sug{margin:14px 0 0;padding-left:22px;max-width:900px}
 ol.sug li{margin:0 0 13px;font-size:14.5px;line-height:1.62}
-.strict{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-.strict input[type=range]{width:168px;accent-color:#1f7a3f;cursor:pointer;margin:0}
-#strictTxt{font-size:12.5px;color:#6b6961;font-variant-numeric:tabular-nums;min-width:250px}
-#strictTxt b{color:#1a1a1a;font-weight:600}
-#strictTxt .warn{color:#b3261e}
 .controls{display:flex;gap:26px;flex-wrap:wrap;align-items:center;
   position:sticky;top:0;z-index:50;background:#fff;
   margin:0 -14px 18px;padding:12px 14px 11px;
@@ -362,7 +357,8 @@ slope(y&#771; &sim; x&#771;) = 2.4403784804 &nbsp;=&nbsp; &beta;&#770;<sub>Meta<
 <h3>12. The ledger, and why it has to balance</h3>
 <p>A channel&rsquo;s adjusted total is what attribution gave it, less the orders another channel drove into it, plus the orders it drove elsewhere:</p>
 <div class="eq">A&#8209;Orders = attributed &minus; in &plus; out</div>
-<div class="eq">Meta (Total): 797,049 &plus; 141,742 out &minus; 85,385 in = 853,406</div>
+<div class="eq">Meta (Total): 797,049 &plus; 141,742 out &minus; 85,385 in = 853,405</div>
+<p class="cap">The three terms are each rounded to the nearest order before display; adding them here as printed gives 853,406, a rounding difference of one order from the underlying total of 853,405.13, which is what the table above actually shows.</p>
 <p><strong>Only positive spillovers take part.</strong> A positive coefficient means one channel earned orders another was credited for &mdash; moving them corrects a misplacement, and both halves of the entry are real. A negative coefficient means more spend at one channel goes with fewer orders credited to another, and there nobody was credited for the orders that failed to appear, so there is no counterparty to debit. Booking those as transfers charges a channel for volume it never held. Negative pairs are reported in the matrix and the detail panel and kept out of the ledger.</p>
 <p>Note that the labels invert between the arithmetic and the display: what arrives as credit from elsewhere is <em>subtracted</em>, because those orders belong to whoever drove them. The table shows the two figures the way a channel experiences them &mdash; orders gained and orders lost &mdash; so the row reads left to right.</p>
 <p>Summed across all channels, the two sides are the same quantity written twice: every order taken from one destination is an order handed to some source. So</p>
@@ -371,7 +367,7 @@ slope(y&#771; &sim; x&#771;) = 2.4403784804 &nbsp;=&nbsp; &beta;&#770;<sub>Meta<
 
 <h3>13. Cost, return and value from the adjusted total</h3>
 <p>Once the order count is settled, the rest is division:</p>
-<div class="eq">A&#8209;CAC = spend / A&#8209;Orders = $48,242,283 / 853,406 = <strong>$56.53</strong><br>
+<div class="eq">A&#8209;CAC = spend / A&#8209;Orders = $48,242,283 / 853,405 = <strong>$56.53</strong><br>
 A&#8209;ROAS = adjusted revenue / spend &nbsp;&nbsp;&nbsp; A&#8209;AOV = adjusted revenue / A&#8209;Orders</div>
 <p>Contribution margin is the one measure here that does not come from the first order, because a first order almost never repays its own acquisition cost. It follows the customers instead: each order is valued at the twelve-month revenue and twelve-month contribution of the channel it actually landed in, and the channel's own ad spend is then subtracted.</p>
 <div class="eq">A&#8209;CM% = (twelve&#8209;month contribution of the adjusted orders &minus; spend) / their twelve&#8209;month revenue<br>
@@ -436,20 +432,6 @@ const DEF=50;                      // the default strictness, set once in apply_
 let STRICT=STOPS.indexOf(DEF)>=0?STOPS.indexOf(DEF):STOPS.length-1;
 const pctNow=()=>STOPS[STRICT];
 const ordinal=v=>Math.round(v)+'%';        // the control is a credibility floor now
-// Three easily-confused quantities. `clear` is how many pairs the gate lets through by
-// chance. Only true nulls among those can be false, and of those only the ones pointing
-// upwards with a non-zero weight ever reach the ledger. The last is what matters.
-const coin=()=>(D[key()]||{}).coin||null;
-// The page carries two judgement calls -- how much proof to demand, and how big a budget
-// cut to price. Each has its own table; nobody multiplies them. This does.
-function envelope(){
-  // Used to sweep the old "Proof demanded" strictness levels (SWEEP) for a range of
-  // pullback-sensitivity outcomes. SWEEP nulled pullsens at every level earlier this
-  // session (the sweep itself was never rebuilt under the new methodology), so this
-  // always fell through to null before SWEEP was removed entirely -- same result, no
-  // dependency on a ~4.7MB blob that was doing nothing.
-  return null;
-}
 // One vocabulary for the counts, so the same quantity is not named four ways.
 //   measured   every cross-channel pair estimated
 //   counted    contributes something to the ledger
@@ -470,41 +452,14 @@ function counts(){
           equiv:counted.reduce((a,c)=>a+(c.ret||0),0),
           tail:tail, tailShare:totFlow>0?tail/totFlow:0};
 }
-const ordq=q=>{const x=Math.round(q*100),d=x%10,t=x%100;
-  return x+((t>=11&&t<=13)?'th':d===1?'st':d===2?'nd':d===3?'rd':'th');};
 const liveBar=c=>(c&&(c.bar_live??c.bar_gate??c.bar98))||null;
 const CRMLEV=['CRM Email','CRM SMS'];                 // levers counted in campaigns a week
 const isCrm=lev=>CRMLEV.indexOf(lev)>=0;
 const stepOf=lev=>isCrm(lev)?'one more campaign a week':'one more $1,000 a week';
 const perOf =lev=>isCrm(lev)?'per campaign/week':'per $1,000/week';
 const moreOf=lev=>isCrm(lev)?'Every extra campaign a week from ':'Every extra $1,000 a week into ';
-const expFalse=()=>{ const c=coin(); if(c&&c.enter!=null) return c.enter;
-  const F=D[key()], n=Object.values(F.cells).filter(x=>!x.own&&!x.degenerate).length;
-  return (100-pctNow())/100*n; };
-// Patch the loaded data to the chosen strictness, then let the existing renderers run
-// unchanged. Every setting was produced by the same Python as the default, so nothing
-// here recomputes statistics -- it only chooses which precomputed answer is showing.
-function applyStrict(){
-  const S=SWEEP[String(pctNow())]; if(!S) return;
-  for(const k in S.views){
-    const src=S.views[k], F=D[k]; if(!F) continue;
-    F.econ=src.econ; F.negflows=src.negflows; F.band=src.band; F.coin=src.coin;
-    if(src.pullsens) F.pullsens=src.pullsens;
-    if(src.concentration) F.concentration=src.concentration;
-    F.strict=pctNow()/100; F.kpow=Math.log(0.5)/Math.log(pctNow()/100);
-    if(src.cmpo!=null) F.cmpo=src.cmpo;
-    for(const pk in src.cells){
-      const c=F.cells[pk]; if(!c) continue;
-      const o=src.cells[pk];
-      c.keep=o.keep; c.kept_b=o.kept_b; c.weight=o.weight; c.gate=o.gate; c.bar_live=o.bar;
-      c.cred=o.cred; c.q=o.q; c.ret=o.ret; c.w_placebo=o.wp;
-    }
-  }
-  if(S.conserve) D.conserve=S.conserve;
-}
 let M='orders', R='Total', H='incl', SEL=null, AMT=10000, HPCT=20;
 const key=()=>R+'|'+M+'|'+H;
-const unit=()=>M==='orders'?'orders':'$';
 function pct(adj,rep,goodUp){
   if(!rep||!isFinite(rep)) return '';
   const c=100*(adj/rep-1);
@@ -656,55 +611,6 @@ function renderRely(){
   el.innerHTML=s;
 }
 
-function renderSens(){
-  const el=document.getElementById('sens'); if(!el) return;
-  const num=v=>Math.round(v).toLocaleString(), pc=v=>(100*(v||0)).toFixed(1)+'%';
-  const rows=STOPS.map(s=>{
-    const V=(SWEEP[String(s)]||{}).views||{}, F=V[key()]||{};
-    const cs=Object.values(F.cells||{}).filter(c=>c.keep);
-    return {s,kp:Math.log(0.5)/Math.log(s/100),n:cs.length,
-            vis:cs.filter(c=>Math.abs(c.kept_b||0)>=0.05).length,
-            equiv:cs.reduce((a,c)=>a+(c.ret||0),0),
-            moved:(F.band||{}).total,share:(F.band||{}).share,coin:F.coin};
-  }).filter(r=>r.moved!=null);
-  if(!rows.length){el.innerHTML='';return;}
-  const dflt=rows.find(r=>r.s===DEF)||rows[0], loose=rows[0], strict=rows[rows.length-1];
-  // the same three pairs at every setting, to show that shares move rather than membership
-  const F0=D[key()], live=Object.entries(F0.cells).filter(([k,c])=>!c.own&&c.keep)
-    .sort((a,b)=>(b[1].cred||0)-(a[1].cred||0));
-  const demo=[live[0],live[Math.floor(live.length/2)],live[live.length-1]].filter(Boolean);
-  let s='<p class="note">There is no threshold anywhere in this. Every pair keeps a <em>fraction</em> of its effect, and the control at the top decides how hard that fraction is squeezed. '
-   +'A pair whose credibility equals the control value keeps exactly half; stronger evidence keeps more, weaker evidence keeps less, and nothing is ever cut off at a line. '
-   +'Loosen the control and every share on the page rises at once.</p>'
-   +'<div class="hscroll"><table class="s tight"><tr><th class="stick">Proof demanded</th>';
-  demo.forEach(([k,c])=>s+='<th style="white-space:normal">'+k.replace('|',' &rarr; ')+'<br><span style="font-weight:400;text-transform:none;letter-spacing:0;color:#999">'+Math.round(100*(c.cred||0))+'% likely real</span></th>');
-  s+='<th>'+(M==='revenue'?'Revenue':'Orders')+' reallocated</th><th>Share</th>'
-   +'<th style="white-space:normal">Pair-equivalents</th><th style="white-space:normal">Chance share of volume</th><th></th></tr>';
-  rows.forEach(r=>{
-    const on=r.s===pctNow(), vs=r.coin?r.coin.vol_share:null;
-    s+='<tr'+(on?' style="background:#f4f6f4"':'')+'><td class="l stick">'+r.s+'%</td>';
-    demo.forEach(([k,c])=>{ const ret=Math.pow(c.cred||0,r.kp);
-      s+='<td'+(on?' style="font-weight:600"':' style="color:#666"')+'>'+(100*ret).toFixed(0)+'%</td>'; });
-    s+='<td>'+num(r.moved)+'</td><td><strong>'+pc(r.share)+'</strong></td>'
-     +'<td style="color:#888">'+r.equiv.toFixed(1)+'</td>'
-     +'<td'+(vs!=null&&vs>0.05?' style="color:#b3261e"':'')+'>'+(vs==null?'&mdash;':(100*vs).toFixed(1)+'%')+'</td>'
-     +'<td style="color:#8a877e;white-space:nowrap">'+(on?'&larr; showing':(r.s===DEF?'the default':''))+'</td></tr>';
-  });
-  s+='</table></div>';
-  let nt='<p class="note" style="margin-top:12px"><strong>Read across a row, not down the table.</strong> '
-   +'The same '+dflt.n+' pairs are counted at every setting &mdash; none enters, none leaves. What changes is how much of each one is counted, and the three columns above are there to make that visible: '
-   +demo.map(([k,c])=>k.replace('|',' → ')+' goes from '+(100*Math.pow(c.cred||0,loose.kp)).toFixed(0)+'% at '+loose.s+'% demanded to '+(100*Math.pow(c.cred||0,strict.kp)).toFixed(0)+'% at '+strict.s+'%').join('; ')+'.</p>'
-   +'<p class="note"><strong>Strong evidence is barely touched; weak evidence collapses.</strong> That is the whole mechanism. Squeezing harder costs a well-evidenced pair a few points and costs a doubtful one almost everything, '
-   +'so the reallocated total falls from '+num(loose.moved)+' to '+num(strict.moved)+' across the range without any pair being judged in or out. '
-   +'The pair-equivalents column is the honest headcount: '+dflt.equiv.toFixed(1)+' pairs&rsquo; worth of effect at the default, spread across '+dflt.n+' counted pairs of which '+dflt.vis+' are legible.</p>'
-   +'<p class="note"><strong>Why the default sits at '+DEF+'%.</strong> Simulating 300 worlds in which nothing is real &mdash; every pair&rsquo;s statistic drawn from its own permutation null, signs at random &mdash; and running this exact scheme, '
-   +DEF+'% is the loosest setting where the <em>worst</em> of those 300 runs invents under 1% of the reallocated total. '
-   +'At '+dflt.s+'% the median null world invents nothing at all. Loosen to 93% and the worst case reaches 3.7%; the pass/fail gate this replaced had a worst case of 27%. '
-   +'The looser positions are left available because they answer a different question &mdash; how much is out there if you are willing to be wrong more often &mdash; but the chance-share column is the price, and it is shown next to the answer.</p>'
-   +'<p class="note"><strong>What is still binary, and why.</strong> Two rules remain all-or-nothing, and neither is a judgement of strength: a fit too degenerate to estimate, and an effect that also runs backwards in time, which means something outside the model drives both series. Those are disqualifications. Everything about <em>how strong</em> the evidence is, is a matter of degree. Direction is no longer a criterion at all &mdash; a well-evidenced negative subtracts rather than being discarded.</p>';
-  el.innerHTML=s+nbox(nt,'Notes on tempering');
-}
-
 function renderPull(){
   const el=document.getElementById('pull'); if(!el) return;
   const F=D[key()], P=F.pullsens; if(!P||!P.rows||!P.rows.length){el.innerHTML='';return;}
@@ -744,7 +650,7 @@ function renderPull(){
 
 function renderSuggest(){
   const el=document.getElementById('suggest'); if(!el) return;
-  const F=D[key()], E=F.econ||{}, B=F.band||{}, X=envelope(), K=F.concentration||{};
+  const F=D[key()], E=F.econ||{}, B=F.band||{}, K=F.concentration||{}, H=D.holdout;
   const T=D.stability, live=new Set(Object.entries(F.cells).filter(([k,c])=>!c.own&&c.keep).map(([k])=>k));
   const num=v=>Math.round(v).toLocaleString();
   const cellOf=k=>F.cells[k]||{};
@@ -758,7 +664,7 @@ function renderSuggest(){
    +'That is the whole finding: '+num(B.total||0)+' orders a year sit on the wrong channel, and every CAC and ROAS built on the attributed figure inherits the error. '
    +'Which channels gain and which give up credit is set out in <em>What this changes</em> above &mdash; the point here is only that the adjusted column is the one to plan from.</li>';
   s+='<li><strong>Run the Television holdout below before acting on Television specifically.</strong> '
-   +'It is the largest finding here and the one attribution disagrees with most violently &mdash; 6 orders a year against '
+   +'It is the largest finding here and the one attribution disagrees with most violently &mdash; '+(H?num(H.attr_o):'a handful of')+' orders a year against '
    +num((E['Television']||{}).adj_lvl||0)+'. Nothing on this page can settle that; twelve weeks of withheld spend can.</li>';
   if(thin.length) s+='<li><strong>Use the small-budget channels&rsquo; direction, never their magnitude.</strong> '
    +thin.join(' and ')+' spend under $25,000 a week, so a $1,000 change is a large share of the budget and the estimate rests on little variation.</li>';
@@ -766,9 +672,6 @@ function renderSuggest(){
    +bad.map(r=>r.k.split('|')[0]).filter((v,i,a)=>a.indexOf(v)===i).join(' or ')+'.</strong> The '
    +(bad.length>1?'largest unstable pairs are ':'largest unstable pair is ')
    +bad.map(r=>r.k.replace('|',' → ')).join(', ')+', which '+(bad.length>1?'do':'does')+' not hold direction across the two halves of the window &mdash; what a fading effect looks like.</li>';
-  if(X) s+='<li><strong>Quote the range, not the point estimate.</strong> '
-   +'The headline is '+(100*(B.share||0)).toFixed(1)+'%, but the two judgement calls behind it &mdash; how much proof to demand, how large a budget cut to price &mdash; move it between '
-   +(100*X.loShare).toFixed(1)+'% and '+(100*X.hiShare).toFixed(1)+'%. Anyone who hears only the middle number will over-read it.</li>';
   if(K.top) s+='<li><strong>Check '+K.top.replace('|',' → ')+' by hand before leaning on the total.</strong> '
    +'It carries '+Math.round(100*(K.top_share||0))+'% of everything that survives, so if that single pair is wrong then so is much of the answer, and averaging across the others would not reveal it.</li>';
   s+='<li><strong>Close the two data gaps that cap this analysis.</strong> '
@@ -806,7 +709,7 @@ function renderHold(){
    +num(pick.orders_at_risk)+' new customer orders while it runs. Shallower cuts need too long: a quarter of the budget takes '
    +H.plan[0].weeks+' weeks, most of a year, over which neither the media plan nor the promo calendar will hold still. '
    +'Deeper cuts are faster but push weekly spend below anything in this history, so the estimate stops being interpolation and the result stops being comparable to what is on this page.</p>'
-   +'<p class="note"><strong>What to measure.</strong> Not television-attributed orders, which are 6 a year and will stay there. Total new customer orders, and the orders credited to the six destinations this page says Television is really feeding. '
+   +'<p class="note"><strong>What to measure.</strong> Not television-attributed orders, which are '+num(H.attr_o)+' a year and will stay there. Total new customer orders, and the orders credited to the six destinations this page says Television is really feeding. '
    +'If the page is right they fall together while television is dark, by roughly '+num(pick.per_week)+' a week between them. If attribution is right, nothing measurable happens anywhere &mdash; and this page is wrong about its largest finding.</p>'
    +'<p class="note"><strong>Two things would spoil it.</strong> Run it against a stable promotional calendar: promo depth is the strongest competing explanation on this page, and a holdout that coincides with a change in promo cadence cannot be read. '
    +'And keep it out of November and December &mdash; the holiday weeks carry much of the spend variation, the model already treats them separately, and a dark-TV December would confound the thing you are measuring with the largest seasonal swing in the business.</p>'
@@ -1085,7 +988,6 @@ function shade(c,max){
   return `rgba(31,122,63,${a})`;
 }
 function draw(){
-  if(window.__strictLabel) window.__strictLabel();
   const F=D[key()];
   const max=Math.max(...Object.values(F.cells).filter(c=>!c.own&&c.keep&&(c.kept_b||0)>0).map(c=>c.kept_b||0),1);
   let h='<table class="m"><tr><th></th>';
@@ -1154,19 +1056,11 @@ function draw(){
           +'Those worlds centre on '+Math.round(N.null_median||0).toLocaleString()+', which is the check that matters, and a total this large arose in '
           +(N.p!=null?(100*N.p).toFixed(1)+'% of them. ':'few of them. ');})()
     +'So the honest answer to the question is: yes, materially, and across most of the map rather than a short list. '
-    +(function(){ const E=envelope(); if(!E) return '';
-        return ' <strong>That figure is a choice as much as a measurement.</strong> Two judgement calls set its scale &mdash; how much proof to demand, and how large a budget cut to price &mdash; and across the defensible range of both it runs from '
-          +(100*E.loShare).toFixed(1)+'% to '+(100*E.hiShare).toFixed(1)+'%, a factor of '+Math.round(E.ratio)
-          +'. Both are controls you can move: the first at the top of this page, the second in the section below on pricing the pullback.'; })()
     +(function(){ const C=(D[key()]||{}).concentration;
         if(!C||!C.top||C.n<3) return '';
         return ' It is also a concentrated one: '+C.top.replace('|',' → ')+' alone is '
           +Math.round(100*C.top_share)+'% of everything that survives, and the top three pairs are '
-          +Math.round(100*C.top3_share)+'%.'; })()
-    +(pctNow()!==DEF?' <em>The proof-demanded control is set to '+pctNow()+'% rather than the '
-      +DEF+'% this page argues for'+(expFalse()>1.5?', which is loose enough that roughly '+expFalse().toFixed(1)
-      +' of the pairs below are expected to be chance &mdash; read the list as a shortlist to check, not a set of findings'
-      :expFalse()<0.4?', which is stricter, so the list below is shorter and surer than the one the page describes':'')+'.</em>':'');
+          +Math.round(100*C.top3_share)+'%.'; })();
   const other=D[R+'|'+M+'|'+(H==='incl'?'excl':'incl')];
   const oheld=other?Object.values(other.cells).filter(c=>verdict(c)==='hold').length:null;
   const wn=document.getElementById('warn');
@@ -1338,13 +1232,6 @@ function draw(){
        +'Adding the flow variances gives a 90% range of '+num(B.lo_indep)+' to '+num(B.hi_indep)+'. That treats the '+B.n_flows+' flows as independent, which they are not entirely &mdash; they share a panel, a set of controls and a business. '
        +'At the other extreme, if every estimate were wrong in the same direction at once, the range widens to '+num(B.lo_comov)+' to '+num(B.hi_comov)+'. '
        +'The honest reading is the wider one: the reallocation is firmly not zero, and its size is good to about a third either way rather than to the digit. '
-       +(function(){ const E=envelope(); if(!E) return '';
-           return '<strong>And that band is the smaller of two uncertainties.</strong> It measures sampling error with both judgement calls held still. Move them instead &mdash; the proof demanded at the top of the page, the size of the priced cut further down &mdash; and the same ledger runs from '
-             +num(E.lo.v)+' ('+(100*E.loShare).toFixed(1)+'%, at '+E.lo.s+'% demanded and a cut back to the '+ordq(E.lo.q)+' percentile week) to '
-             +num(E.hi.v)+' ('+(100*E.hiShare).toFixed(1)+'%, at '+E.hi.s+'% and the '+ordq(E.hi.q)+'). '
-             +'That is a factor of '+Math.round(E.ratio)+', against a factor of about one and a half from the band. '
-             +'Pricing a cut to nothing at all, which this page refuses, would reach '+(100*E.tzShare).toFixed(1)+'%. '
-             +'So the sampling error is not what should worry you about this number; the two choices behind it are. '; })()
        +(function(){ const C=F.concentration; if(!C||!C.top) return '';
            return 'Neither band captures a different risk, which is concentration: '+C.top.replace('|',' → ')+' carries '
              +Math.round(100*C.top_share)+'% of the surviving effect and the top three carry '+Math.round(100*C.top3_share)
@@ -1558,27 +1445,6 @@ function soWhat(){
   document.getElementById('soWhat').innerHTML=h;
 
 }
-(function(){
-  const sl=document.getElementById('strict'), tx=document.getElementById('strictTxt');
-  if(!sl) return;
-  sl.max=String(STOPS.length-1); sl.value=String(STRICT);
-  const label=()=>{
-    const pc=pctNow(), F=D[key()];
-    const npairs=Object.values(F.cells).filter(c=>!c.own&&!c.degenerate).length;
-    const kept=Object.values(F.cells).filter(c=>!c.own&&c.keep).length;
-    const c=coin(), exp=c?c.enter:0, vs=c?c.vol_share:null;
-    const F2=D[key()], kp=Math.log(0.5)/Math.log(pc/100);
-    const mid=Math.pow(0.93,kp);          // what a middling pair keeps here
-    tx.innerHTML='<b>'+pc+'%</b> &middot; a pair '+pc+'% likely real keeps half its effect'
-      +'; a 93% pair keeps '+(100*mid).toFixed(0)+'% &middot; '
-      +'<span'+(vs!=null&&vs>0.5?' class="warn"':'')+'>'+(vs!=null?(100*vs).toFixed(1)+'% of the gross movement is expected to be chance (it largely cancels in the net)':'')
-      +'</span>'
-      +(pc===DEF?' &middot; the setting this page argues for':'');
-  };
-  sl.oninput=()=>{ STRICT=+sl.value; applyStrict(); draw(); label(); };
-  window.__strictLabel=label;
-  applyStrict(); label();
-})();
 document.querySelectorAll('#mTabs button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#mTabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');M=b.dataset.m;draw();});
 document.querySelectorAll('#hTabs button').forEach(b=>b.onclick=()=>{
