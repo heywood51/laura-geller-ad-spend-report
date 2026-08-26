@@ -172,12 +172,13 @@ details.sec .tease{display:block;font-size:12.5px;color:#8a877e;margin:2px 0 0;f
   <span><i class="sw" style="background:#1f7a3f"></i>More credited there &mdash; survives correction</span>
   <span><i class="sw" style="background:#e8e6df"></i>Nothing detectable</span>
   <span><i class="sw" style="background:#f2f1ec"></i>Own channel &mdash; not a spillover</span>
+  <span><i class="sw" style="background:#f0efea;color:#b3261e;font-weight:700;text-align:center;line-height:13px;font-size:11px">&minus;</i>Points down &mdash; subtracts from the total</span>
   <span style="color:#999">Click any cell</span>
 </div>
 
 <details class="notes" style="margin-top:10px"><summary>Notes on reading this grid <span style="color:#a8a69d">3</span></summary>
 <p class="note"><strong>Cells measure orders <em>credited</em> to the column, not orders that happened.</strong> A green cell can mean the row channel created demand the column got the click for. <strong>Shading is what a cell actually contributes, not whether it passed a test.</strong> Nothing is excluded for being weak: a nearly-white cell is still counted, at a few percent of its measured effect, and the number stops printing only when it is too small to read. Darker means more of the effect survived the credibility discount.</p>
-<p class="note">A pair can be well evidenced and still run the other way &mdash; more spend at the row against <em>fewer</em> orders credited to the column. That is cannibalisation, and it <strong>subtracts</strong>: those pairs are counted in every total on this page, at full weight, with a minus sign. They are not shaded in the grid, because a second colour scale competing with the first made the picture harder to read rather than easier &mdash; so the grid shows where credit is gained and the totals are net of where it is lost. <span id="negn"></span></p>
+<p class="note">A pair can be well evidenced and still run the other way &mdash; more spend at the row against <em>fewer</em> orders credited to the column. That is cannibalisation, and it <strong>subtracts</strong>: those pairs are counted in every total on this page, at full weight, with a minus sign, and printed in red directly in the grid. They are not shaded, because a second colour scale competing with the first made the picture harder to read rather than easier &mdash; so colour marks where credit is gained, the red numbers mark where it is lost, and the totals are net of both. <span id="negn"></span></p>
 <p class="note"><strong>Why they have to count.</strong> Keeping only the positive half of the evidence was the single largest error in earlier versions of this page. Selection on sign keeps half of any noise and cancels none of it: a shuffled US &mdash; spend moved in time so no real effect can survive &mdash; produced <strong>636,379 orders</strong> of positive-only halo out of nothing. Two large multipliers were then applied to bring that back down, which is why the page once reported 14% of what it measured. Netting the signs centres the noise on zero instead, and the discounting reduces to one honest step.</p>
 </details>
 
@@ -186,13 +187,14 @@ details.sec .tease{display:block;font-size:12.5px;color:#8a877e;margin:2px 0 0;f
 <div class="panel" id="panel"><h3 style="color:#888;font-weight:500">Select a cell</h3>
 <p style="color:#888">Rows are where the money goes in. Columns are where results come out. Pick any pair to see the size of the effect, how certain it is, and how it splits across two weeks, and whether it survives the backwards test.</p></div>
 
-<h2>Where the credit actually belongs</h2>
+<details class="sec" open><summary><h2>Where the credit actually belongs</h2></summary>
 <p class="note"><strong>Annual totals, with credit moved to the channel shown to have earned it.</strong> Every channel appears, including the four with no budget of their own. Cost figures are our ad dollars, not what a customer pays. Contribution margin is shown as a percentage of the twelve-month revenue those customers go on to produce, after the channel&rsquo;s own ad spend &mdash; the same basis as the weekly sales meeting. Hover any adjusted figure for the per-$1,000 rate underneath it.</p>
 <div id="spill"></div>
 
 <h3 class="shifth">The same orders, sorted differently</h3>
 <p class="cap" id="shiftcap"></p>
 <div id="shift"></div>
+</details>
 
 <details class="sec" open><summary><h2>What this changes</h2></summary>
 <div class="method" id="soWhat"></div>
@@ -1064,7 +1066,7 @@ function renderTv(){
   el.innerHTML=s;
 }
 
-function fmt(v){ return M==='orders' ? (Math.abs(v)>=100?v.toFixed(0):v.toFixed(1)) : (Math.abs(v)>=1000?'$'+(v/1000).toFixed(1)+'k':'$'+v.toFixed(0)); }
+function fmt(v){ const sg=v<0?'-':'', av=Math.abs(v); return M==='orders' ? sg+(av>=100?av.toFixed(0):av.toFixed(1)) : sg+(av>=1000?'$'+(av/1000).toFixed(1)+'k':'$'+av.toFixed(0)); }
 function verdict(c){
   if(c.own) return 'own';
   // 'neg' is now COUNTED, at full weight, with a minus sign -- it is simply not shaded,
@@ -1095,10 +1097,10 @@ function draw(){
       const c=F.cells[l+'|'+d];
       if(!c){h+='<td></td>';return;}
       const v=verdict(c), col=shade(c,max);
-      // negatives contribute to every total but print nothing: their size is stated in the
-      // caption above the grid and in the panel that opens when the blank cell is clicked
-      const txt=c.own?'&mdash;':((c.keep&&(c.kept_b||0)>0&&Math.abs(c.kept_b)>=0.05)?fmt(c.kept_b):'');
-      const fg=(v==='hold'&&Math.abs(c.kept_b||c.b)/max>0.45)?'#fff':'#333';
+      // negatives are printed in the grid too now, in red, rather than left blank --
+      // their size no longer lives only in the caption and the detail panel.
+      const txt=c.own?'&mdash;':((c.keep&&Math.abs(c.kept_b||0)>=0.05)?fmt(c.kept_b):'');
+      const fg=v==='neg'?'#b3261e':((v==='hold'&&Math.abs(c.kept_b||c.b)/max>0.45)?'#fff':'#333');
       h+='<td><div class="cell'+(c.own?' own':'')+'" style="background:'+col+';color:'+fg+'" data-k="'+l+'|'+d+'">'+txt+'</div></td>';
     });
     h+='</tr>';
@@ -1137,7 +1139,7 @@ function draw(){
     window.__heroVis=cs.filter(c=>Math.abs(c.kept_b||0)>=0.05).length;
     const bd=F.band||{};
     document.getElementById('hero').innerHTML=(bd.share!=null
-      ? (100*bd.share).toFixed(1)+'% of new customer '+(M==='revenue'?'revenue':'orders')+' <em>is credited to the wrong channel</em>'
+      ? (100*bd.share).toFixed(1)+'% of new customer '+(M==='revenue'?'revenue':'orders')+' <em>'+(M==='revenue'?'is':'are')+' credited to the wrong channel</em>'
       : "credit sits on the wrong channel");
   })();
   document.getElementById('heroTxt').innerHTML=
@@ -1190,7 +1192,7 @@ function draw(){
                     .reduce((a,[k,c])=>a+fl(k,c),0);
     nn.innerHTML=negc.length
       ? '<strong>'+negc.length+' of the '+counts().counted+' counted pairs run that way in this view</strong>, subtracting '
-        +nfmt(Math.abs(lost))+' orders from the '+nfmt(won)+' gained. They are listed in the notes under the table below.'
+        +nfmt(Math.abs(lost))+' orders from the '+nfmt(won)+' gained.'
       : 'In this view every counted pair points the same way, so nothing is being subtracted.';
   }
   const setTxt=(id,val)=>{const e=document.getElementById(id); if(e) e.textContent=val;};
@@ -1451,7 +1453,7 @@ function detail(){
   const lo=c.b-1.645*c.se, hi=c.b+1.645*c.se;
   const badge={
     hold:['v-hold','Holds up','Beats its own shuffled-data null, passes the backwards test, and keeps the share of its effect a second market shows is real.'],
-    neg:['v-neg','Real, and subtracts','Clears the same bars as the green cells but points downwards: more spend at the row against fewer orders credited to the column. Counted in every total at full weight, with a minus sign, and left unshaded in the grid.'],
+    neg:['v-neg','Real, and subtracts','Clears the same bars as the green cells but points downwards: more spend at the row against fewer orders credited to the column. Counted in every total at full weight, with a minus sign, printed in red in the grid, and left unshaded there because a second colour scale fighting the green one made the grid harder to read.'],
     none:['v-no','Nothing detectable','No effect this pair could not have produced by coincidence, judged against 250 refits on shuffled spend.']}[v];
   const w2=c.b1, w2sig=(c.p1!==null&&c.p1<0.05), w2sh=(c.b?100*w2/c.b:0);
   const persists=w2sig&&w2*c.b>0, reverses=w2sig&&w2*c.b<0;
@@ -1473,7 +1475,7 @@ function detail(){
       +Math.round(100*(c.weight||0))+'% of its size against the second market.'
       +'<br><br>What it most likely is: the same purchase happening but resolving to a different last click, because the journey now contains a '+lev
       +' touchpoint. Nothing is destroyed &mdash; the credit moves. A real reduction would need head-to-head competition for the same audience or inventory, which this data cannot test.'
-      +'<br><br><strong>It subtracts from the reallocation.</strong> More spend at the row against fewer orders credited to the column is cannibalisation, and it is counted with a minus sign at full weight. It is not shaded in the grid, so this panel is where you see it. Earlier versions discarded these, which kept only the positive half of the evidence and let noise accumulate instead of cancelling.';
+      +'<br><br><strong>It subtracts from the reallocation.</strong> More spend at the row against fewer orders credited to the column is cannibalisation, and it is counted with a minus sign at full weight, printed in red in the grid above. It is not shaded there &mdash; a second colour scale fighting the green one made the grid harder to read &mdash; so the number, not the background, is what marks it out. Earlier versions discarded these, which kept only the positive half of the evidence and let noise accumulate instead of cancelling.';
   } else {
     say='No effect separable from noise once every other channel, promotions and seasonality are held still.'
       +(c.nb!==null&&Math.abs(c.nb)>Math.abs(c.b)*1.5?' Measured on its own it would look like '+fmt(c.nb)+', which is a good illustration of why single-channel readings mislead.':'')
