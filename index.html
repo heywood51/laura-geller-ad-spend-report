@@ -1443,7 +1443,7 @@ function soWhat(){
   let h='<p><strong>Attribution is not wrong at random. It is wrong in a direction.</strong> '
    +held+' of '+F.n_tests+' cross-channel pairs survive testing, and the credit they move runs mostly one way: from channels that create demand without being clicked, to channels that get the click at the end. '
    +'The biggest net gainers are '+net.slice(0,3).map(x=>x[0]).join(', ')+'; the biggest net losers '+net.slice(-3).reverse().map(x=>x[0]).join(', ')+'.'
-   +(pass.length?' '+(pass.length>1?pass.join(' and ')+' are':pass[0]+' is')+' the exception, taking in almost exactly as much as '+(pass.length>1?'they send':'it sends')+' out &mdash; a staging post rather than a source or a sink, which is why '+(pass.length>1?'they appear':'it appears')+' on both lists below.':'')+'</p>';
+   +(pass.length?' '+(pass.length>1?pass.join(' and ')+' are':pass[0]+' is')+' the exception, taking in almost exactly as much as '+(pass.length>1?'they send':'it sends')+' out &mdash; a staging post rather than a source or a sink: '+pass.map(k=>k+' moves '+Math.round(E[k].out_lvl).toLocaleString()+' out against '+Math.round(E[k].in_lvl).toLocaleString()+' in').join('; ')+'.':'')+'</p>';
   if(send.length) h+='<p><strong>Under-credited &mdash; doing work that shows up on someone else&rsquo;s line.</strong> '
    +send.slice(0,4).map(([k,v])=>k+' ('+Math.round(v.out_lvl).toLocaleString()+' orders)').join(', ')
    +'. Judged on their own reported numbers these look worse than they are, and cutting them would remove volume that reappears as somebody else&rsquo;s loss a week later.</p>';
