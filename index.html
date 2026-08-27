@@ -352,7 +352,7 @@ slope(y&#771; &sim; x&#771;) = 3.8179839545 &nbsp;=&nbsp; &beta;&#770;<sub>Meta<
 <h3>11. From a weekly rate to a yearly number</h3>
 <p>A coefficient says what one more $1,000 a week does. The table at the top of the page reports annual orders. Getting from one to the other is the step where this analysis previously went wrong, so it is worth setting out carefully.</p>
 <p>The naive conversion is to multiply the rate by the whole budget:</p>
-<div class="eq">3.29 &times; ($930,558 / 1,000) &times; 52 = 159,062 orders a year &nbsp;&nbsp;&#10007;</div>
+<div class="eq">3.29 &times; ($920,879 / 1,000) &times; 52 = 157,408 orders a year &nbsp;&nbsp;&#10007;</div>
 <p>That silently asks what would happen if Meta spent <em>nothing</em>. Meta&rsquo;s average week (Total, this data window) is $920,879, and the model only ever watched the budget move inside a much narrower band. Projecting a local slope all the way down to zero is not something the data can support, and it showed on earlier data: applied across every channel, the arithmetic produced <em>negative</em> annual orders for some channels, because the credit it claimed to move exceeded everything attribution had ever given them. An impossible answer is a useful one.</p>
 <p><strong>The fix is to price the flows at a change that actually happened.</strong> Each channel is taken from its average week down to its quietest week in the window &mdash; the 5th percentile of its own nonzero weekly spend, not the literal minimum, so one anomalous zero-spend week cannot set the whole pullback. For Meta (Total) that is a pullback of $437,303 a week rather than the full $920,879:</p>
 <div class="eq">Meta &rarr; CRM Email, unweighted = 3.29 &times; ($437,303 / 1,000) &times; 52 = 74,749 orders a year</div>
@@ -616,18 +616,19 @@ function renderPull(){
   const el=document.getElementById('pull'); if(!el) return;
   const F=D[key()], P=F.pullsens; if(!P||!P.rows||!P.rows.length){el.innerHTML='';return;}
   const num=v=>Math.round(v).toLocaleString(), pc=v=>(100*(v||0)).toFixed(1)+'%';
-  const base=P.rows[P.rows.length-1];  // frac=1.0, the default already priced above
+  const base=P.rows.find(r=>r.q===P.base_q)||P.rows[0];  // the default (base_q) already priced above
   if(!base||!(base.moved>0)){
     el.innerHTML='<p class="note">Nothing survives in this view, so there is no reallocation to price.</p>'; return;
   }
   let s='<p class="note">A coefficient says what one more $1,000 a week does. Turning that into an annual figure means choosing <em>how big a cut to price</em>, '
    +'and that choice sets the scale of every total on this page. The default (used in the table above) prices each channel pulling all the way back to its own quietest observed week. '
    +'Here is the same ledger priced at shallower cuts along that same path, and at the one this page refuses to use as its default.</p>'
-   +'<div class="hscroll"><table class="s tight"><tr><th class="stick">Priced at a cut</th>'
+   +'<div class="hscroll"><table class="s tight"><tr><th class="stick">Priced at a cut back to</th>'
    +'<th>'+(M==='revenue'?'Revenue':'Orders')+' reallocated</th><th>Share of the total</th><th>vs the default</th><th></th></tr>';
   P.rows.forEach(r=>{
-    const on=r.frac>=1.0;
-    s+='<tr'+(on?' style="background:#f4f6f4"':'')+'><td class="l stick">'+r.label+'</td>'
+    const on=r.q===P.base_q;
+    const label=Math.round(r.q*100)+'th percentile week'+(on?' (the default)':'');
+    s+='<tr'+(on?' style="background:#f4f6f4"':'')+'><td class="l stick">'+label+'</td>'
      +'<td>'+num(r.moved)+'</td><td><strong>'+pc(r.share)+'</strong></td>'
      +'<td>'+(on?'&mdash;':(base.moved>0?(100*(r.moved/base.moved-1)).toFixed(0)+'%':'&mdash;'))+'</td>'
      +'<td style="color:#8a877e;white-space:nowrap">'+(on?'&larr; the setting used above':'')+'</td></tr>';
@@ -741,11 +742,11 @@ function renderStab(){
     const rows=info.rows;
     const nSame=rows.filter(r=>r.same_sign).length, nOv=rows.filter(r=>r.overlap).length;
     const bad=rows.filter(r=>!(r.same_sign&&r.overlap));
-    let s='<div class="hscroll"><table class="s tight"><tr><th class="stick">Channel</th><th>Full window</th>'
+    let s='<div class="hscroll"><table class="s tight"><tr><th class="stick">Pair</th><th>Full window</th>'
      +'<th>First half</th><th>Second half</th><th>Same direction</th><th>Consistent</th></tr>';
     rows.forEach(r=>{
       const ok=r.same_sign&&r.overlap;
-      s+='<tr'+(ok?'':' style="background:#fdf6f5"')+'><td class="l stick">'+r.lever+'</td>'
+      s+='<tr'+(ok?'':' style="background:#fdf6f5"')+'><td class="l stick">'+r.k.replace('|',' &rarr; ')+'</td>'
        +'<td style="color:#888">'+f1(r.full)+'</td>'
        +'<td>'+f1(r.b1)+' <span style="color:#aaa">&plusmn;'+f1(r.se1)+'</span></td>'
        +'<td>'+f1(r.b2)+' <span style="color:#aaa">&plusmn;'+f1(r.se2)+'</span></td>'
@@ -753,11 +754,11 @@ function renderStab(){
        +'<td>'+(r.overlap?'yes':'<span style="color:#b3261e">no</span>')+'</td></tr>';
     });
     s+='</table></div>';
-    s+='<p class="note" style="margin-top:8px">'+nSame+' of '+rows.length+' channels point the same way in both halves and '+nOv+' of '+rows.length+' have intervals that overlap. '
+    s+='<p class="note" style="margin-top:8px">'+nSame+' of '+rows.length+' pairs point the same way in both halves and '+nOv+' of '+rows.length+' have intervals that overlap. '
      +'Each half carries '+info.n_first+' and '+info.n_second+' weekly changes against '+info.k_params+' parameters, so the intervals are wide and overlap is the expected outcome, not a finding &mdash; a change of sign, or two intervals that miss each other entirely, is what would actually be informative.</p>';
     if(bad.length){
       s+='<p class="note"><strong>'+(bad.length>1?'Worth a second look':'Worth a second look')+':</strong> '
-       +bad.map(r=>r.lever+' ('+f1(r.b1)+' in the first half vs. '+f1(r.b2)+' in the second)').join(', ')
+       +bad.map(r=>r.k.replace('|',' &rarr; ')+' ('+f1(r.b1)+' in the first half vs. '+f1(r.b2)+' in the second)').join(', ')
        +' '+(bad.length>1?"don't":"doesn't")+' hold direction and precision together across the split.</p>';
     }
     if(info.skipped&&info.skipped.length){
@@ -765,13 +766,13 @@ function renderStab(){
     }
     return s;
   };
-  let s='<p class="note">Every figure on this page is estimated across the whole window as though the pattern held steady throughout. This checks that by cutting the window in half and re-fitting each channel&rsquo;s effect on total new orders &mdash; the same &ldquo;created demand&rdquo; regression the ledger table&rsquo;s marginal rate uses &mdash; separately in each half, so a channel whose effect has genuinely drifted (a new competitor, a platform change, rising or falling spend elsewhere) shows up as a sign flip or two intervals that miss each other, rather than being hidden inside one number for the full window.</p>'
+  let s='<p class="note">Every figure on this page is estimated across the whole window as though the pattern held steady throughout. This checks that by cutting the window in half and re-fitting every surviving cross-channel pair separately in each half &mdash; so a pair whose effect has genuinely drifted (a new competitor, a platform change, rising or falling spend elsewhere) shows up as a sign flip or two intervals that miss each other, rather than being hidden inside one number for the full window. (A steadier, lever-level version of this check &mdash; splitting each channel&rsquo;s effect on total new orders instead of each pair &mdash; is the goal; see the note below on why it isn&rsquo;t running yet.)</p>'
    +'<p class="note"><strong>US and International, not pooled.</strong> Each region is refit on its own data, for the same reason the rest of this page keeps them separate: spend in one market cannot cause an order shipped from the other, and the two channel line-ups differ. There is no Total row here &mdash; Total on this page is always the two regions&rsquo; own numbers added together, never a third regression, and a stability check only means something against a regression that was actually fit.</p>';
   s+='<h4 style="margin:16px 0 4px">US</h4>'+oneRegionTable('US',T.US);
   s+='<h4 style="margin:16px 0 4px">International</h4>'+oneRegionTable('International',T.International);
   s+=(H==='excl'?'<p class="note"><strong>Nov/Dec excluded is active.</strong> This split is refit on the holiday-excluded window only, which runs to roughly 85 weeks rather than ~104 &mdash; each half here carries around 42-43 weekly changes against a dozen-plus parameters, a thinner split than the included view already warned was wide. Treat any flip or non-overlap below with that in mind before treating it as a finding.</p>':'');
-  let nt='<p class="note"><strong>Read this as suggestive, not as a test.</strong> Splitting ~104 weeks in half leaves each side with roughly 50 weekly changes against a dozen-plus parameters, so these intervals are wide by construction. A channel passing both checks has not been proven stable in any formal sense; a channel failing one is a prompt to look closer, not a verdict.</p>'
-   +'<p class="note"><strong>Why the lever level, not the pair level.</strong> An earlier version of this table split every surviving spillover pair individually, which multiplies the noise problem by however many destinations a channel touches. Testing each channel&rsquo;s effect on total new orders instead &mdash; own orders plus everywhere its spend spills to, combined &mdash; is the same quantity the ledger table&rsquo;s marginal CAC/ROAS already relies on, and is the steadiest thing available to split in half with this much data.</p>'
+  let nt='<p class="note"><strong>Read this as suggestive, not as a test.</strong> Splitting ~104 weeks in half leaves each side with roughly 50 weekly changes against a dozen-plus parameters, so these intervals are wide by construction. A pair passing both checks has not been proven stable in any formal sense; a pair failing one is a prompt to look closer, not a verdict.</p>'
+   +'<p class="note"><strong>Why this is split by pair, not by lever.</strong> A lever-level version of this check &mdash; splitting each channel&rsquo;s effect on total new orders in half, the same quantity the ledger table&rsquo;s marginal CAC/ROAS relies on &mdash; would be steadier, and was attempted; it currently cannot be run because it depends on internals of the scenario calculator that have since changed underneath it. Until it is rebuilt, this table splits every surviving spillover pair individually instead, which multiplies the noise problem by however many destinations a channel touches &mdash; read it as a coarser, noisier check than it should be, not a clean one.</p>'
    +'<p class="note">Channels with no spend at all in one half of the window (a launch or a pause) are left out of that half&rsquo;s test rather than shown with a false zero &mdash; there is no coefficient to estimate when the predictor never moved.</p>';
   el.innerHTML=s+nbox(nt,'Notes on the split');
 }
